@@ -1,4 +1,8 @@
-export type TourCategory = "anime-concert" | "gaming-concert" | "classical-recital";
+export type TourCategory =
+  | "anime-concert"
+  | "gaming-concert"
+  | "classical-recital"
+  | "lucid";
 export type TourStatus = "on-sale" | "upcoming" | "past";
 
 export type TourCardData = {
@@ -19,20 +23,22 @@ export const homeTourFilters: { label: string; value: TourFilter }[] = [
   { label: "What's on", value: "whats-on" },
   { label: "Anime Concerts", value: "anime-concert" },
   { label: "Gaming Concerts", value: "gaming-concert" },
-  { label: "Classical Recitals", value: "classical-recital" },
+  { label: "Classic Concert", value: "classical-recital" },
   { label: "Past event", value: "past" },
 ];
 
 export const tourTypeFilters: { label: string; value: TourFilter }[] = [
   { label: "Anime Concerts", value: "anime-concert" },
   { label: "Gaming Concerts", value: "gaming-concert" },
-  { label: "Classical Recitals", value: "classical-recital" },
+  { label: "Classic Concert", value: "classical-recital" },
+  { label: "Lucid Live", value: "lucid" },
 ];
 
 export const tourCategoryLabels: Record<TourCategory, string> = {
   "anime-concert": "Anime Concert",
   "gaming-concert": "Gaming Concert",
   "classical-recital": "Classical Recital",
+  lucid: "Lucid",
 };
 
 export const tourHighlights: TourCardData[] = [
@@ -211,5 +217,71 @@ export const tourHighlights: TourCardData[] = [
     status: "past",
     image:
       "https://images.unsplash.com/photo-1519683109079-d5f539e1542f?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "lucid-live-showcase",
+    category: "lucid",
+    title: "Lucid Live Showcase",
+    date: "2026-12-01",
+    dateLabel: "TBA 2026",
+    cities: ["Melbourne", "Sydney"],
+    status: "upcoming",
+    image:
+      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "lucid-live-sessions",
+    category: "lucid",
+    title: "Lucid Live Sessions",
+    date: "2026-11-01",
+    dateLabel: "TBA 2026",
+    cities: ["Melbourne"],
+    status: "upcoming",
+    image:
+      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "lucid-orchestra-series",
+    category: "lucid",
+    title: "Lucid Orchestra Series",
+    date: "2026-10-01",
+    dateLabel: "TBA 2026",
+    cities: ["Sydney", "Melbourne"],
+    status: "upcoming",
+    image:
+      "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "lucid-piano-collection",
+    category: "lucid",
+    title: "Lucid Piano Collection",
+    date: "2026-09-01",
+    dateLabel: "TBA 2026",
+    cities: ["Melbourne", "Brisbane"],
+    status: "upcoming",
+    image:
+      "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "lucid-chamber-nights",
+    category: "lucid",
+    title: "Lucid Chamber Nights",
+    date: "2026-08-01",
+    dateLabel: "TBA 2026",
+    cities: ["Canberra", "Melbourne"],
+    status: "upcoming",
+    image:
+      "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "lucid-special-event",
+    category: "lucid",
+    title: "Lucid Special Event",
+    date: "2026-07-01",
+    dateLabel: "TBA 2026",
+    cities: ["Sydney"],
+    status: "upcoming",
+    image:
+      "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=80",
   },
 ];

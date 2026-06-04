@@ -25,7 +25,7 @@ main {
 }
 
 .event-filter-list {
-  column-gap: 1.75rem;
+  column-gap: 2rem;
   row-gap: 1.25rem;
 }
 
@@ -84,7 +84,7 @@ main {
   }
 
   .event-filter-list {
-    column-gap: 2.25rem;
+    column-gap: 2.5rem;
     row-gap: 1.5rem;
   }
 

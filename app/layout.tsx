@@ -3,9 +3,22 @@ import "./globals.css";
 import "./site.css";
 
 export const metadata: Metadata = {
-  title: "Castiglione Arts & Music | Touring Production Australia",
+  title: "Castiglione",
   description:
-    "Australia-based touring production company for live orchestral anime and gaming concerts, classical recitals, and chamber music tours.",
+    "Castiglione is an Australia-based touring production company for live orchestral anime and gaming concerts, classic concerts, and cultural live experiences.",
+  openGraph: {
+    title: "Castiglione",
+    description:
+      "Castiglione is an Australia-based touring production company for live orchestral anime and gaming concerts, classic concerts, and cultural live experiences.",
+    siteName: "Castiglione",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Castiglione",
+    description:
+      "Castiglione is an Australia-based touring production company for live orchestral anime and gaming concerts, classic concerts, and cultural live experiences.",
+  },
 };
 
 export default function RootLayout({

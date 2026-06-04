@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -18,20 +19,21 @@ export function Navigation() {
     <header className="sticky top-0 z-50 border-b border-black bg-white/95 backdrop-blur">
       <nav
         aria-label="Main navigation"
-        className="mx-auto flex min-h-20 w-full max-w-[1760px] items-center justify-between px-4 sm:px-6 lg:px-10"
+        className="mx-auto flex min-h-20 w-full max-w-[1760px] items-center justify-between px-5 sm:px-7 lg:px-10"
       >
         <Link
           href="/"
-          className="group flex items-center gap-3 pr-4 text-left"
-          aria-label="Castiglione Arts & Music home"
+          className="flex min-w-0 shrink-0 items-center pr-5 text-left sm:pr-8"
+          aria-label="Castiglione home"
         >
-          <span className="grid size-11 shrink-0 place-items-center bg-black text-sm font-black uppercase tracking-normal text-white transition-colors group-hover:bg-[#d7263d]">
-            CA
-          </span>
-          <span className="max-w-52 text-base font-black uppercase leading-[0.92] tracking-normal sm:text-lg">
-            Castiglione
-            <span className="block font-semibold">Arts & Music</span>
-          </span>
+          <Image
+            src="/media/castiglione-logo.webp"
+            alt="Castiglione"
+            width={496}
+            height={137}
+            priority
+            className="h-10 w-auto object-contain sm:h-[52px]"
+          />
         </Link>
 
         <div className="hidden flex-1 items-stretch justify-start gap-1 lg:flex">

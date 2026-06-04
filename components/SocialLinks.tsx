@@ -1,11 +1,10 @@
 import type { ElementType } from "react";
-import { BookOpen, BookText } from "lucide-react";
+import { BookText } from "lucide-react";
 import { FaFacebookF, FaInstagram, FaTiktok, FaYoutube } from "react-icons/fa6";
 
 export const socialLinks: { label: string; href: string; icon: ElementType }[] = [
-  { label: "Facebook", href: "#", icon: FaFacebookF },
   { label: "Instagram", href: "#", icon: FaInstagram },
-  { label: "Rednote / Xiaohongshu", href: "#", icon: BookOpen },
+  { label: "Facebook", href: "#", icon: FaFacebookF },
   { label: "TikTok", href: "#", icon: FaTiktok },
   { label: "YouTube", href: "#", icon: FaYoutube },
   { label: "Rednote", href: "#", icon: BookText },

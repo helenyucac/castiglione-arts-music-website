@@ -24,10 +24,10 @@ export function WhoWeAre() {
         <div className="grid gap-6 lg:grid-cols-[1fr_0.85fr]">
           <div className="space-y-5 text-lg leading-8">
             <p>
-              Since its founding in Melbourne in 2015, Castiglione Arts & Music
-              has developed touring productions for audiences across Australia
-              and beyond, connecting global artists, beloved screen worlds, and
-              major concert venues.
+              Since its founding in Melbourne in 2015, Castiglione has developed
+              touring productions for audiences across Australia and beyond,
+              connecting global artists, beloved screen worlds, and major concert
+              venues.
             </p>
             <p>
               Our work spans live orchestral anime and gaming concerts, master

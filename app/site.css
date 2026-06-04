@@ -1,0 +1,150 @@
+:root {
+  --background: #ffffff;
+  --foreground: #111111;
+}
+
+html {
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+main {
+  display: block;
+  overflow: visible;
+}
+
+.event-filter-list {
+  column-gap: 1.75rem;
+  row-gap: 1.25rem;
+}
+
+.highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.tour-card {
+  min-height: 360px;
+}
+
+.tour-card-media {
+  aspect-ratio: 4 / 3;
+}
+
+.tour-card-info {
+  min-height: 212px;
+  padding: 0.75rem;
+}
+
+.tour-card-category {
+  min-height: 3rem;
+  font-size: 0.62rem;
+  line-height: 0.75rem;
+}
+
+.tour-card-title {
+  font-size: clamp(0.95rem, 3.7vw, 1.3rem);
+}
+
+.tour-card-details {
+  font-size: 0.62rem;
+  line-height: 0.75rem;
+}
+
+.about-section-grid {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.about-section-media {
+  position: relative;
+  min-height: 300px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid #000000;
+  background: #000000;
+}
+
+@media (min-width: 640px) {
+  .highlights-grid {
+    gap: 1rem;
+  }
+
+  .event-filter-list {
+    column-gap: 2.25rem;
+    row-gap: 1.5rem;
+  }
+
+  .tour-card {
+    min-height: 440px;
+  }
+
+  .tour-card-info {
+    min-height: 230px;
+    padding: 1rem;
+  }
+
+  .tour-card-category {
+    font-size: 0.75rem;
+    line-height: 1.25rem;
+  }
+
+  .tour-card-title {
+    font-size: 1.25rem;
+  }
+
+  .tour-card-details {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .highlights-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .event-filter-list {
+    column-gap: 2.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .about-section-grid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: start;
+  }
+
+  .about-section-media {
+    min-height: 520px;
+  }
+
+  .highlights-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .tour-card {
+    min-height: 500px;
+  }
+
+  .tour-card-info {
+    padding: 1.25rem;
+  }
+
+  .tour-card-title {
+    font-size: 1.5rem;
+  }
+}

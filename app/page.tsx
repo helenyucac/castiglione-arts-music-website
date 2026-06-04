@@ -1,0 +1,23 @@
+import { Footer } from "@/components/Footer";
+import { HeroVideo } from "@/components/HeroVideo";
+import { HighlightsSection } from "@/components/HighlightsSection";
+import { Navigation } from "@/components/Navigation";
+import { PathTravelled } from "@/components/PathTravelled";
+import { WhoWeAre } from "@/components/WhoWeAre";
+
+export default function Home() {
+  return (
+    <>
+      <Navigation />
+      <main>
+        <HeroVideo
+          posterSrc="https://images.unsplash.com/photo-1508973379184-7517410fb0bc?auto=format&fit=crop&w=2400&q=85"
+        />
+        <HighlightsSection />
+        <WhoWeAre />
+        <PathTravelled />
+      </main>
+      <Footer />
+    </>
+  );
+}

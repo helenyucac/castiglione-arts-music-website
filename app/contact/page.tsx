@@ -1,6 +1,23 @@
+import type { Metadata } from "next";
 import { ContactForm } from "@/components/ContactForm";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
+
+const contactDescription =
+  "Contact Castiglione for touring enquiries, artist opportunities, venue partnerships, and season updates.";
+
+export const metadata: Metadata = {
+  title: "Castiglione",
+  description: contactDescription,
+  openGraph: {
+    title: "Castiglione",
+    description: contactDescription,
+  },
+  twitter: {
+    title: "Castiglione",
+    description: contactDescription,
+  },
+};
 
 export default function ContactPage() {
   return (

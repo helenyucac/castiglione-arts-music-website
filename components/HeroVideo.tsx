@@ -46,7 +46,7 @@ export function HeroVideo({ videoSrc, posterSrc }: HeroVideoProps) {
             Live orchestral anime, gaming concerts and classical recitals
           </p>
           <h1 className="text-balance max-w-5xl text-[clamp(3.2rem,9vw,9.4rem)] font-black uppercase leading-[0.82] tracking-normal">
-            Castiglione Arts & Music
+            Castiglione
           </h1>
           <div className="mt-8 max-w-4xl">
             <p className="max-w-2xl text-lg leading-7 text-white/90 sm:text-xl">

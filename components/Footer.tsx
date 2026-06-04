@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { SocialLinks } from "@/components/SocialLinks";
 
@@ -14,14 +15,14 @@ export function Footer() {
       <div className="mx-auto w-full max-w-[1760px] px-4 py-10 sm:px-6 lg:px-10">
         <div className="grid gap-10 border-b border-black pb-10 lg:grid-cols-[1fr_1.4fr]">
           <div>
-            <Link href="/" className="inline-flex items-center gap-3">
-              <span className="grid size-12 place-items-center bg-black text-sm font-black uppercase text-white">
-                CA
-              </span>
-              <span className="text-xl font-black uppercase leading-none">
-                Castiglione
-                <span className="block font-semibold">Arts & Music</span>
-              </span>
+            <Link href="/" className="inline-flex items-center" aria-label="Castiglione home">
+              <Image
+                src="/media/castiglione-logo.webp"
+                alt="Castiglione"
+                width={496}
+                height={137}
+                className="h-10 w-auto object-contain sm:h-[52px]"
+              />
             </Link>
             <p className="mt-6 max-w-md text-lg leading-8">
               Australia-based touring production for orchestral anime and gaming
@@ -65,7 +66,7 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col gap-3 pt-6 text-sm font-bold uppercase tracking-normal sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Castiglione Arts & Music.</p>
+          <p>© 2026 Castiglione Arts & Culture</p>
           <p>Melbourne / Sydney / Brisbane / Perth / Beyond</p>
         </div>
       </div>

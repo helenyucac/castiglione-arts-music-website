@@ -31,7 +31,8 @@ function filterEvents(events: TourCardData[], filter: TourFilter) {
   if (
     filter === "anime-concert" ||
     filter === "gaming-concert" ||
-    filter === "classical-recital"
+    filter === "classical-recital" ||
+    filter === "lucid"
   ) {
     return events.filter((event) => event.category === filter);
   }
@@ -66,8 +67,8 @@ export function EventShowcase({
               type="button"
               className={`p-0 text-left text-xs font-black uppercase tracking-normal underline-offset-8 transition duration-200 focus:outline-none focus-visible:underline sm:text-sm ${
                 isActive
-                  ? "text-black underline decoration-2"
-                  : "text-black/50 hover:text-black hover:underline"
+                  ? "text-black/50 underline decoration-2"
+                  : "text-black hover:text-black/50 hover:underline"
               }`}
               aria-pressed={isActive}
               onClick={() => setActiveFilter(filter.value)}

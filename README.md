@@ -1,6 +1,6 @@
-# Castiglione Arts & Music Website
+# Castiglione Website
 
-Official website prototype for Castiglione Arts & Music, an Australia-based touring production company focused on live orchestral anime and gaming concerts, classical recitals, and chamber music tours.
+Official website prototype for Castiglione, an Australia-based touring production company focused on live orchestral anime and gaming concerts, classical recitals, and chamber music tours.
 
 This project is built with Next.js App Router, TypeScript, Tailwind CSS, and is prepared for Vercel Preview deployments.
 

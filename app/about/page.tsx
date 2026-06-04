@@ -1,8 +1,25 @@
 import { ArrowUpRight } from "lucide-react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
+
+const aboutDescription =
+  "Castiglione is an Australia-based touring production company creating culture-rich concert experiences for major venues, devoted audiences, and artists with a global voice.";
+
+export const metadata: Metadata = {
+  title: "About Castiglione",
+  description: aboutDescription,
+  openGraph: {
+    title: "About Castiglione",
+    description: aboutDescription,
+  },
+  twitter: {
+    title: "About Castiglione",
+    description: aboutDescription,
+  },
+};
 
 const footprintStats = [
   { value: "2015", label: "Founded in Melbourne" },
@@ -18,10 +35,10 @@ export default function AboutPage() {
         <section className="bg-white py-14 sm:py-20 lg:py-24">
           <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
             <div className="pb-8 sm:pb-12">
-              <p className="max-w-6xl text-[clamp(2rem,5vw,5.75rem)] font-black leading-[0.98] tracking-normal">
-                Castiglione Arts & Music is an Australia-based touring
-                production company creating culture-rich concert experiences for
-                major venues, devoted audiences, and artists with a global voice.
+              <p className="max-w-4xl text-xl font-black leading-8 tracking-normal sm:text-2xl lg:text-3xl lg:leading-10">
+                Castiglione is an Australia-based touring production company
+                creating culture-rich concert experiences for major venues,
+                devoted audiences, and artists with a global voice.
               </p>
             </div>
 

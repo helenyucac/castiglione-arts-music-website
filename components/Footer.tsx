@@ -37,7 +37,6 @@ export function Footer() {
             </div>
 
             <div>
-              <p className="mb-4 text-sm font-black uppercase tracking-normal">Navigate</p>
               <div className="grid gap-3">
                 {footerNav.map((item) =>
                   item.isExternal ? (
@@ -65,9 +64,8 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 pt-6 text-sm font-bold uppercase tracking-normal sm:flex-row sm:items-center sm:justify-between">
+        <div className="pt-6 text-sm font-bold uppercase tracking-normal">
           <p>© 2026 Castiglione Arts & Culture</p>
-          <p>Melbourne / Sydney / Brisbane / Perth / Beyond</p>
         </div>
       </div>
     </footer>

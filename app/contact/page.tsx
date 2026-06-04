@@ -35,23 +35,11 @@ export default function ContactPage() {
                 and season updates, send us a note or join the Castiglione mail
                 list.
               </p>
+              <div className="mt-10 border-t border-black" aria-hidden="true" />
             </div>
 
-            <div className="grid gap-10 py-12 lg:grid-cols-[0.85fr_1.15fr] lg:py-16">
-              <aside>
-                <h2 className="text-3xl font-black uppercase leading-none tracking-normal">
-                  Office
-                </h2>
-                <address className="mt-6 max-w-md text-lg not-italic leading-8">
-                  Level 2 Alfred Deakin Building
-                  <br />
-                  Flinders Street
-                  <br />
-                  Melbourne 3000
-                </address>
-              </aside>
-
-              <section>
+            <div className="py-12 lg:py-16">
+              <section className="max-w-5xl">
                 <h2 className="mb-8 text-3xl font-black uppercase leading-none tracking-normal">
                   Contact / Mailing List
                 </h2>

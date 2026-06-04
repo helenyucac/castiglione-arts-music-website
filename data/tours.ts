@@ -31,7 +31,7 @@ export const tourTypeFilters: { label: string; value: TourFilter }[] = [
   { label: "Anime Concerts", value: "anime-concert" },
   { label: "Gaming Concerts", value: "gaming-concert" },
   { label: "Classic Concert", value: "classical-recital" },
-  { label: "Lucid", value: "lucid" },
+  { label: "Lucid Live", value: "lucid" },
 ];
 
 export const tourCategoryLabels: Record<TourCategory, string> = {

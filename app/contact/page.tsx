@@ -26,7 +26,7 @@ export default function ContactPage() {
       <main>
         <section className="bg-white py-14 sm:py-20 lg:py-24">
           <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
-            <div className="border-b border-black pb-10">
+            <div className="pb-10">
               <h1 className="max-w-5xl text-[clamp(4rem,11vw,10rem)] font-black uppercase leading-[0.82] tracking-normal">
                 Contact Us
               </h1>
@@ -38,7 +38,7 @@ export default function ContactPage() {
             </div>
 
             <div className="grid gap-10 py-12 lg:grid-cols-[0.85fr_1.15fr] lg:py-16">
-              <aside className="border-t border-black pt-6">
+              <aside>
                 <h2 className="text-3xl font-black uppercase leading-none tracking-normal">
                   Office
                 </h2>
@@ -49,14 +49,9 @@ export default function ContactPage() {
                   <br />
                   Melbourne 3000
                 </address>
-                <p className="mt-8 max-w-md text-base font-bold leading-7 text-black/65">
-                  This preview form is prepared for front-end review. A production
-                  submission endpoint or mailing list provider can be connected
-                  before launch.
-                </p>
               </aside>
 
-              <section className="border-t border-black pt-6">
+              <section>
                 <h2 className="mb-8 text-3xl font-black uppercase leading-none tracking-normal">
                   Contact / Mailing List
                 </h2>

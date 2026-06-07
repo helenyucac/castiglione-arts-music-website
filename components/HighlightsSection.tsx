@@ -6,7 +6,7 @@ export function HighlightsSection() {
     <section id="tours" className="border-y border-black bg-white py-12 sm:py-16 lg:py-20">
       <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
         <div className="mb-8 border-b border-black pb-8 lg:mb-10">
-          <h2 className="text-[clamp(2.6rem,6vw,5.8rem)] font-black uppercase leading-[0.88] tracking-normal">
+          <h2 className="text-[clamp(2.25rem,5vw,4.8rem)] font-black uppercase leading-[0.92] tracking-normal">
             Highlights
           </h2>
         </div>

@@ -167,11 +167,11 @@ The homepage displays up to 12 cards. The `/tours` page displays all events.
 The event card colors are controlled by category:
 
 ```text
-Anime concerts: #A7B4C2
-Gaming Concerts: #595C64
-Classic Concerts: #AEACA6
-Exhibitions: #F8F8F3
-Lucid Live: #68635D
+Anime concerts: #B7A79A
+Gaming Concerts: #DDCDA6
+Classic Concerts: #CCC3BA
+Exhibitions: #DDCDA6
+Lucid Live: #E0E1DB
 ```
 
 ## Replacing Social Media Links

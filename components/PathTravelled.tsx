@@ -37,7 +37,7 @@ export function PathTravelled() {
             <p className="mb-4 text-sm font-black uppercase tracking-normal text-[#00a896]">
               Touring footprints
             </p>
-            <h2 className="max-w-4xl text-[clamp(2.6rem,5.5vw,5.5rem)] font-black uppercase leading-[0.9] tracking-normal">
+            <h2 className="max-w-4xl text-[clamp(2.25rem,4.8vw,4.8rem)] font-black uppercase leading-[0.92] tracking-normal">
               The Path We&apos;ve Travelled
             </h2>
             <p className="mt-8 max-w-2xl text-lg leading-8 text-white/80">

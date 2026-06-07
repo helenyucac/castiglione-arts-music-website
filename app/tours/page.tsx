@@ -28,7 +28,7 @@ export default function ToursPage() {
         <section className="bg-white py-14 sm:py-20 lg:py-24">
           <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
             <div className="mb-10 border-b border-black pb-8">
-              <p className="max-w-4xl text-lg font-black leading-8 tracking-normal sm:text-xl lg:text-2xl lg:leading-9">
+              <p className="max-w-none text-lg font-black leading-8 tracking-normal sm:text-xl lg:max-w-7xl lg:text-xl lg:leading-8 xl:text-2xl xl:leading-9">
                 Explore our touring archive and current listings across anime
                 concerts, gaming concerts, exhibitions, Lucid Live projects, and
                 classic concert productions.

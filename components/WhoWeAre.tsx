@@ -8,7 +8,7 @@ export function WhoWeAre() {
       <div className="mx-auto grid w-full max-w-[1760px] gap-8 px-4 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-10">
         <div className="flex flex-col justify-between">
           <div>
-            <h2 className="max-w-3xl text-[clamp(2.6rem,5.5vw,5.5rem)] font-black uppercase leading-[0.9] tracking-normal">
+            <h2 className="max-w-3xl text-[clamp(2.25rem,4.8vw,4.8rem)] font-black uppercase leading-[0.92] tracking-normal">
               Who We Are
             </h2>
           </div>

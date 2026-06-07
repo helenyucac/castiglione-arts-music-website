@@ -11,11 +11,8 @@ type TourCardProps = {
   tour: TourCardData;
 };
 
-const DARK_CARD_CATEGORIES = new Set(["gaming-concert", "lucid"]);
-
 export function TourCard({ tour }: TourCardProps) {
   const accentColor = tourCategoryColors[tour.category];
-  const isDarkCard = DARK_CARD_CATEGORIES.has(tour.category);
   const details = `${tour.dateLabel} / ${tour.cities.join(", ")}`;
 
   return (
@@ -35,7 +32,7 @@ export function TourCard({ tour }: TourCardProps) {
           className="tour-card-info flex flex-1 flex-col justify-between"
           style={{
             backgroundColor: accentColor,
-            color: isDarkCard ? "#ffffff" : "#111111",
+            color: "#111111",
           }}
         >
           <div>
@@ -49,7 +46,7 @@ export function TourCard({ tour }: TourCardProps) {
 
           <div
             className="mt-4 flex items-end justify-between gap-2 border-t pt-3 sm:mt-8 sm:gap-4 sm:pt-4"
-            style={{ borderTopColor: isDarkCard ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.3)" }}
+            style={{ borderTopColor: "rgba(0,0,0,0.3)" }}
           >
             <p className="tour-card-details break-words font-bold uppercase tracking-normal">
               {details}

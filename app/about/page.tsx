@@ -35,7 +35,7 @@ export default function AboutPage() {
         <section className="bg-white py-14 sm:py-20 lg:py-24">
           <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
             <div className="pb-8 sm:pb-12">
-              <p className="max-w-4xl text-xl font-black leading-8 tracking-normal sm:text-2xl lg:text-3xl lg:leading-10">
+              <p className="max-w-4xl text-lg font-black leading-8 tracking-normal sm:text-xl lg:max-w-7xl lg:text-2xl lg:leading-9">
                 Castiglione is an Australia-based touring production company
                 creating culture-rich concert experiences for major venues,
                 devoted audiences, and artists with a global voice.
@@ -44,7 +44,7 @@ export default function AboutPage() {
 
             <section className="about-section-grid border-b border-black py-14 sm:py-20">
               <div>
-                <h2 className="text-[clamp(2.6rem,5.5vw,5.8rem)] font-black uppercase leading-[0.9] tracking-normal">
+                <h2 className="text-[clamp(2.25rem,4.8vw,4.8rem)] font-black uppercase leading-[0.92] tracking-normal">
                   Our Story
                 </h2>
                 <div className="mt-8 max-w-2xl space-y-5 text-lg leading-8">
@@ -82,7 +82,7 @@ export default function AboutPage() {
 
             <section className="about-section-grid py-14 sm:py-20">
               <div>
-                <h2 className="text-[clamp(2.6rem,5.5vw,5.8rem)] font-black uppercase leading-[0.9] tracking-normal">
+                <h2 className="text-[clamp(2.25rem,4.8vw,4.8rem)] font-black uppercase leading-[0.92] tracking-normal">
                   Touring Footprints
                 </h2>
                 <div className="mt-8 grid max-w-2xl border-y border-black sm:grid-cols-3">

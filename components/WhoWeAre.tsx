@@ -6,9 +6,9 @@ export function WhoWeAre() {
   return (
     <section id="about" className="bg-white py-14 sm:py-20 lg:py-24">
       <div className="mx-auto grid w-full max-w-[1760px] gap-8 px-4 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-10">
-        <div className="flex flex-col justify-between border-t border-black pt-6">
+        <div className="flex flex-col justify-between">
           <div>
-            <h2 className="max-w-3xl text-[clamp(3rem,7vw,7rem)] font-black uppercase leading-[0.82] tracking-normal">
+            <h2 className="max-w-3xl text-[clamp(2.6rem,5.5vw,5.5rem)] font-black uppercase leading-[0.9] tracking-normal">
               Who We Are
             </h2>
           </div>
@@ -31,7 +31,7 @@ export function WhoWeAre() {
             </p>
             <p>
               Our work spans live orchestral anime and gaming concerts, master
-              classical recitals, chamber music, and cross-cultural projects.
+              classic concerts, chamber music, and cross-cultural projects.
               Every tour is shaped through artist relationships, venue planning,
               production logistics, and a deep respect for the audience journey.
             </p>

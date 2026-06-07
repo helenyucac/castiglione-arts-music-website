@@ -1,6 +1,6 @@
 # Castiglione Website
 
-Official website prototype for Castiglione, an Australia-based touring production company focused on live orchestral anime and gaming concerts, classical recitals, and chamber music tours.
+Official website prototype for Castiglione, an Australia-based touring production company focused on live orchestral anime and gaming concerts, classic concerts, exhibitions, Lucid Live projects, and chamber music tours.
 
 This project is built with Next.js App Router, TypeScript, Tailwind CSS, and is prepared for Vercel Preview deployments.
 
@@ -132,7 +132,7 @@ The `date`, `category`, and `status` fields power the Highlights and Tours filte
 
 Use these normalized values:
 
-- `category`: `anime-concert`, `gaming-concert`, or `classical-recital`
+- `category`: `anime-concert`, `gaming-concert`, `classical-recital`, `exhibition`, or `lucid`
 - `status`: `on-sale`, `upcoming`, or `past`
 - `date`: sortable ISO date, for example `2026-11-12`
 - `cities`: array of city names
@@ -143,15 +143,18 @@ Homepage filter logic:
 - `What's on`: events with `status: "on-sale"` or `status: "upcoming"`
 - `Anime Concerts`: events with `category: "anime-concert"`
 - `Gaming Concerts`: events with `category: "gaming-concert"`
-- `Classical Recitals`: events with `category: "classical-recital"`
-- `Past event`: events with `status: "past"`
+- `Classic Concerts`: events with `category: "classical-recital"`
+- `Exhibitions`: events with `category: "exhibition"`
+- `Past Event`: events with `status: "past"`
 
 Tours page filter logic:
 
 - Default Tours page state: all events, sorted newest to oldest by `date`
 - `Anime Concerts`: events with `category: "anime-concert"`
 - `Gaming Concerts`: events with `category: "gaming-concert"`
-- `Classical Recitals`: events with `category: "classical-recital"`
+- `Classic Concerts`: events with `category: "classical-recital"`
+- `Exhibitions`: events with `category: "exhibition"`
+- `Lucid Live`: events with `category: "lucid"`
 
 Card city formatting is handled in `components/TourCard.tsx` with:
 
@@ -161,11 +164,14 @@ tour.cities.join(", ")
 
 The homepage displays up to 12 cards. The `/tours` page displays all events.
 
-The Highlights card colors are intentionally controlled by `components/TourCard.tsx`, not by the tour data. They alternate between:
+The event card colors are controlled by category:
 
 ```text
-#f9f9f9
-#fdf9ee
+Anime concerts: #A7B4C2
+Gaming Concerts: #595C64
+Classic Concerts: #AEACA6
+Exhibitions: #F8F8F3
+Lucid Live: #68635D
 ```
 
 ## Replacing Social Media Links

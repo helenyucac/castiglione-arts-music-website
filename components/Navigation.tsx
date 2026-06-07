@@ -8,7 +8,7 @@ import { useState } from "react";
 const navItems = [
   { label: "About Us", href: "/about" },
   { label: "Tours", href: "/tours" },
-  { label: "Lucid Live", href: "https://lucidlivemusic.com/event/", isExternal: true },
+  { label: "Partnerships", href: "/partnerships" },
   { label: "Contact Us", href: "/contact" },
 ];
 
@@ -37,27 +37,15 @@ export function Navigation() {
         </Link>
 
         <div className="hidden flex-1 items-stretch justify-start gap-1 lg:flex">
-          {navItems.map((item) =>
-            item.isExternal ? (
-              <a
-                key={item.href}
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex min-h-20 items-center px-8 text-sm font-bold uppercase tracking-normal transition-colors hover:bg-black hover:text-white xl:px-10"
-              >
-                {item.label}
-              </a>
-            ) : (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex min-h-20 items-center px-8 text-sm font-bold uppercase tracking-normal transition-colors hover:bg-black hover:text-white xl:px-10"
-              >
-                {item.label}
-              </Link>
-            ),
-          )}
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex min-h-20 items-center px-8 text-sm font-bold uppercase tracking-normal transition-colors hover:bg-black hover:text-white xl:px-10"
+            >
+              {item.label}
+            </Link>
+          ))}
         </div>
 
         <button
@@ -76,29 +64,16 @@ export function Navigation() {
         id="mobile-navigation"
         className={`bg-white lg:hidden ${isOpen ? "block" : "hidden"}`}
       >
-        {navItems.map((item) =>
-          item.isExternal ? (
-            <a
-              key={item.href}
-              href={item.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block px-4 py-5 text-lg font-black uppercase tracking-normal transition-colors hover:bg-black hover:text-white"
-              onClick={() => setIsOpen(false)}
-            >
-              {item.label}
-            </a>
-          ) : (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="block px-4 py-5 text-lg font-black uppercase tracking-normal transition-colors hover:bg-black hover:text-white"
-              onClick={() => setIsOpen(false)}
-            >
-              {item.label}
-            </Link>
-          ),
-        )}
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="block px-4 py-5 text-lg font-black uppercase tracking-normal transition-colors hover:bg-black hover:text-white"
+            onClick={() => setIsOpen(false)}
+          >
+            {item.label}
+          </Link>
+        ))}
       </div>
     </header>
   );

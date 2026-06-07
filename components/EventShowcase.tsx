@@ -32,6 +32,7 @@ function filterEvents(events: TourCardData[], filter: TourFilter) {
     filter === "anime-concert" ||
     filter === "gaming-concert" ||
     filter === "classical-recital" ||
+    filter === "exhibition" ||
     filter === "lucid"
   ) {
     return events.filter((event) => event.category === filter);
@@ -81,8 +82,8 @@ export function EventShowcase({
 
       {visibleEvents.length > 0 ? (
         <div className="highlights-grid">
-          {visibleEvents.map((tour, index) => (
-            <TourCard key={tour.id} tour={tour} index={index} />
+          {visibleEvents.map((tour) => (
+            <TourCard key={tour.id} tour={tour} />
           ))}
         </div>
       ) : (

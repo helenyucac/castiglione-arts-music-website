@@ -5,7 +5,7 @@ import { SocialLinks } from "@/components/SocialLinks";
 const footerNav = [
   { label: "About Us", href: "/about" },
   { label: "Tours", href: "/tours" },
-  { label: "Lucid Live", href: "https://lucidlivemusic.com/event/", isExternal: true },
+  { label: "Partnerships", href: "/partnerships" },
   { label: "Contact Us", href: "/contact" },
 ];
 
@@ -26,7 +26,7 @@ export function Footer() {
             </Link>
             <p className="mt-6 max-w-md text-lg leading-8">
               Australia-based touring production for orchestral anime and gaming
-              concerts, classical recitals, and cultural live experiences.
+              concerts, classic concerts, and cultural live experiences.
             </p>
           </div>
 
@@ -38,27 +38,15 @@ export function Footer() {
 
             <div>
               <div className="grid gap-3">
-                {footerNav.map((item) =>
-                  item.isExternal ? (
-                    <a
-                      key={item.href}
-                      href={item.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xl font-black uppercase leading-none underline-offset-4 hover:underline"
-                    >
-                      {item.label}
-                    </a>
-                  ) : (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="text-xl font-black uppercase leading-none underline-offset-4 hover:underline"
-                    >
-                      {item.label}
-                    </Link>
-                  ),
-                )}
+                {footerNav.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="text-lg font-black uppercase leading-none underline-offset-4 hover:underline sm:text-xl"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
               </div>
             </div>
           </div>

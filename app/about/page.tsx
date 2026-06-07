@@ -44,7 +44,7 @@ export default function AboutPage() {
 
             <section className="about-section-grid border-b border-black py-14 sm:py-20">
               <div>
-                <h2 className="text-[clamp(3.2rem,7vw,7.4rem)] font-black uppercase leading-[0.84] tracking-normal">
+                <h2 className="text-[clamp(2.6rem,5.5vw,5.8rem)] font-black uppercase leading-[0.9] tracking-normal">
                   Our Story
                 </h2>
                 <div className="mt-8 max-w-2xl space-y-5 text-lg leading-8">
@@ -82,7 +82,7 @@ export default function AboutPage() {
 
             <section className="about-section-grid py-14 sm:py-20">
               <div>
-                <h2 className="text-[clamp(3.2rem,7vw,7.4rem)] font-black uppercase leading-[0.84] tracking-normal">
+                <h2 className="text-[clamp(2.6rem,5.5vw,5.8rem)] font-black uppercase leading-[0.9] tracking-normal">
                   Touring Footprints
                 </h2>
                 <div className="mt-8 grid max-w-2xl border-y border-black sm:grid-cols-3">

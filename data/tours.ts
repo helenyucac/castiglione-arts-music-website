@@ -2,6 +2,7 @@ export type TourCategory =
   | "anime-concert"
   | "gaming-concert"
   | "classical-recital"
+  | "exhibition"
   | "lucid";
 export type TourStatus = "on-sale" | "upcoming" | "past";
 
@@ -23,22 +24,33 @@ export const homeTourFilters: { label: string; value: TourFilter }[] = [
   { label: "What's on", value: "whats-on" },
   { label: "Anime Concerts", value: "anime-concert" },
   { label: "Gaming Concerts", value: "gaming-concert" },
-  { label: "Classic Concert", value: "classical-recital" },
-  { label: "Past event", value: "past" },
+  { label: "Classic Concerts", value: "classical-recital" },
+  { label: "Exhibitions", value: "exhibition" },
+  { label: "Past Event", value: "past" },
 ];
 
 export const tourTypeFilters: { label: string; value: TourFilter }[] = [
   { label: "Anime Concerts", value: "anime-concert" },
   { label: "Gaming Concerts", value: "gaming-concert" },
-  { label: "Classic Concert", value: "classical-recital" },
+  { label: "Classic Concerts", value: "classical-recital" },
+  { label: "Exhibitions", value: "exhibition" },
   { label: "Lucid Live", value: "lucid" },
 ];
 
 export const tourCategoryLabels: Record<TourCategory, string> = {
-  "anime-concert": "Anime Concert",
-  "gaming-concert": "Gaming Concert",
-  "classical-recital": "Classical Recital",
-  lucid: "Lucid",
+  "anime-concert": "Anime concerts",
+  "gaming-concert": "Gaming Concerts",
+  "classical-recital": "Classic Concerts",
+  exhibition: "Exhibitions",
+  lucid: "Lucid Live",
+};
+
+export const tourCategoryColors: Record<TourCategory, string> = {
+  "anime-concert": "#A7B4C2",
+  "gaming-concert": "#595C64",
+  "classical-recital": "#AEACA6",
+  exhibition: "#F8F8F3",
+  lucid: "#68635D",
 };
 
 export const tourHighlights: TourCardData[] = [
@@ -285,3 +297,7 @@ export const tourHighlights: TourCardData[] = [
       "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=80",
   },
 ];
+
+export const homeTourHighlights = tourHighlights.filter(
+  (tour) => tour.category !== "lucid",
+);

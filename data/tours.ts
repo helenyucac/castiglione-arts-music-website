@@ -46,11 +46,11 @@ export const tourCategoryLabels: Record<TourCategory, string> = {
 };
 
 export const tourCategoryColors: Record<TourCategory, string> = {
-  "anime-concert": "#B7A79A",
-  "gaming-concert": "#DDCDA6",
-  "classical-recital": "#CCC3BA",
-  exhibition: "#DDCDA6",
-  lucid: "#E0E1DB",
+  "anime-concert": "#B8A898",
+  "gaming-concert": "#D7C19D",
+  "classical-recital": "#C8BEB3",
+  exhibition: "#F2EEE7",
+  lucid: "#D3D7CF",
 };
 
 export const tourHighlights: TourCardData[] = [

@@ -25,8 +25,8 @@ export function Footer() {
               />
             </Link>
             <p className="mt-6 max-w-md text-lg leading-8">
-              Australia-based touring production for orchestral anime and gaming
-              concerts, classic concerts, and cultural live experiences.
+              Touring eminent artists and connecting audiences through a shared
+              love of music, arts, and unique cultural experiences.
             </p>
           </div>
 

@@ -5,7 +5,7 @@ import { Navigation } from "@/components/Navigation";
 import { tourHighlights, tourTypeFilters } from "@/data/tours";
 
 const toursDescription =
-  "Explore Castiglione touring archive and current listings across anime concerts, gaming concerts, exhibitions, Lucid Live projects, and classic concert productions.";
+  "Explore Castiglione touring archive and current listings across anime concerts, gaming concerts, exhibitions, Lucid Live projects, and classical concert productions.";
 
 export const metadata: Metadata = {
   title: "Castiglione",
@@ -31,7 +31,7 @@ export default function ToursPage() {
               <p className="max-w-none text-lg font-black leading-8 tracking-normal sm:text-xl lg:max-w-7xl lg:text-xl lg:leading-8 xl:text-2xl xl:leading-9">
                 Explore our touring archive and current listings across anime
                 concerts, gaming concerts, exhibitions, Lucid Live projects, and
-                classic concert productions.
+                classical concert productions.
               </p>
             </div>
 

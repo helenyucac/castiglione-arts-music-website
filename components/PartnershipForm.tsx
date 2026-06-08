@@ -26,25 +26,24 @@ export function PartnershipForm() {
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="grid gap-6 sm:grid-cols-2">
         <div>
-          <label className="text-sm font-black uppercase tracking-normal" htmlFor="partner-first-name">
-            First Name
+          <label className="text-sm font-black uppercase tracking-normal" htmlFor="partner-name">
+            Name
           </label>
-          <input id="partner-first-name" name="firstName" required className={inputClass} />
+          <input
+            id="partner-name"
+            name="name"
+            required
+            autoComplete="name"
+            className={inputClass}
+          />
         </div>
 
         <div>
-          <label className="text-sm font-black uppercase tracking-normal" htmlFor="partner-last-name">
-            Last Name
+          <label className="text-sm font-black uppercase tracking-normal" htmlFor="partner-company">
+            Company / Organisation
           </label>
-          <input id="partner-last-name" name="lastName" required className={inputClass} />
+          <input id="partner-company" name="company" required className={inputClass} />
         </div>
-      </div>
-
-      <div>
-        <label className="text-sm font-black uppercase tracking-normal" htmlFor="partner-company">
-          Company / Organisation
-        </label>
-        <input id="partner-company" name="company" required className={inputClass} />
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
@@ -63,39 +62,26 @@ export function PartnershipForm() {
         </div>
 
         <div>
-          <label className="text-sm font-black uppercase tracking-normal" htmlFor="partner-phone">
-            Phone
+          <label className="text-sm font-black uppercase tracking-normal" htmlFor="partnership-type">
+            Partnership Type
           </label>
-          <input
-            id="partner-phone"
-            name="phone"
-            type="tel"
-            autoComplete="tel"
+          <select
+            id="partnership-type"
+            name="partnershipType"
+            required
+            defaultValue=""
             className={inputClass}
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="text-sm font-black uppercase tracking-normal" htmlFor="partnership-type">
-          Partnership Type
-        </label>
-        <select
-          id="partnership-type"
-          name="partnershipType"
-          required
-          defaultValue=""
-          className={inputClass}
-        >
-          <option value="" disabled>
-            Select partnership type
-          </option>
-          {partnershipTypes.map((type) => (
-            <option key={type} value={type}>
-              {type}
+          >
+            <option value="" disabled>
+              Select partnership type
             </option>
-          ))}
-        </select>
+            {partnershipTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div>

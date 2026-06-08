@@ -24,7 +24,7 @@ const milestones = [
   {
     year: "Now",
     title: "A broader live portfolio",
-    description: "Classic concerts, cinematic concerts, and Lucid Live projects move in parallel.",
+    description: "Classical concerts, cinematic concerts, and Lucid Live projects move in parallel.",
   },
 ];
 

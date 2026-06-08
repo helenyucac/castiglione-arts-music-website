@@ -1,6 +1,6 @@
 # Castiglione Website
 
-Official website prototype for Castiglione, an Australia-based touring production company focused on live orchestral anime and gaming concerts, classic concerts, exhibitions, Lucid Live projects, and chamber music tours.
+Official website prototype for Castiglione, an Australia-based touring production company focused on live orchestral anime and gaming concerts, classical concerts, exhibitions, Lucid Live projects, and chamber music tours.
 
 This project is built with Next.js App Router, TypeScript, Tailwind CSS, and is prepared for Vercel Preview deployments.
 
@@ -143,7 +143,7 @@ Homepage filter logic:
 - `What's on`: events with `status: "on-sale"` or `status: "upcoming"`
 - `Anime Concerts`: events with `category: "anime-concert"`
 - `Gaming Concerts`: events with `category: "gaming-concert"`
-- `Classic Concerts`: events with `category: "classical-recital"`
+- `Classical Concerts`: events with `category: "classical-recital"`
 - `Exhibitions`: events with `category: "exhibitions"`
 - `Past Event`: events with `status: "past"`
 
@@ -152,7 +152,7 @@ Tours page filter logic:
 - Default Tours page state: all events, sorted newest to oldest by `date`
 - `Anime Concerts`: events with `category: "anime-concert"`
 - `Gaming Concerts`: events with `category: "gaming-concert"`
-- `Classic Concerts`: events with `category: "classical-recital"`
+- `Classical Concerts`: events with `category: "classical-recital"`
 - `Exhibitions`: events with `category: "exhibitions"`
 - `Lucid Live`: events with `category: "lucid"`
 
@@ -169,7 +169,7 @@ The event card colors are controlled by category:
 ```text
 Anime concerts: #DBD3C8
 Gaming Concerts: #C5B7AB
-Classic Concerts: #D6C898
+Classical Concerts: #D6C898
 Exhibitions: #A3877A
 Lucid Live: #C0C0B8
 ```

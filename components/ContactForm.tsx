@@ -15,49 +15,25 @@ export function ContactForm() {
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
-      <div className="grid gap-6 sm:grid-cols-2">
-        <div>
-          <label className="text-sm font-black uppercase tracking-normal" htmlFor="first-name">
-            First Name
-          </label>
-          <input id="first-name" name="firstName" required className={inputClass} />
-        </div>
-
-        <div>
-          <label className="text-sm font-black uppercase tracking-normal" htmlFor="last-name">
-            Last Name
-          </label>
-          <input id="last-name" name="lastName" required className={inputClass} />
-        </div>
+      <div>
+        <label className="text-sm font-black uppercase tracking-normal" htmlFor="name">
+          Name
+        </label>
+        <input id="name" name="name" required autoComplete="name" className={inputClass} />
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <div>
-          <label className="text-sm font-black uppercase tracking-normal" htmlFor="email">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            className={inputClass}
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-black uppercase tracking-normal" htmlFor="phone">
-            Phone
-          </label>
-          <input
-            id="phone"
-            name="phone"
-            type="tel"
-            autoComplete="tel"
-            className={inputClass}
-          />
-        </div>
+      <div>
+        <label className="text-sm font-black uppercase tracking-normal" htmlFor="email">
+          Email
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+          className={inputClass}
+        />
       </div>
 
       <div>

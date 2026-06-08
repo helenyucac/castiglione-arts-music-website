@@ -31,7 +31,7 @@ export function WhoWeAre() {
             </p>
             <p>
               Our work spans live orchestral anime and gaming concerts, master
-              classic concerts, chamber music, and cross-cultural projects.
+              classical concerts, chamber music, and cross-cultural projects.
               Every tour is shaped through artist relationships, venue planning,
               production logistics, and a deep respect for the audience journey.
             </p>

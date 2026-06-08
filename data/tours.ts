@@ -24,7 +24,7 @@ export const homeTourFilters: { label: string; value: TourFilter }[] = [
   { label: "What's on", value: "whats-on" },
   { label: "Anime Concerts", value: "anime-concert" },
   { label: "Gaming Concerts", value: "gaming-concert" },
-  { label: "Classic Concerts", value: "classical-recital" },
+  { label: "Classical Concerts", value: "classical-recital" },
   { label: "Exhibitions", value: "exhibitions" },
   { label: "Past Event", value: "past" },
 ];
@@ -32,7 +32,7 @@ export const homeTourFilters: { label: string; value: TourFilter }[] = [
 export const tourTypeFilters: { label: string; value: TourFilter }[] = [
   { label: "Anime Concerts", value: "anime-concert" },
   { label: "Gaming Concerts", value: "gaming-concert" },
-  { label: "Classic Concerts", value: "classical-recital" },
+  { label: "Classical Concerts", value: "classical-recital" },
   { label: "Exhibitions", value: "exhibitions" },
   { label: "Lucid Live", value: "lucid" },
 ];
@@ -40,7 +40,7 @@ export const tourTypeFilters: { label: string; value: TourFilter }[] = [
 export const tourCategoryLabels: Record<TourCategory, string> = {
   "anime-concert": "Anime concerts",
   "gaming-concert": "Gaming Concerts",
-  "classical-recital": "Classic Concerts",
+  "classical-recital": "Classical Concerts",
   exhibitions: "Exhibitions",
   lucid: "Lucid Live",
 };

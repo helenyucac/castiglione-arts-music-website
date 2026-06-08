@@ -6,7 +6,7 @@ import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
 
 const aboutDescription =
-  "Castiglione is an Australia-based touring production company creating culture-rich concert experiences for major venues, devoted audiences, and artists with a global voice.";
+  "Touring eminent artists and connecting audiences through a shared love of music, arts, and unique cultural experiences.";
 
 export const metadata: Metadata = {
   title: "About Castiglione",
@@ -36,9 +36,8 @@ export default function AboutPage() {
           <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
             <div className="pb-8 sm:pb-12">
               <p className="max-w-4xl text-lg font-black leading-8 tracking-normal sm:text-xl lg:max-w-7xl lg:text-2xl lg:leading-9">
-                Castiglione is an Australia-based touring production company
-                creating culture-rich concert experiences for major venues,
-                devoted audiences, and artists with a global voice.
+                Touring eminent artists and connecting audiences through a shared
+                love of music, arts, and unique cultural experiences.
               </p>
             </div>
 

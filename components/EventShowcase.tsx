@@ -32,7 +32,7 @@ function filterEvents(events: TourCardData[], filter: TourFilter) {
     filter === "anime-concert" ||
     filter === "gaming-concert" ||
     filter === "classical-recital" ||
-    filter === "exhibition" ||
+    filter === "exhibitions" ||
     filter === "lucid"
   ) {
     return events.filter((event) => event.category === filter);

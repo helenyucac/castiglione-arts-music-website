@@ -2,7 +2,7 @@ export type TourCategory =
   | "anime-concert"
   | "gaming-concert"
   | "classical-recital"
-  | "exhibition"
+  | "exhibitions"
   | "lucid";
 export type TourStatus = "on-sale" | "upcoming" | "past";
 
@@ -25,7 +25,7 @@ export const homeTourFilters: { label: string; value: TourFilter }[] = [
   { label: "Anime Concerts", value: "anime-concert" },
   { label: "Gaming Concerts", value: "gaming-concert" },
   { label: "Classic Concerts", value: "classical-recital" },
-  { label: "Exhibitions", value: "exhibition" },
+  { label: "Exhibitions", value: "exhibitions" },
   { label: "Past Event", value: "past" },
 ];
 
@@ -33,7 +33,7 @@ export const tourTypeFilters: { label: string; value: TourFilter }[] = [
   { label: "Anime Concerts", value: "anime-concert" },
   { label: "Gaming Concerts", value: "gaming-concert" },
   { label: "Classic Concerts", value: "classical-recital" },
-  { label: "Exhibitions", value: "exhibition" },
+  { label: "Exhibitions", value: "exhibitions" },
   { label: "Lucid Live", value: "lucid" },
 ];
 
@@ -41,16 +41,16 @@ export const tourCategoryLabels: Record<TourCategory, string> = {
   "anime-concert": "Anime concerts",
   "gaming-concert": "Gaming Concerts",
   "classical-recital": "Classic Concerts",
-  exhibition: "Exhibitions",
+  exhibitions: "Exhibitions",
   lucid: "Lucid Live",
 };
 
 export const tourCategoryColors: Record<TourCategory, string> = {
-  "anime-concert": "#B89E87",
-  "gaming-concert": "#D8C7A1",
-  "classical-recital": "#C9C1B6",
-  exhibition: "#F3F1EA",
-  lucid: "#B8C1B3",
+  "anime-concert": "#DBD3C8",
+  "gaming-concert": "#C5B7AB",
+  "classical-recital": "#D6C898",
+  exhibitions: "#A3877A",
+  lucid: "#C0C0B8",
 };
 
 export const tourHighlights: TourCardData[] = [
@@ -141,6 +141,28 @@ export const tourHighlights: TourCardData[] = [
     status: "past",
     image:
       "https://images.unsplash.com/photo-1526142684086-7ebd69df27a5?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "art-beyond-boundaries",
+    category: "exhibitions",
+    title: "Art Beyond Boundaries",
+    date: "2026-03-01",
+    dateLabel: "MAR 2026",
+    cities: ["Melbourne"],
+    status: "past",
+    image:
+      "https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "immersive-worlds",
+    category: "exhibitions",
+    title: "Immersive Worlds",
+    date: "2026-04-01",
+    dateLabel: "APR 2026",
+    cities: ["Sydney"],
+    status: "past",
+    image:
+      "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&w=1200&q=80",
   },
   {
     id: "juan-diego-florez",

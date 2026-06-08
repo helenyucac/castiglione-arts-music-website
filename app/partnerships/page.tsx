@@ -4,7 +4,7 @@ import { Navigation } from "@/components/Navigation";
 import { PartnershipForm } from "@/components/PartnershipForm";
 
 const partnershipsDescription =
-  "For venue partners, presenters, sponsors, IP producers, rights holders, and cultural organisations interested in building touring projects with Castiglione.";
+  "We collaborate with venues, presenters, rights holders, producers, sponsors, and cultural organisations to transform creative concepts into touring productions and cultural experiences that connect with audiences.";
 
 export const metadata: Metadata = {
   title: "Partnerships | Castiglione",
@@ -30,10 +30,14 @@ export default function PartnershipsPage() {
               <h1 className="max-w-5xl text-[clamp(2.6rem,6vw,5.6rem)] font-black uppercase leading-[0.92] tracking-normal">
                 Partnerships
               </h1>
-              <p className="mt-8 max-w-4xl text-lg leading-8 sm:text-xl">
-                For venue partners, presenters, sponsors, IP producers, rights
-                holders, and cultural organisations interested in building
-                touring projects with Castiglione.
+              <p className="mt-8 max-w-4xl text-xl font-black leading-8 tracking-normal sm:text-2xl lg:text-3xl lg:leading-10">
+                Where great ideas become unforgettable live experiences.
+              </p>
+              <p className="mt-5 max-w-5xl text-lg leading-8 sm:text-xl">
+                We collaborate with venues, presenters, rights holders,
+                producers, sponsors, and cultural organisations to transform
+                creative concepts into touring productions and cultural
+                experiences that connect with audiences.
               </p>
               <div className="mt-10 border-t border-black" aria-hidden="true" />
             </div>

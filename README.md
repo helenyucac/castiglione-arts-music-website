@@ -132,7 +132,7 @@ The `date`, `category`, and `status` fields power the Highlights and Tours filte
 
 Use these normalized values:
 
-- `category`: `anime-concert`, `gaming-concert`, `classical-recital`, `exhibition`, or `lucid`
+- `category`: `anime-concert`, `gaming-concert`, `classical-recital`, `exhibitions`, or `lucid`
 - `status`: `on-sale`, `upcoming`, or `past`
 - `date`: sortable ISO date, for example `2026-11-12`
 - `cities`: array of city names
@@ -144,7 +144,7 @@ Homepage filter logic:
 - `Anime Concerts`: events with `category: "anime-concert"`
 - `Gaming Concerts`: events with `category: "gaming-concert"`
 - `Classic Concerts`: events with `category: "classical-recital"`
-- `Exhibitions`: events with `category: "exhibition"`
+- `Exhibitions`: events with `category: "exhibitions"`
 - `Past Event`: events with `status: "past"`
 
 Tours page filter logic:
@@ -153,7 +153,7 @@ Tours page filter logic:
 - `Anime Concerts`: events with `category: "anime-concert"`
 - `Gaming Concerts`: events with `category: "gaming-concert"`
 - `Classic Concerts`: events with `category: "classical-recital"`
-- `Exhibitions`: events with `category: "exhibition"`
+- `Exhibitions`: events with `category: "exhibitions"`
 - `Lucid Live`: events with `category: "lucid"`
 
 Card city formatting is handled in `components/TourCard.tsx` with:
@@ -167,11 +167,11 @@ The homepage displays up to 12 cards. The `/tours` page displays all events.
 The event card colors are controlled by category:
 
 ```text
-Anime concerts: #B7A79A
-Gaming Concerts: #DDCDA6
-Classic Concerts: #CCC3BA
-Exhibitions: #DDCDA6
-Lucid Live: #E0E1DB
+Anime concerts: #DBD3C8
+Gaming Concerts: #C5B7AB
+Classic Concerts: #D6C898
+Exhibitions: #A3877A
+Lucid Live: #C0C0B8
 ```
 
 ## Replacing Social Media Links

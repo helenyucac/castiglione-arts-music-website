@@ -41,7 +41,7 @@ main {
 }
 
 .tour-card-media {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
 }
 
 .tour-card-info {
@@ -76,6 +76,10 @@ main {
   overflow: hidden;
   border: 1px solid #000000;
   background: #000000;
+}
+
+.about-section-media-map {
+  background: #ffffff;
 }
 
 @media (min-width: 640px) {

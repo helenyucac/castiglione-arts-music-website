@@ -125,13 +125,13 @@ export default function AboutPage() {
                   />
                 </Link>
               </div>
-              <div className="about-section-media bg-[#fdf9ee]">
+              <div className="about-section-media about-section-media-map">
                 <Image
                   src="/media/our-touring-footprints.jpg"
                   alt="Castiglione touring footprints map"
                   fill
                   sizes="(min-width: 1280px) 50vw, 100vw"
-                  className="object-contain"
+                  className="scale-110 object-contain"
                 />
               </div>
             </section>

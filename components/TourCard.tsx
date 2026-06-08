@@ -22,7 +22,7 @@ function hexToRgba(hex: string, alpha: number) {
 
 export function TourCard({ tour }: TourCardProps) {
   const accentColor = tourCategoryColors[tour.category];
-  const softenedAccentColor = hexToRgba(accentColor, 0.5);
+  const softenedAccentColor = hexToRgba(accentColor, 0.7);
   const details = `${tour.dateLabel} / ${tour.cities.join(", ")}`;
 
   return (

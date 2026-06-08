@@ -127,11 +127,11 @@ export default function AboutPage() {
               </div>
               <div className="about-section-media bg-[#fdf9ee]">
                 <Image
-                  src="/media/touring-map.png"
-                  alt="Castiglione touring map"
+                  src="/media/our-touring-footprints.jpg"
+                  alt="Castiglione touring footprints map"
                   fill
                   sizes="(min-width: 1280px) 50vw, 100vw"
-                  className="object-cover"
+                  className="object-contain"
                 />
               </div>
             </section>

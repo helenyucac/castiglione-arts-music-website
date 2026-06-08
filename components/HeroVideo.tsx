@@ -38,7 +38,7 @@ export function HeroVideo({ videoSrc, posterSrc }: HeroVideoProps) {
           <span className="grid size-9 place-items-center rounded-full border border-white/80">
             <Play aria-hidden="true" size={15} fill="currentColor" />
           </span>
-          Touring production / Australia
+          Touring Production ｜ Worldwide
         </div>
 
         <div className="max-w-6xl pb-4">

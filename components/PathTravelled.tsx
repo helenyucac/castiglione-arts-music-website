@@ -34,9 +34,6 @@ export function PathTravelled() {
       <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
-            <p className="mb-4 text-sm font-black uppercase tracking-normal text-[#00a896]">
-              Touring footprints
-            </p>
             <h2 className="max-w-4xl text-[clamp(2.25rem,4.8vw,4.8rem)] font-black uppercase leading-[0.92] tracking-normal">
               The Path We&apos;ve Travelled
             </h2>

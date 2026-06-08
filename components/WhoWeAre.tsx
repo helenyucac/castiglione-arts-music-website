@@ -21,8 +21,8 @@ export function WhoWeAre() {
           </Link>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_0.85fr]">
-          <div className="space-y-5 text-lg leading-8">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,0.85fr)] lg:gap-14 xl:gap-20">
+          <div className="max-w-xl space-y-5 text-lg leading-8 lg:pr-6 xl:pr-10">
             <p>
               Since its founding in Melbourne in 2015, Castiglione has developed
               touring productions for audiences across Australia and beyond,

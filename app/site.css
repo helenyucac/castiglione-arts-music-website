@@ -135,6 +135,10 @@ main {
     min-height: 520px;
   }
 
+  .about-section-media-map {
+    margin-top: 5rem;
+  }
+
   .highlights-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }

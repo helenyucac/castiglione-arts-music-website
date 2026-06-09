@@ -5,7 +5,7 @@ import Link from "next/link";
 export function WhoWeAre() {
   return (
     <section id="about" className="bg-white py-14 sm:py-20 lg:py-24">
-      <div className="mx-auto grid w-full max-w-[1760px] gap-8 px-4 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-10">
+      <div className="mx-auto grid w-full max-w-[1760px] gap-8 px-4 sm:px-6 lg:grid-cols-[0.78fr_1.42fr] lg:px-10">
         <div className="flex flex-col justify-between">
           <div>
             <h2 className="max-w-3xl text-[clamp(2.25rem,4.8vw,4.8rem)] font-black uppercase leading-[0.92] tracking-normal">
@@ -21,8 +21,8 @@ export function WhoWeAre() {
           </Link>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,0.85fr)] lg:gap-14 xl:gap-20">
-          <div className="max-w-xl space-y-5 text-lg leading-8 lg:pr-6 xl:pr-10">
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 xl:gap-14">
+          <div className="space-y-5 text-lg leading-8">
             <p>
               Since its founding in Melbourne in 2015, Castiglione has developed
               touring productions for audiences across Australia and beyond,

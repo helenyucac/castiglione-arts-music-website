@@ -13,10 +13,10 @@ export function WhoWeAre() {
             </h2>
           </div>
           <Link
-            href="/contact"
+            href="/partnerships"
             className="mt-8 inline-flex w-fit items-center gap-2 border border-black bg-black px-5 py-4 text-sm font-black uppercase text-white transition-colors hover:bg-[#ffcf33] hover:text-black"
           >
-            Start a conversation
+            Partner with us
             <ArrowUpRight aria-hidden="true" size={18} />
           </Link>
         </div>

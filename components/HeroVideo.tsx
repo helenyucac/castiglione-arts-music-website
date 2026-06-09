@@ -50,8 +50,8 @@ export function HeroVideo({ videoSrc, posterSrc }: HeroVideoProps) {
           </h1>
           <div className="mt-8 max-w-4xl">
             <p className="max-w-2xl text-lg leading-7 text-white/90 sm:text-xl">
-              Australia-based touring production for culture-rich live concerts,
-              built for major halls, devoted audiences, and unforgettable nights.
+              Touring eminent artists and connecting audiences through a shared
+              love of music, arts, and unique cultural experiences.
             </p>
             <div className="mt-6 flex flex-col items-start gap-5">
               <Link

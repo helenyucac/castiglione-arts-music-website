@@ -40,7 +40,7 @@ export default function ContactPage() {
             <div className="py-12 lg:py-16">
               <section className="max-w-5xl">
                 <h2 className="mb-8 text-xl font-black uppercase leading-none tracking-normal sm:text-2xl">
-                  Contact / Mailing List
+                  Get in Touch
                 </h2>
                 <ContactForm />
               </section>

@@ -6,7 +6,7 @@ import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
 
 const aboutDescription =
-  "Castiglione is an Australia-based touring production company creating culture-rich concert experiences for major venues, devoted audiences, and artists with a global voice.";
+  "Touring eminent artists and connecting audiences through a shared love of music, arts, and unique cultural experiences.";
 
 export const metadata: Metadata = {
   title: "About Castiglione",
@@ -35,16 +35,15 @@ export default function AboutPage() {
         <section className="bg-white py-14 sm:py-20 lg:py-24">
           <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
             <div className="pb-8 sm:pb-12">
-              <p className="max-w-4xl text-xl font-black leading-8 tracking-normal sm:text-2xl lg:text-3xl lg:leading-10">
-                Castiglione is an Australia-based touring production company
-                creating culture-rich concert experiences for major venues,
-                devoted audiences, and artists with a global voice.
+              <p className="max-w-4xl text-lg font-black leading-8 tracking-normal sm:text-xl lg:max-w-7xl lg:text-2xl lg:leading-9">
+                Touring eminent artists and connecting audiences through a shared
+                love of music, arts, and unique cultural experiences.
               </p>
             </div>
 
             <section className="about-section-grid border-b border-black py-14 sm:py-20">
               <div>
-                <h2 className="text-[clamp(3.2rem,7vw,7.4rem)] font-black uppercase leading-[0.84] tracking-normal">
+                <h2 className="text-[clamp(2.25rem,4.8vw,4.8rem)] font-black uppercase leading-[0.92] tracking-normal">
                   Our Story
                 </h2>
                 <div className="mt-8 max-w-2xl space-y-5 text-lg leading-8">
@@ -82,7 +81,7 @@ export default function AboutPage() {
 
             <section className="about-section-grid py-14 sm:py-20">
               <div>
-                <h2 className="text-[clamp(3.2rem,7vw,7.4rem)] font-black uppercase leading-[0.84] tracking-normal">
+                <h2 className="text-[clamp(2.25rem,4.8vw,4.8rem)] font-black uppercase leading-[0.92] tracking-normal">
                   Touring Footprints
                 </h2>
                 <div className="mt-8 grid max-w-2xl border-y border-black sm:grid-cols-3">
@@ -126,13 +125,13 @@ export default function AboutPage() {
                   />
                 </Link>
               </div>
-              <div className="about-section-media bg-[#fdf9ee]">
+              <div className="about-section-media about-section-media-map">
                 <Image
-                  src="/media/touring-map.png"
-                  alt="Castiglione touring map"
+                  src="/media/our-touring-footprints.jpg"
+                  alt="Castiglione touring footprints map"
                   fill
                   sizes="(min-width: 1280px) 50vw, 100vw"
-                  className="object-cover"
+                  className="scale-110 object-contain"
                 />
               </div>
             </section>

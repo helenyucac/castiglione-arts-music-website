@@ -1,17 +1,28 @@
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { tourCategoryLabels, type TourCardData } from "@/data/tours";
+import {
+  tourCategoryColors,
+  tourCategoryLabels,
+  type TourCardData,
+} from "@/data/tours";
 
 type TourCardProps = {
-  index: number;
   tour: TourCardData;
 };
 
-const CARD_PALETTE = ["#f9f9f9", "#fdf9ee"];
+function hexToRgba(hex: string, alpha: number) {
+  const value = hex.replace("#", "");
+  const red = Number.parseInt(value.slice(0, 2), 16);
+  const green = Number.parseInt(value.slice(2, 4), 16);
+  const blue = Number.parseInt(value.slice(4, 6), 16);
 
-export function TourCard({ index, tour }: TourCardProps) {
-  const accentColor = CARD_PALETTE[index % CARD_PALETTE.length];
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+}
+
+export function TourCard({ tour }: TourCardProps) {
+  const accentColor = tourCategoryColors[tour.category];
+  const softenedAccentColor = hexToRgba(accentColor, 0.7);
   const details = `${tour.dateLabel} / ${tour.cities.join(", ")}`;
 
   return (
@@ -28,9 +39,10 @@ export function TourCard({ index, tour }: TourCardProps) {
         </div>
 
         <div
-          className="tour-card-info flex flex-1 flex-col justify-between text-[#111111]"
+          className="tour-card-info flex flex-1 flex-col justify-between"
           style={{
-            backgroundColor: accentColor,
+            backgroundColor: softenedAccentColor,
+            color: "#111111",
           }}
         >
           <div>
@@ -42,7 +54,10 @@ export function TourCard({ index, tour }: TourCardProps) {
             </h3>
           </div>
 
-          <div className="mt-4 flex items-end justify-between gap-2 border-t border-black/30 pt-3 sm:mt-8 sm:gap-4 sm:pt-4">
+          <div
+            className="mt-4 flex items-end justify-between gap-2 border-t pt-3 sm:mt-8 sm:gap-4 sm:pt-4"
+            style={{ borderTopColor: "rgba(0,0,0,0.3)" }}
+          >
             <p className="tour-card-details break-words font-bold uppercase tracking-normal">
               {details}
             </p>

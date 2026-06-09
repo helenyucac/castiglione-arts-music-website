@@ -24,7 +24,7 @@ const milestones = [
   {
     year: "Now",
     title: "A broader live portfolio",
-    description: "Classical masters, cinematic concerts, and Lucid Live projects move in parallel.",
+    description: "Classical concerts, cinematic concerts, and Lucid Live projects move in parallel.",
   },
 ];
 
@@ -34,10 +34,7 @@ export function PathTravelled() {
       <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
-            <p className="mb-4 text-sm font-black uppercase tracking-normal text-[#00a896]">
-              Touring footprints
-            </p>
-            <h2 className="max-w-4xl text-[clamp(3rem,7vw,7rem)] font-black uppercase leading-[0.82] tracking-normal">
+            <h2 className="max-w-4xl text-[clamp(2.25rem,4.8vw,4.8rem)] font-black uppercase leading-[0.92] tracking-normal">
               The Path We&apos;ve Travelled
             </h2>
             <p className="mt-8 max-w-2xl text-lg leading-8 text-white/80">

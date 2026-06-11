@@ -2,7 +2,7 @@ import { Footer } from "@/components/Footer";
 import { HeroVideo } from "@/components/HeroVideo";
 import { HighlightsSection } from "@/components/HighlightsSection";
 import { Navigation } from "@/components/Navigation";
-import { PathTravelled } from "@/components/PathTravelled";
+import { OurHubs } from "@/components/OurHubs";
 import { ProgramsSection } from "@/components/ProgramsSection";
 import { WhoWeAre } from "@/components/WhoWeAre";
 
@@ -18,7 +18,7 @@ export default function Home() {
         <ProgramsSection />
         <HighlightsSection />
         <WhoWeAre />
-        <PathTravelled />
+        <OurHubs />
       </main>
       <Footer />
     </>

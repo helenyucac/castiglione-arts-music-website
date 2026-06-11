@@ -3,6 +3,7 @@ export type TourCategory =
   | "gaming-concert"
   | "classical-recital"
   | "exhibitions"
+  | "music-festival"
   | "lucid";
 export type TourStatus = "on-sale" | "upcoming" | "past";
 
@@ -42,6 +43,7 @@ export const tourCategoryLabels: Record<TourCategory, string> = {
   "gaming-concert": "Gaming Concerts",
   "classical-recital": "Classical Concerts",
   exhibitions: "Exhibitions",
+  "music-festival": "Music Festival",
   lucid: "Lucid Live",
 };
 
@@ -50,10 +52,33 @@ export const tourCategoryColors: Record<TourCategory, string> = {
   "gaming-concert": "#B8AEA3",
   "classical-recital": "#CBBE9A",
   exhibitions: "#A89285",
+  "music-festival": "#D7CEC4",
   lucid: "#BEC2B8",
 };
 
 export const tourHighlights: TourCardData[] = [
+  {
+    id: "sonica-asian-pop",
+    category: "music-festival",
+    title: "Sonica — A Night of Asian Pop",
+    date: "2026-12-01",
+    dateLabel: "DEC 2026",
+    cities: ["Marina Bay, Singapore"],
+    status: "upcoming",
+    image:
+      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    id: "oddshapes-experimental-soundscapes",
+    category: "music-festival",
+    title: "OddShapes — Experimental Soundscapes",
+    date: "2026-11-01",
+    dateLabel: "NOV 2026",
+    cities: ["Royal Botanic Gardens, Sydney"],
+    status: "upcoming",
+    image:
+      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1200&q=80",
+  },
   {
     id: "mischa-maisky-recital",
     category: "classical-recital",
@@ -73,8 +98,7 @@ export const tourHighlights: TourCardData[] = [
     dateLabel: "Oct 2026",
     cities: ["Sydney", "Melbourne"],
     status: "on-sale",
-    image:
-      "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1200&q=80",
+    image: "/media/naruto-square-poster.png",
     href: "/tours/naruto-the-symphonic-experience",
   },
   {

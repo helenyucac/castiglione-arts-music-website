@@ -33,6 +33,7 @@ function filterEvents(events: TourCardData[], filter: TourFilter) {
     filter === "gaming-concert" ||
     filter === "classical-recital" ||
     filter === "exhibitions" ||
+    filter === "music-festival" ||
     filter === "lucid"
   ) {
     return events.filter((event) => event.category === filter);

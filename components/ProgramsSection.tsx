@@ -49,10 +49,9 @@ export function ProgramsSection() {
             OUR HIGHLIGHTS
           </p>
           <h2
-            className="max-w-7xl text-[clamp(3.5rem,7vw,7.6rem)] font-light leading-[0.86] tracking-normal text-[#111111]"
+            className="m-0 text-left text-[clamp(3.5rem,9vw,5.11875rem)] font-medium leading-[0.98] tracking-[-0.04em] text-[#111111] antialiased sm:whitespace-nowrap lg:text-[81.9px] lg:leading-[80.262px] lg:tracking-[-2.0475px]"
             style={{
-              fontFamily:
-                'Canela, "Canela Deck", "Cormorant Garamond", Fraunces, serif',
+              fontFamily: 'Fraunces, "Cormorant Garamond", serif',
             }}
           >
             Stories. Stages. Experiences.

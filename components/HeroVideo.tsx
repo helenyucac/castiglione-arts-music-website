@@ -31,8 +31,8 @@ export function HeroVideo({ videoSrc, posterSrc }: HeroVideoProps) {
         <div className="media-grain absolute inset-0" />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-[640px] w-full max-w-[1760px] items-end px-4 py-10 sm:min-h-[720px] sm:px-6 sm:py-12 lg:px-10 lg:py-16">
-        <div className="max-w-[980px] pb-4 sm:pb-6 lg:pb-8">
+      <div className="relative z-10 mx-auto flex min-h-[640px] w-full max-w-[1760px] items-end px-4 py-10 text-left sm:min-h-[720px] sm:px-6 sm:py-12 lg:px-10 lg:py-16">
+        <div className="flex max-w-[760px] flex-col items-start pb-4 sm:pb-6 lg:pb-8">
           <p
             className="mb-5 text-xs font-bold uppercase tracking-[0.28em] text-white sm:text-sm"
             style={{ fontFamily: "Inter, sans-serif" }}
@@ -40,14 +40,14 @@ export function HeroVideo({ videoSrc, posterSrc }: HeroVideoProps) {
             Global Stories · Local Stages
           </p>
           <h1
-            className="text-balance text-[clamp(3.4rem,8vw,8.8rem)] font-light leading-[0.9] tracking-normal text-white"
+            className="max-w-[18ch] text-left text-[clamp(2.35rem,4vw,4.5rem)] font-light leading-[0.96] tracking-normal text-white"
             style={{
               fontFamily:
                 'Canela, "Canela Deck", "Cormorant Garamond", Fraunces, serif',
             }}
           >
-            <span className="block">Curating Global</span>
-            <span className="block">Culture and Artistry.</span>
+            <span className="block whitespace-nowrap">Curating Global</span>
+            <span className="block whitespace-nowrap">Culture and Artistry.</span>
           </h1>
           <div className="mt-8 flex flex-col items-start gap-5">
             <SocialLinks className="justify-start" variant="hero" />

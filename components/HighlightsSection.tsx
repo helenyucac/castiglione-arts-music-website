@@ -14,7 +14,10 @@ export function HighlightsSection() {
           </p>
           <h2
             className="m-0 text-left text-[clamp(4rem,8vw,6.4rem)] font-medium leading-[0.9] tracking-[-0.04em] text-[#111111] antialiased"
-            style={{ fontFamily: 'Fraunces, "Cormorant Garamond", serif' }}
+            style={{
+              fontFamily:
+                'Fraunces, Canela, "Canela Deck", "Cormorant Garamond", serif',
+            }}
           >
             What&apos;s On
           </h2>

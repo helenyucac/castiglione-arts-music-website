@@ -44,7 +44,7 @@ export function HeroVideo({ videoSrc, posterSrc }: HeroVideoProps) {
             className="max-w-[18ch] text-left text-[clamp(2.35rem,4vw,4.5rem)] font-light leading-[0.96] tracking-normal text-white"
             style={{
               fontFamily:
-                'Canela, "Canela Deck", "Cormorant Garamond", Fraunces, serif',
+                'Fraunces, Canela, "Canela Deck", "Cormorant Garamond", serif',
             }}
           >
             <span className="block whitespace-nowrap">Curating Global</span>

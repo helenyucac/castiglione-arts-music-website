@@ -19,7 +19,10 @@ export function WhoWeAre() {
           </p>
           <h2
             className="m-0 text-left text-[54.6px] font-medium leading-[57.33px] tracking-[-1.092px] text-[#111111] antialiased"
-            style={{ fontFamily: 'Fraunces, "Cormorant Garamond", serif' }}
+            style={{
+              fontFamily:
+                'Fraunces, Canela, "Canela Deck", "Cormorant Garamond", serif',
+            }}
           >
             <span className="block">Cultural</span>
             <span className="block">Journeys.</span>

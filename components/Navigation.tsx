@@ -6,10 +6,10 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
 const navItems = [
-  { label: "About Us", href: "/about" },
-  { label: "Tours", href: "/tours" },
-  { label: "Partnerships", href: "/partnerships" },
-  { label: "Contact Us", href: "/contact" },
+  { label: "OUR STORY", href: "/about" },
+  { label: "PROGRAMS", href: "/tours" },
+  { label: "WHAT'S ON", href: "/tours" },
+  { label: "PARTNERSHIP", href: "/partnerships" },
 ];
 
 export function Navigation() {
@@ -36,12 +36,13 @@ export function Navigation() {
           />
         </Link>
 
-        <div className="hidden flex-1 items-stretch justify-start gap-1 lg:flex">
+        <div className="hidden flex-1 items-center justify-start lg:flex">
           {navItems.map((item) => (
             <Link
-              key={item.href}
+              key={`${item.label}-${item.href}`}
               href={item.href}
-              className="flex min-h-20 items-center px-8 text-sm font-bold uppercase tracking-normal transition-colors hover:bg-black hover:text-white xl:px-10"
+              className="mr-10 flex min-h-20 items-center text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.2px] text-[#111111] antialiased transition-colors duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] last:mr-0 hover:text-[rgb(90,90,90)]"
+              style={{ fontFamily: "Inter, sans-serif" }}
             >
               {item.label}
             </Link>
@@ -66,9 +67,10 @@ export function Navigation() {
       >
         {navItems.map((item) => (
           <Link
-            key={item.href}
+            key={`${item.label}-${item.href}`}
             href={item.href}
-            className="block px-4 py-5 text-lg font-black uppercase tracking-normal transition-colors hover:bg-black hover:text-white"
+            className="block px-5 py-5 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.2px] text-[#111111] antialiased transition-colors duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] hover:text-[rgb(90,90,90)]"
+            style={{ fontFamily: "Inter, sans-serif" }}
             onClick={() => setIsOpen(false)}
           >
             {item.label}

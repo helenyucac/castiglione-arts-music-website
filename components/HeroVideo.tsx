@@ -31,14 +31,15 @@ export function HeroVideo({ videoSrc, posterSrc }: HeroVideoProps) {
         <div className="media-grain absolute inset-0" />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-[640px] w-full max-w-[1760px] items-end px-4 py-10 text-left sm:min-h-[720px] sm:px-6 sm:py-12 lg:px-10 lg:py-16">
+      <div className="relative z-10 mx-auto flex min-h-[640px] w-full max-w-[1760px] flex-col justify-between px-4 py-10 text-left sm:min-h-[720px] sm:px-6 sm:py-12 lg:px-10 lg:py-16">
+        <p
+          className="pt-16 text-xs font-bold uppercase tracking-[0.28em] text-white sm:pt-20 sm:text-sm lg:pt-24"
+          style={{ fontFamily: "Inter, sans-serif" }}
+        >
+          Global Stories · Local Stages
+        </p>
+
         <div className="flex max-w-[760px] flex-col items-start pb-4 sm:pb-6 lg:pb-8">
-          <p
-            className="mb-5 text-xs font-bold uppercase tracking-[0.28em] text-white sm:text-sm"
-            style={{ fontFamily: "Inter, sans-serif" }}
-          >
-            Global Stories · Local Stages
-          </p>
           <h1
             className="max-w-[18ch] text-left text-[clamp(2.35rem,4vw,4.5rem)] font-light leading-[0.96] tracking-normal text-white"
             style={{

@@ -21,7 +21,7 @@ const hubs = [
 
 export function OurHubs() {
   return (
-    <section id="our-hubs" className="bg-[#f4f0ea] py-12 sm:py-16 lg:py-20">
+    <section id="our-hubs" className="bg-[#f4f0ea] py-8 sm:py-10 lg:py-14">
       <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
         <p
           className="mb-14 text-xs font-semibold uppercase tracking-[0.36em] text-[#d24a37] sm:mb-16 lg:mb-20"

@@ -19,10 +19,9 @@ export function Footer() {
           </p>
 
           <h2
-            className="m-0 text-[clamp(3rem,6.2vw,5.4rem)] font-medium leading-[0.92] tracking-[-0.04em] text-white antialiased"
+            className="m-0 mb-5 max-w-[608px] text-center text-[48px] font-medium leading-[48px] tracking-[-0.96px] text-white antialiased"
             style={{
-              fontFamily:
-                'Fraunces, Canela, "Canela Deck", "Cormorant Garamond", serif',
+              fontFamily: 'Fraunces, "Cormorant Garamond", serif',
             }}
           >
             <span className="block">Let&apos;s create something</span>

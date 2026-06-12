@@ -42,10 +42,9 @@ export function OurHubs() {
 
               <div>
                 <h2
-                  className="m-0 text-[clamp(3.75rem,6.2vw,7.4rem)] font-medium leading-[0.9] tracking-[-0.045em] text-[#111111] antialiased"
+                  className="m-0 p-0 text-[47.775px] font-normal leading-[47.775px] tracking-[-0.9555px] text-[#111111] antialiased"
                   style={{
-                    fontFamily:
-                      'Fraunces, Canela, "Canela Deck", "Cormorant Garamond", serif',
+                    fontFamily: 'Fraunces, "Cormorant Garamond", serif',
                   }}
                 >
                   {hub.city}
@@ -58,9 +57,9 @@ export function OurHubs() {
                 </p>
               </div>
 
-              <div className="mt-auto border-t border-[rgba(17,17,17,0.08)] pt-6">
+              <div className="mt-10 border-t border-[rgba(17,17,17,0.08)] pt-4">
                 <p
-                  className="text-[17px] font-normal leading-[1.75] text-[rgba(17,17,17,0.65)] antialiased"
+                  className="text-[13px] font-normal leading-[22.1px] text-[rgba(17,17,17,0.65)] antialiased"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   {hub.footer}

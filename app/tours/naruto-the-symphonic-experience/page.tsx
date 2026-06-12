@@ -11,14 +11,6 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Naruto: The Symphonic Experience | Castiglione",
     description: narutoDescription,
-    images: [
-      {
-        url: narutoEventDetail.heroImage,
-        width: 2400,
-        height: 1350,
-        alt: narutoEventDetail.heroAlt,
-      },
-    ],
   },
   twitter: {
     title: "Naruto: The Symphonic Experience | Castiglione",

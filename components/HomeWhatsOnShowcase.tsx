@@ -117,7 +117,7 @@ export function HomeWhatsOnShowcase({ events }: HomeWhatsOnShowcaseProps) {
       </div>
 
       {visibleEvents.length > 0 ? (
-        <div className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
           {visibleEvents.map((event) => {
             const homeCategory = getHomeCategory(event.category);
 
@@ -128,7 +128,7 @@ export function HomeWhatsOnShowcase({ events }: HomeWhatsOnShowcaseProps) {
             return (
               <Link key={event.id} href={event.href ?? "#"} className="group block">
                 <article>
-                  <div className="relative aspect-[4/5] overflow-hidden bg-[#e7e0d6]">
+                  <div className="relative overflow-hidden bg-[#e7e0d6]" style={{ aspectRatio: "4 / 5" }}>
                     <Image
                       src={event.image}
                       alt=""

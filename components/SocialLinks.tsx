@@ -24,9 +24,13 @@ type SocialLinksProps = {
 };
 
 export function SocialLinks({ className = "", variant = "hero" }: SocialLinksProps) {
+  const baseClass =
+    variant === "footer"
+      ? "grid size-11 place-items-center border transition duration-200 sm:size-12"
+      : "grid size-11 place-items-center border transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(17,17,17,0.14)] sm:size-12";
   const iconClass =
     variant === "footer"
-      ? "border-black text-black hover:bg-black hover:text-white"
+      ? "border-white/25 text-white/75 hover:border-white/45 hover:bg-white/5 hover:text-white hover:opacity-75"
       : "border-white/70 bg-white/10 text-white backdrop-blur hover:border-white hover:bg-white hover:text-black";
 
   return (
@@ -41,7 +45,7 @@ export function SocialLinks({ className = "", variant = "hero" }: SocialLinksPro
             target="_blank"
             rel="noopener noreferrer"
             aria-label={item.label}
-            className={`grid size-11 place-items-center border transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(17,17,17,0.14)] sm:size-12 ${iconClass}`}
+            className={`${baseClass} ${iconClass}`}
           >
             <Icon aria-hidden="true" size={20} />
           </a>

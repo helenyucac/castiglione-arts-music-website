@@ -115,7 +115,7 @@ const offices = [
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <p
-      className="text-[11px] font-semibold uppercase leading-none tracking-[0.36em] text-[#d24a37] antialiased"
+      className="m-0 mb-6 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[rgb(217,74,40)] antialiased"
       style={interFont}
     >
       {children}
@@ -134,7 +134,7 @@ export default function AboutPage() {
               <div className="lg:col-span-6">
                 <Eyebrow>About Castiglione</Eyebrow>
                 <h1
-                  className="mt-7 max-w-5xl text-[80.7px] font-medium leading-[82.314px] tracking-[-1.614px] text-[#111111] antialiased"
+                  className="mt-0 max-w-5xl text-[80.7px] font-medium leading-[82.314px] tracking-[-1.614px] text-[#111111] antialiased"
                   style={headlineFont}
                 >
                   <span className="block">An institution</span>
@@ -144,7 +144,7 @@ export default function AboutPage() {
 
               <div className="lg:col-span-4 lg:col-start-9 lg:pt-9">
                 <p
-                  className="max-w-xl text-[15px] font-normal leading-[1.8] text-[rgba(17,17,17,0.72)] antialiased"
+                  className="m-0 w-full max-w-[395px] p-0 text-[15px] font-normal leading-[24.375px] text-[rgba(17,17,17,0.75)] antialiased"
                   style={interFont}
                 >
                   Castiglione Arts &amp; Culture is a touring production and
@@ -173,26 +173,26 @@ export default function AboutPage() {
             <div className="lg:col-span-4">
               <Eyebrow>The Institution</Eyebrow>
               <h2
-                className="mt-6 max-w-3xl text-[48px] font-medium leading-[48.96px] tracking-[-0.96px] text-[#111111] antialiased"
+                className="mt-0 max-w-3xl text-[48px] font-medium leading-[48.96px] tracking-[-0.96px] text-[#111111] antialiased"
                 style={headlineFont}
               >
                 Global footprint,{" "}
-                <span className="italic">local resonance.</span>
+                <span className="font-medium italic">local resonance.</span>
               </h2>
             </div>
 
             <div className="lg:col-span-7 lg:col-start-6">
               <div
-                className="max-w-5xl space-y-5 text-[15px] font-normal leading-[1.85] text-[rgba(17,17,17,0.72)] antialiased"
+                className="max-w-[720px] text-[16px] font-normal leading-[26px] text-[rgba(17,17,17,0.75)] antialiased"
                 style={interFont}
               >
-                <p>
+                <p className="m-0 mb-6 p-0">
                   Since 2015 we have redefined the touring landscape by bridging
                   Eastern and Western creative horizons. We don&apos;t simply host
                   events — we curate moments of profound cultural exchange
                   between cities, audiences and artists.
                 </p>
-                <p>
+                <p className="m-0 mb-6 p-0">
                   Our work spans the orchestral stages of Sydney and Melbourne,
                   the festival fields of Singapore, and the major exhibition
                   halls of Shanghai and Tokyo. Every programme is anchored in
@@ -254,8 +254,8 @@ export default function AboutPage() {
                     {principle.number}
                   </p>
                   <h3
-                    className="mt-9 text-[21px] font-medium leading-tight tracking-[-0.02em] text-[#111111] antialiased"
-                    style={displayFont}
+                    className="m-0 mb-4 p-0 text-[24px] font-medium leading-[32px] tracking-[-0.24px] text-[#111111] antialiased"
+                    style={headlineFont}
                   >
                     {principle.title}
                   </h3>

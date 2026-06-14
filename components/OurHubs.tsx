@@ -21,7 +21,7 @@ const hubs = [
 
 export function OurHubs() {
   return (
-    <section id="our-hubs" className="bg-[#f4f0ea] py-8 sm:py-10 lg:py-14">
+    <section id="our-hubs" className="border-t border-[rgba(17,17,17,0.06)] bg-[#f5f1ea] py-32">
       <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
         <p
           className="mb-14 text-xs font-semibold uppercase tracking-[0.36em] text-[#d24a37] sm:mb-16 lg:mb-20"
@@ -32,7 +32,7 @@ export function OurHubs() {
 
         <div className="grid gap-14 md:grid-cols-3 md:gap-8 lg:gap-12">
           {hubs.map((hub) => (
-            <article key={hub.city} className="flex min-h-[360px] flex-col md:min-h-[430px] lg:min-h-[500px]">
+            <article key={hub.city} className="flex flex-col">
               <p
                 className="mb-8 text-[11px] font-medium uppercase tracking-[0.28em] text-[rgba(17,17,17,0.45)] antialiased sm:mb-10"
                 style={{ fontFamily: "Inter, sans-serif" }}

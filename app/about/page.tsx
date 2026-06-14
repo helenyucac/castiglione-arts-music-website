@@ -24,6 +24,10 @@ const displayFont = {
   fontFamily: 'Fraunces, Canela, "Canela Deck", "Cormorant Garamond", serif',
 };
 
+const headlineFont = {
+  fontFamily: 'Fraunces, "Cormorant Garamond", serif',
+};
+
 const interFont = {
   fontFamily: "Inter, sans-serif",
 };
@@ -130,8 +134,8 @@ export default function AboutPage() {
               <div className="lg:col-span-6">
                 <Eyebrow>About Castiglione</Eyebrow>
                 <h1
-                  className="mt-7 max-w-5xl text-[clamp(4rem,8.1vw,8rem)] font-medium leading-[0.9] tracking-[-0.055em] antialiased"
-                  style={displayFont}
+                  className="mt-7 max-w-5xl text-[80.7px] font-medium leading-[82.314px] tracking-[-1.614px] text-[#111111] antialiased"
+                  style={headlineFont}
                 >
                   <span className="block">An institution</span>
                   <span className="block">for the global stage.</span>
@@ -169,8 +173,8 @@ export default function AboutPage() {
             <div className="lg:col-span-4">
               <Eyebrow>The Institution</Eyebrow>
               <h2
-                className="mt-6 max-w-3xl text-[clamp(2.4rem,4.2vw,4.6rem)] font-medium leading-[0.96] tracking-[-0.045em] antialiased"
-                style={displayFont}
+                className="mt-6 max-w-3xl text-[48px] font-medium leading-[48.96px] tracking-[-0.96px] text-[#111111] antialiased"
+                style={headlineFont}
               >
                 Global footprint,{" "}
                 <span className="italic">local resonance.</span>
@@ -229,8 +233,8 @@ export default function AboutPage() {
               </div>
               <div className="lg:col-span-8 lg:col-start-5">
                 <h2
-                  className="max-w-5xl text-[clamp(2.3rem,4vw,4.4rem)] font-medium leading-[1] tracking-[-0.045em] antialiased"
-                  style={displayFont}
+                  className="max-w-5xl text-[48px] font-medium leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
+                  style={headlineFont}
                 >
                   Three commitments that shape every production.
                 </h2>
@@ -275,8 +279,8 @@ export default function AboutPage() {
 
             <div className="lg:col-span-8 lg:col-start-4">
               <h2
-                className="text-[clamp(2.5rem,4.2vw,4.6rem)] font-medium leading-[1] tracking-[-0.045em] antialiased"
-                style={displayFont}
+                className="text-[48px] font-medium leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
+                style={headlineFont}
               >
                 Eleven years on the road.
               </h2>
@@ -320,8 +324,8 @@ export default function AboutPage() {
               </div>
               <div className="lg:col-span-8 lg:col-start-5">
                 <h2
-                  className="max-w-5xl text-[clamp(2.5rem,4.2vw,4.6rem)] font-medium leading-[1] tracking-[-0.045em] antialiased"
-                  style={displayFont}
+                  className="max-w-5xl text-[48px] font-medium leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
+                  style={headlineFont}
                 >
                   Four offices across the Asia-Pacific.
                 </h2>

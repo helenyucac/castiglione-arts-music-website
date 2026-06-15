@@ -134,7 +134,7 @@ export default function AboutPage() {
               <div className="lg:col-span-6">
                 <Eyebrow>About Castiglione</Eyebrow>
                 <h1
-                  className="mt-0 max-w-5xl text-[80.7px] font-medium leading-[82.314px] tracking-[-1.614px] text-[#111111] antialiased"
+                  className="mt-0 max-w-5xl text-[80.7px] font-semibold leading-[82.314px] tracking-[-1.614px] text-[#111111] antialiased"
                   style={headlineFont}
                 >
                   <span className="block">An institution</span>
@@ -173,11 +173,11 @@ export default function AboutPage() {
             <div className="lg:col-span-4">
               <Eyebrow>The Institution</Eyebrow>
               <h2
-                className="mt-0 max-w-3xl text-[48px] font-medium leading-[48.96px] tracking-[-0.96px] text-[#111111] antialiased"
+                className="mt-0 max-w-3xl text-[48px] font-semibold leading-[48.96px] tracking-[-0.96px] text-[#111111] antialiased"
                 style={headlineFont}
               >
                 Global footprint,{" "}
-                <span className="font-medium italic">local resonance.</span>
+                <span className="font-semibold italic">local resonance.</span>
               </h2>
             </div>
 
@@ -233,7 +233,7 @@ export default function AboutPage() {
               </div>
               <div className="lg:col-span-8 lg:col-start-5">
                 <h2
-                  className="max-w-5xl text-[48px] font-medium leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
+                  className="max-w-5xl text-[48px] font-semibold leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
                   style={headlineFont}
                 >
                   Three commitments that shape every production.
@@ -279,7 +279,7 @@ export default function AboutPage() {
 
             <div className="lg:col-span-8 lg:col-start-4">
               <h2
-                className="text-[48px] font-medium leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
+                className="text-[48px] font-semibold leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
                 style={headlineFont}
               >
                 Eleven years on the road.
@@ -324,7 +324,7 @@ export default function AboutPage() {
               </div>
               <div className="lg:col-span-8 lg:col-start-5">
                 <h2
-                  className="max-w-5xl text-[48px] font-medium leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
+                  className="max-w-5xl text-[48px] font-semibold leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
                   style={headlineFont}
                 >
                   Four offices across the Asia-Pacific.

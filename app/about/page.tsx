@@ -142,7 +142,7 @@ export default function AboutPage() {
                 </h1>
               </div>
 
-              <div className="lg:col-span-7 lg:col-start-6 lg:pt-9">
+              <div className="lg:col-span-7 lg:col-start-6 lg:self-end">
                 <p
                   className="m-0 w-full max-w-[720px] p-0 text-[15px] font-normal leading-[24.375px] text-[rgba(17,17,17,0.75)] antialiased"
                   style={interFont}
@@ -205,8 +205,12 @@ export default function AboutPage() {
                 {stats.map((stat) => (
                   <div key={stat.label}>
                     <p
-                      className="text-[61.425px] font-normal leading-[61.425px] tracking-[-3.07125px] text-[rgba(0,0,0,0.25)] antialiased"
-                      style={displayFont}
+                      className={`mb-1 text-[48px] font-normal leading-[48px] antialiased ${
+                        stat.isAccent
+                          ? "text-[rgb(217,74,40)]"
+                          : "text-[rgba(0,0,0,0.25)]"
+                      }`}
+                      style={headlineFont}
                     >
                       {stat.value}
                     </p>
@@ -277,26 +281,26 @@ export default function AboutPage() {
 
             <div className="lg:col-span-9 lg:col-start-4">
               <h2
-                className="mx-auto w-full max-w-[1301px] text-[48px] font-semibold leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
+                className="mx-auto w-full max-w-[1301px] text-center text-[48px] font-semibold leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
                 style={headlineFont}
               >
                 Eleven years on the road.
               </h2>
 
-              <div className="mx-auto mt-14 w-full max-w-[1301px] border-b border-[rgba(17,17,17,0.1)]">
+              <div className="mx-auto mt-14 w-full max-w-[1301px] border-t border-[rgba(17,17,17,0.1)]">
                 {milestones.map((milestone) => (
                   <div
                     key={milestone.year}
-                    className="grid gap-y-6 border-t border-[rgba(17,17,17,0.08)] py-10 md:grid-cols-[180px_300px_minmax(0,1fr)] md:gap-x-6"
+                    className="grid gap-y-6 border-b border-[rgba(17,17,17,0.1)] py-10 md:grid-cols-[180px_300px_minmax(0,1fr)] md:gap-x-6"
                   >
                     <p
-                      className="text-[30px] font-normal leading-none text-[#d24a37] antialiased"
-                      style={displayFont}
+                      className="text-[48px] font-normal leading-[48px] text-[rgb(217,74,40)] antialiased"
+                      style={headlineFont}
                     >
                       {milestone.year}
                     </p>
                     <h3
-                      className="text-[24px] font-semibold leading-[32px] tracking-[-0.24px] text-[#111111] antialiased"
+                      className="text-[24px] font-medium leading-[32px] tracking-[-0.24px] text-[#111111] antialiased"
                       style={headlineFont}
                     >
                       {milestone.title}
@@ -330,7 +334,7 @@ export default function AboutPage() {
               </div>
             </div>
 
-            <div className="mt-12 grid border border-[rgba(17,17,17,0.12)] md:grid-cols-2 lg:grid-cols-3">
+            <div className="mx-auto mt-12 grid w-full max-w-[1301px] border border-[rgba(17,17,17,0.12)] md:grid-cols-2 lg:grid-cols-3">
               {offices.map((office) => (
                 <article
                   key={office.city}

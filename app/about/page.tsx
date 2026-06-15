@@ -142,9 +142,9 @@ export default function AboutPage() {
                 </h1>
               </div>
 
-              <div className="lg:col-span-5 lg:col-start-9 lg:pt-9">
+              <div className="lg:col-span-7 lg:col-start-6 lg:pt-9">
                 <p
-                  className="m-0 w-full max-w-[500px] p-0 text-[15px] font-normal leading-[24.375px] text-[rgba(17,17,17,0.75)] antialiased"
+                  className="m-0 w-full max-w-[720px] p-0 text-[15px] font-normal leading-[24.375px] text-[rgba(17,17,17,0.75)] antialiased"
                   style={interFont}
                 >
                   Castiglione Arts &amp; Culture is a touring production and
@@ -183,7 +183,7 @@ export default function AboutPage() {
 
             <div className="lg:col-span-7 lg:col-start-6">
               <div
-                className="max-w-[720px] text-[16px] font-normal leading-[26px] text-[rgba(17,17,17,0.75)] antialiased"
+                className="w-full max-w-[720px] text-[16px] font-normal leading-[26px] text-[rgba(17,17,17,0.75)] antialiased"
                 style={interFont}
               >
                 <p className="m-0 mb-6 p-0">
@@ -205,15 +205,13 @@ export default function AboutPage() {
                 {stats.map((stat) => (
                   <div key={stat.label}>
                     <p
-                      className={`text-[clamp(2.6rem,4.5vw,4.8rem)] font-normal leading-none tracking-[-0.05em] antialiased ${
-                        stat.isAccent ? "text-[#d24a37]" : "text-black/25"
-                      }`}
+                      className="text-[61.425px] font-normal leading-[61.425px] tracking-[-3.07125px] text-[rgba(0,0,0,0.25)] antialiased"
                       style={displayFont}
                     >
                       {stat.value}
                     </p>
                     <p
-                      className="mt-3 text-[10px] font-medium uppercase leading-none tracking-[0.28em] text-[rgba(17,17,17,0.45)] antialiased"
+                      className="mt-3 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[rgba(17,17,17,0.45)] antialiased"
                       style={interFont}
                     >
                       {stat.label}
@@ -254,13 +252,13 @@ export default function AboutPage() {
                     {principle.number}
                   </p>
                   <h3
-                    className="m-0 mb-4 p-0 text-[24px] font-medium leading-[32px] tracking-[-0.24px] text-[#111111] antialiased"
+                    className="m-0 mb-4 p-0 text-[24px] font-semibold leading-[32px] tracking-[-0.24px] text-[#111111] antialiased"
                     style={headlineFont}
                   >
                     {principle.title}
                   </h3>
                   <p
-                    className="mt-4 max-w-md text-[14px] font-normal leading-[1.8] text-[rgba(17,17,17,0.66)] antialiased"
+                    className="mt-4 max-w-md text-[16px] font-normal leading-[26px] text-[rgba(17,17,17,0.75)] antialiased"
                     style={interFont}
                   >
                     {principle.description}
@@ -277,34 +275,34 @@ export default function AboutPage() {
               <Eyebrow>Milestones</Eyebrow>
             </div>
 
-            <div className="lg:col-span-8 lg:col-start-4">
+            <div className="lg:col-span-9 lg:col-start-4">
               <h2
-                className="text-[48px] font-semibold leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
+                className="mx-auto w-full max-w-[1301px] text-[48px] font-semibold leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
                 style={headlineFont}
               >
                 Eleven years on the road.
               </h2>
 
-              <div className="mt-14 border-b border-[rgba(17,17,17,0.08)]">
+              <div className="mx-auto mt-14 w-full max-w-[1301px] border-b border-[rgba(17,17,17,0.1)]">
                 {milestones.map((milestone) => (
                   <div
                     key={milestone.year}
-                    className="grid gap-5 border-t border-[rgba(17,17,17,0.08)] py-8 md:grid-cols-12 md:gap-8"
+                    className="grid gap-y-6 border-t border-[rgba(17,17,17,0.08)] py-10 md:grid-cols-[180px_300px_minmax(0,1fr)] md:gap-x-6"
                   >
                     <p
-                      className="text-[30px] font-normal leading-none text-[#d24a37] antialiased md:col-span-2"
+                      className="text-[30px] font-normal leading-none text-[#d24a37] antialiased"
                       style={displayFont}
                     >
                       {milestone.year}
                     </p>
                     <h3
-                      className="text-[19px] font-medium leading-snug tracking-[-0.02em] text-[#111111] antialiased md:col-span-4"
-                      style={displayFont}
+                      className="text-[24px] font-semibold leading-[32px] tracking-[-0.24px] text-[#111111] antialiased"
+                      style={headlineFont}
                     >
                       {milestone.title}
                     </h3>
                     <p
-                      className="text-[14px] font-normal leading-[1.8] text-[rgba(17,17,17,0.58)] antialiased md:col-span-6"
+                      className="text-[16px] font-normal leading-[26px] text-[rgba(17,17,17,0.75)] antialiased"
                       style={interFont}
                     >
                       {milestone.description}
@@ -327,16 +325,16 @@ export default function AboutPage() {
                   className="max-w-5xl text-[48px] font-semibold leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
                   style={headlineFont}
                 >
-                  Four offices across the Asia-Pacific.
+                  Three offices across the Asia-Pacific.
                 </h2>
               </div>
             </div>
 
-            <div className="mt-12 grid border border-[rgba(17,17,17,0.12)] md:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-12 grid border border-[rgba(17,17,17,0.12)] md:grid-cols-2 lg:grid-cols-3">
               {offices.map((office) => (
                 <article
                   key={office.city}
-                  className="min-h-[250px] border-b border-[rgba(17,17,17,0.12)] p-8 md:border-r lg:border-b-0"
+                  className="min-h-[250px] border-b border-[rgba(17,17,17,0.12)] p-8 md:border-r md:last:border-r-0 lg:border-b-0"
                 >
                   <p
                     className="text-[10px] font-medium uppercase leading-none tracking-[0.28em] text-[rgba(17,17,17,0.45)] antialiased"
@@ -365,7 +363,6 @@ export default function AboutPage() {
                 </article>
               ))}
 
-              <div className="min-h-[250px] bg-[#d8d5cf]" aria-hidden="true" />
             </div>
 
             <div className="mt-12 flex justify-center">

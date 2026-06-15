@@ -7,7 +7,7 @@ const interFont = {
 };
 
 const displayFont = {
-  fontFamily: 'Fraunces, Canela, "Canela Deck", "Cormorant Garamond", serif',
+  fontFamily: 'Fraunces, "Cormorant Garamond", serif',
 };
 
 const partnershipTabs = [
@@ -126,7 +126,7 @@ export function PartnershipTabs() {
               {activeTab.eyebrow}
             </p>
             <h2
-              className="m-0 whitespace-pre-line text-[clamp(2.5rem,4.4vw,4.8rem)] font-medium leading-[0.98] tracking-[-0.045em] text-[#111111] antialiased"
+              className="m-0 max-w-[504.75px] whitespace-pre-line p-0 text-[48px] font-medium leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
               style={displayFont}
             >
               {activeTab.headline}

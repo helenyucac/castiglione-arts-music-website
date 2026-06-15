@@ -25,7 +25,7 @@ const interFont = {
 };
 
 const displayFont = {
-  fontFamily: 'Fraunces, Canela, "Canela Deck", "Cormorant Garamond", serif',
+  fontFamily: 'Fraunces, "Cormorant Garamond", serif',
 };
 
 export default function PartnershipsPage() {
@@ -43,7 +43,7 @@ export default function PartnershipsPage() {
                 Partnership
               </p>
               <h1
-                className="m-0 max-w-6xl text-[clamp(4.6rem,8.5vw,8.75rem)] font-medium leading-[0.9] tracking-[-0.055em] text-[#111111] antialiased"
+                className="m-0 max-w-[738.914px] p-0 text-[81.9px] font-medium leading-[83.538px] tracking-[-1.638px] text-[#111111] antialiased"
                 style={displayFont}
               >
                 <span className="block">Let&apos;s build</span>

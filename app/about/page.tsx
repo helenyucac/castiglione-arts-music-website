@@ -79,7 +79,7 @@ const milestones = [
   },
   {
     year: "2024",
-    title: "Shanghai office",
+    title: "Hangzhou office",
     description:
       "Established Greater China operations for exhibitions and IP licensing.",
   },
@@ -134,7 +134,7 @@ export default function AboutPage() {
               <div className="lg:col-span-6">
                 <Eyebrow>About Castiglione</Eyebrow>
                 <h1
-                  className="mt-0 max-w-5xl text-[80.7px] font-semibold leading-[82.314px] tracking-[-1.614px] text-[#111111] antialiased"
+                  className="mt-0 max-w-5xl text-[77px] font-semibold leading-[78.54px] tracking-[-1.54px] text-[#111111] antialiased"
                   style={headlineFont}
                 >
                   <span className="block">An institution</span>
@@ -142,7 +142,7 @@ export default function AboutPage() {
                 </h1>
               </div>
 
-              <div className="lg:col-span-7 lg:col-start-6 lg:self-end">
+              <div className="lg:col-span-7 lg:col-start-6 lg:pt-10">
                 <p
                   className="m-0 w-full max-w-[720px] p-0 text-[15px] font-normal leading-[24.375px] text-[rgba(17,17,17,0.75)] antialiased"
                   style={interFont}
@@ -208,7 +208,7 @@ export default function AboutPage() {
                       className={`mb-1 text-[48px] font-normal leading-[48px] antialiased ${
                         stat.isAccent
                           ? "text-[rgb(217,74,40)]"
-                          : "text-[rgba(0,0,0,0.25)]"
+                          : "text-[rgba(17,17,17,0.75)]"
                       }`}
                       style={headlineFont}
                     >
@@ -274,12 +274,12 @@ export default function AboutPage() {
         </section>
 
         <section className="bg-white py-16 sm:py-20 lg:py-24">
-          <div className="mx-auto grid w-full max-w-[1760px] gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-10 lg:px-10">
-            <div className="lg:col-span-3">
-              <Eyebrow>Milestones</Eyebrow>
-            </div>
+          <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
+            <div className="relative">
+              <div className="mb-10 lg:absolute lg:left-0 lg:top-0 lg:mb-0">
+                <Eyebrow>Milestones</Eyebrow>
+              </div>
 
-            <div className="lg:col-span-9 lg:col-start-4">
               <h2
                 className="mx-auto w-full max-w-[1301px] text-center text-[48px] font-semibold leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
                 style={headlineFont}

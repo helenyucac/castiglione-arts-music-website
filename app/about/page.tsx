@@ -130,9 +130,9 @@ export default function AboutPage() {
       <main className="bg-[#f5f1ea] text-[#111111]">
         <section className="border-t border-[rgba(17,17,17,0.06)] pb-16 pt-20 sm:pb-20 sm:pt-24 lg:pb-24 lg:pt-28">
           <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
-            <div className="grid gap-12 lg:grid-cols-12 lg:gap-10">
-              <div className="lg:col-span-6">
-                <Eyebrow>About Castiglione</Eyebrow>
+            <Eyebrow>About Castiglione</Eyebrow>
+            <div className="grid items-start gap-12 lg:grid-cols-12 lg:gap-10">
+              <div className="self-start lg:col-span-6">
                 <h1
                   className="mt-0 max-w-5xl text-[77px] font-semibold leading-[78.54px] tracking-[-1.54px] text-[#111111] antialiased"
                   style={headlineFont}
@@ -142,7 +142,7 @@ export default function AboutPage() {
                 </h1>
               </div>
 
-              <div className="lg:col-span-7 lg:col-start-6 lg:pt-10">
+              <div className="self-start lg:col-span-7 lg:col-start-6">
                 <p
                   className="m-0 w-full max-w-[720px] p-0 text-[15px] font-normal leading-[24.375px] text-[rgba(17,17,17,0.75)] antialiased"
                   style={interFont}

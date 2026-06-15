@@ -142,7 +142,7 @@ export default function AboutPage() {
                 </h1>
               </div>
 
-              <div className="m-0 self-start p-0 transform-none lg:basis-[46%]">
+              <div className="m-0 self-start p-0 transform-none lg:mt-12 lg:basis-[46%]">
                 <p
                   className="m-0 w-full max-w-[720px] p-0 text-[15px] font-normal leading-[24.375px] text-[rgba(17,17,17,0.75)] antialiased"
                   style={interFont}

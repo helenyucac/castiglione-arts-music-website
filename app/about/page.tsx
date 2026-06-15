@@ -142,9 +142,9 @@ export default function AboutPage() {
                 </h1>
               </div>
 
-              <div className="lg:col-span-4 lg:col-start-9 lg:pt-9">
+              <div className="lg:col-span-5 lg:col-start-9 lg:pt-9">
                 <p
-                  className="m-0 w-full max-w-[395px] p-0 text-[15px] font-normal leading-[24.375px] text-[rgba(17,17,17,0.75)] antialiased"
+                  className="m-0 w-full max-w-[500px] p-0 text-[15px] font-normal leading-[24.375px] text-[rgba(17,17,17,0.75)] antialiased"
                   style={interFont}
                 >
                   Castiglione Arts &amp; Culture is a touring production and

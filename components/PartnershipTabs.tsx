@@ -54,7 +54,7 @@ const partnershipTabs = [
     label: "Brands & Partnerships",
     subtitle: "Sponsorship and cultural collaborations.",
     eyebrow: "Brands & Partnerships",
-    headline: "For brands, foundations and\ncultural patrons.",
+    headline: "For brands, foundations and cultural patrons.",
     intro:
       "Align your brand with internationally recognised cultural moments. Our partnership programmes are designed for long-term resonance — not transactional placement.",
     paragraphs: [
@@ -78,6 +78,10 @@ export function PartnershipTabs() {
   );
   const activeTab =
     partnershipTabs.find((tab) => tab.id === activeTabId) ?? partnershipTabs[0];
+  const headlineWidthClass =
+    activeTab.id === "brands"
+      ? "max-w-[640px] lg:w-[640px]"
+      : "max-w-[504.75px] lg:w-[504.75px]";
 
   return (
     <>
@@ -126,7 +130,7 @@ export function PartnershipTabs() {
               {activeTab.eyebrow}
             </p>
             <h2
-              className="m-0 w-full max-w-[504.75px] whitespace-pre-line p-0 text-[48px] font-medium leading-[50.4px] tracking-[-0.96px] text-[rgb(17,17,17)] antialiased lg:w-[504.75px]"
+              className={`m-0 w-full whitespace-pre-line p-0 text-[48px] font-medium leading-[50.4px] tracking-[-0.96px] text-[rgb(17,17,17)] antialiased ${headlineWidthClass}`}
               style={displayFont}
             >
               {activeTab.headline}

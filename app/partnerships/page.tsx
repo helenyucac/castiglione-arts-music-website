@@ -47,9 +47,9 @@ export default function PartnershipsPage() {
                 style={displayFont}
               >
                 <span className="block">Let&apos;s build</span>
-                <span className="block">
-                  <span className="mr-[0.12em] italic">experiences</span>
-                  together.
+                <span className="flex flex-wrap items-baseline gap-x-[0.26em]">
+                  <span className="italic">experiences</span>
+                  <span>together.</span>
                 </span>
               </h1>
             </div>

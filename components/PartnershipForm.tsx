@@ -7,7 +7,7 @@ const interFont = {
 };
 
 const displayFont = {
-  fontFamily: 'Fraunces, Canela, "Canela Deck", "Cormorant Garamond", serif',
+  fontFamily: 'Fraunces, "Cormorant Garamond", serif',
 };
 
 const inputClass =
@@ -48,7 +48,7 @@ export function PartnershipForm() {
           Enquiry
         </p>
         <h2
-          className="m-0 text-[clamp(2.5rem,4vw,4.8rem)] font-medium leading-[1] tracking-[-0.045em] text-[#111111] antialiased"
+          className="m-0 max-w-[1036px] text-[48px] font-medium leading-[48px] tracking-[-0.96px] text-[rgb(17,17,17)] antialiased"
           style={displayFont}
         >
           Let&apos;s build something together.

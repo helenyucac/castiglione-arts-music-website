@@ -43,12 +43,13 @@ export default function PartnershipsPage() {
                 Partnership
               </p>
               <h1
-                className="m-0 max-w-[738.914px] p-0 text-[81.9px] font-medium leading-[83.538px] tracking-[-1.638px] text-[#111111] antialiased"
+                className="m-0 max-w-[738.914px] p-0 text-[81.9px] font-medium leading-[83.538px] tracking-[-1.638px] text-[rgb(17,17,17)] antialiased"
                 style={displayFont}
               >
                 <span className="block">Let&apos;s build</span>
                 <span className="block">
-                  <span className="italic">experiences</span> together.
+                  <span className="mr-[0.12em] italic">experiences</span>
+                  together.
                 </span>
               </h1>
             </div>

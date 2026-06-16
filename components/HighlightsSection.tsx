@@ -3,7 +3,7 @@ import { HomeWhatsOnShowcase } from "@/components/HomeWhatsOnShowcase";
 
 export function HighlightsSection() {
   return (
-    <section id="tours" className="bg-[#f4f0ea] py-16 sm:py-20 lg:py-24">
+    <section id="whats-on" className="bg-[#f4f0ea] py-16 sm:py-20 lg:py-24">
       <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
         <div className="mb-10 lg:mb-12">
           <p

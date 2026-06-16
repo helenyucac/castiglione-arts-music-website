@@ -8,8 +8,8 @@ import { useState } from "react";
 
 const navItems = [
   { label: "OUR STORY", href: "/about", activePath: "/about" },
-  { label: "PROGRAMS", href: "#programs" },
-  { label: "WHAT'S ON", href: "#whats-on" },
+  { label: "PROGRAMS", href: "/#programs" },
+  { label: "WHAT'S ON", href: "/#whats-on" },
   { label: "PARTNERSHIP", href: "/partnerships", activePath: "/partnerships" },
 ];
 
@@ -59,13 +59,7 @@ export function Navigation() {
           })}
         </div>
 
-        <div className="hidden items-center justify-end gap-7 lg:flex">
-          <p
-            className="m-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[1.2px] text-[#111111] antialiased"
-            style={{ fontFamily: "Inter, sans-serif" }}
-          >
-            EN <span className="text-[rgba(17,17,17,0.35)]">|</span> 中文
-          </p>
+        <div className="hidden items-center justify-end lg:flex">
           <Link
             href="/partnerships"
             className="inline-flex min-h-9 items-center border border-[rgba(17,17,17,0.3)] bg-transparent px-6 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[#111111] antialiased transition-colors duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] hover:border-[rgb(217,74,40)] hover:text-[rgb(217,74,40)]"
@@ -112,13 +106,7 @@ export function Navigation() {
             );
           })}
 
-          <div className="mt-3 flex items-center justify-between border-t border-[rgba(17,17,17,0.06)] pt-5">
-            <p
-              className="m-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[1.2px] text-[#111111] antialiased"
-              style={{ fontFamily: "Inter, sans-serif" }}
-            >
-              EN <span className="text-[rgba(17,17,17,0.35)]">|</span> 中文
-            </p>
+          <div className="mt-3 flex items-center justify-end border-t border-[rgba(17,17,17,0.06)] pt-5">
             <Link
               href="/partnerships"
               className="inline-flex min-h-9 items-center border border-[rgba(17,17,17,0.3)] px-5 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[#111111] antialiased transition-colors hover:border-[rgb(217,74,40)] hover:text-[rgb(217,74,40)]"

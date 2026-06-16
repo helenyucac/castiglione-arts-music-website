@@ -96,7 +96,7 @@ export function PartnershipTabs() {
                 }`}
               >
                 <span
-                  className="block text-[28px] font-medium leading-[32px] tracking-[-0.02em] text-[#111111] antialiased"
+                  className="block text-left text-[30px] font-normal leading-[36px] tracking-[-0.45px] text-[rgb(17,17,17)] antialiased"
                   style={displayFont}
                 >
                   {tab.label}
@@ -126,13 +126,13 @@ export function PartnershipTabs() {
               {activeTab.eyebrow}
             </p>
             <h2
-              className="m-0 max-w-[504.75px] whitespace-pre-line p-0 text-[48px] font-medium leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased"
+              className="m-0 w-full max-w-[504.75px] whitespace-pre-line p-0 text-[48px] font-medium leading-[50.4px] tracking-[-0.96px] text-[rgb(17,17,17)] antialiased lg:w-[504.75px]"
               style={displayFont}
             >
               {activeTab.headline}
             </h2>
             <p
-              className="mt-8 max-w-[560px] text-[16px] font-normal leading-[26px] text-[rgba(17,17,17,0.75)] antialiased"
+              className="mb-0 mt-8 w-full max-w-[504.75px] p-0 text-[16px] font-normal leading-[26px] text-[rgba(17,17,17,0.75)] antialiased lg:w-[504.75px]"
               style={interFont}
             >
               {activeTab.intro}
@@ -141,11 +141,14 @@ export function PartnershipTabs() {
 
           <div className="lg:col-span-6 lg:col-start-7">
             <div
-              className="max-w-[760px] space-y-6 text-[16px] font-normal leading-[26px] text-[rgba(17,17,17,0.75)] antialiased"
+              className="space-y-6"
               style={interFont}
             >
               {activeTab.paragraphs.map((paragraph) => (
-                <p key={paragraph} className="m-0">
+                <p
+                  key={paragraph}
+                  className="m-0 w-full max-w-[618.5px] p-0 text-[15px] font-normal leading-[24.375px] text-[rgba(17,17,17,0.75)] antialiased lg:w-[618.5px]"
+                >
                   {paragraph}
                 </p>
               ))}

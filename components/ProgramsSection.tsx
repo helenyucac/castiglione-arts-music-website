@@ -32,7 +32,7 @@ const programs = [
     image:
       "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1400&q=80",
     imageAlt: "Immersive exhibition with colorful light projections",
-    href: "/tours",
+    href: "/programs/exhibitions",
     badgeColor: "#1f7a4d",
   },
 ];

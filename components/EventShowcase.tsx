@@ -6,9 +6,11 @@ import { useMemo, useState } from "react";
 import { homeTourFilters, type TourCardData, type TourFilter } from "@/data/tours";
 import { TourCard } from "@/components/TourCard";
 
+type EventShowcaseFilterValue = TourFilter | "all";
+
 type EventShowcaseProps = {
   events: TourCardData[];
-  filters?: { label: string; value: TourFilter }[];
+  filters?: { label: string; value: EventShowcaseFilterValue }[];
   limit?: number;
   showViewMore?: boolean;
 };
@@ -19,7 +21,11 @@ function sortEventsByDateDesc(events: TourCardData[]) {
   );
 }
 
-function filterEvents(events: TourCardData[], filter: TourFilter) {
+function filterEvents(events: TourCardData[], filter: EventShowcaseFilterValue) {
+  if (filter === "all") {
+    return events;
+  }
+
   if (filter === "whats-on") {
     return events.filter((event) => event.status === "on-sale" || event.status === "upcoming");
   }
@@ -48,7 +54,9 @@ export function EventShowcase({
   limit,
   showViewMore = false,
 }: EventShowcaseProps) {
-  const [activeFilter, setActiveFilter] = useState<TourFilter | null>(null);
+  const [activeFilter, setActiveFilter] = useState<EventShowcaseFilterValue | null>(
+    filters[0]?.value === "all" ? "all" : null,
+  );
 
   const visibleEvents = useMemo(() => {
     const filteredEvents = activeFilter ? filterEvents(events, activeFilter) : events;

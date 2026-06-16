@@ -10,7 +10,7 @@ const programs = [
     image:
       "https://images.unsplash.com/photo-1518834107812-67b0b7c58434?auto=format&fit=crop&w=1400&q=80",
     imageAlt: "Dancer performing on a stage under warm lights",
-    href: "/tours",
+    href: "/programs/concerts",
     badgeColor: "#d92525",
   },
   {

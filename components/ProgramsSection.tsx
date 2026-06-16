@@ -21,7 +21,7 @@ const programs = [
     image:
       "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1400&q=80",
     imageAlt: "Outdoor music festival crowd at dusk",
-    href: "/tours",
+    href: "/programs/music-festival",
     badgeColor: "#2563eb",
   },
   {

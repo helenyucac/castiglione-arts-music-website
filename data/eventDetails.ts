@@ -51,7 +51,7 @@ export const narutoEventDetail: EventDetailData = {
   slug: "naruto-the-symphonic-experience",
   breadcrumb: ["Home", "What's On", "Anime Concerts"],
   categoryLabel: "Anime Concerts",
-  title: "NARUTO: THE SYMPHONIC EXPERIENCE",
+  title: "NARUTO: The Symphonic Experience",
   intro:
     "A live symphonic concert experience bringing Naruto's iconic story, music, and emotional world into the concert hall.",
   heroImage: "/media/naruto-hero.jpg",

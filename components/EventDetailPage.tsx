@@ -14,8 +14,11 @@ const eyebrowStyle = {
 };
 
 const displayStyle = {
-  fontFamily: 'Fraunces, Canela, "Canela Deck", "Cormorant Garamond", serif',
+  fontFamily: 'Fraunces, "Cormorant Garamond", serif',
 };
+
+const sectionEyebrowClass =
+  "m-0 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased";
 
 export function EventDetailPage({ event }: EventDetailPageProps) {
   return (
@@ -37,32 +40,31 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
           </div>
         </section>
 
-        <section className="py-14 sm:py-16 lg:py-20">
+        <section className="bg-white py-14 sm:py-16 lg:py-20">
           <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-10">
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start lg:gap-24">
+            <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_391px] lg:items-start lg:gap-24">
               <div>
-                <p
-                  className="mb-7 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased"
-                  style={eyebrowStyle}
-                >
-                  <span className="mr-2 inline-block size-2 bg-[#d94a28]" aria-hidden="true" />
-                  {event.categoryLabel}
-                </p>
+                <div className="mb-7">
+                  <p className={sectionEyebrowClass} style={eyebrowStyle}>
+                    <span className="mr-2 inline-block size-2 bg-[#d94a28]" aria-hidden="true" />
+                    {event.categoryLabel}
+                  </p>
+                </div>
                 <h1
-                  className="m-0 max-w-[920px] text-[clamp(3rem,7vw,5.7rem)] font-semibold leading-[0.92] tracking-[-0.045em] text-[#111111] antialiased"
+                  className="m-0 w-full max-w-[732.25px] p-0 text-[clamp(44px,6vw,68.25px)] font-medium leading-[1.04] tracking-[-0.02em] text-[#111111] antialiased lg:w-[732.25px] lg:text-[68.25px] lg:leading-[70.98px] lg:tracking-[-1.365px]"
                   style={displayStyle}
                 >
                   {event.title}
                 </h1>
                 <p
-                  className="mt-8 max-w-[620px] text-[15px] font-normal leading-[24.375px] text-[rgba(17,17,17,0.72)] antialiased"
+                  className="mt-8 mb-0 w-full max-w-[576px] p-0 text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.75)] antialiased lg:w-[576px]"
                   style={eyebrowStyle}
                 >
                   {event.intro}
                 </p>
               </div>
 
-              <aside className="bg-[#f8e6e2] p-8 sm:p-10">
+              <aside className="w-full max-w-[391px] bg-[#FBEDE9] p-8 lg:min-h-[315.5px] lg:w-[391px]">
                 <p
                   className="mb-6 text-[11px] font-semibold uppercase leading-none tracking-[2.75px] text-[rgba(17,17,17,0.42)] antialiased"
                   style={eyebrowStyle}
@@ -105,7 +107,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
           </div>
         </section>
 
-        <section className="pb-16 sm:pb-20 lg:pb-24">
+        <section className="bg-white pb-16 sm:pb-20 lg:pb-24">
           <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-10">
             <div className="relative aspect-video overflow-hidden bg-[#e7e0d6]">
               <Image
@@ -122,18 +124,18 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
 
         <section className="border-t border-[rgba(17,17,17,0.08)] bg-white py-16 sm:py-20 lg:py-24">
           <div className="mx-auto grid w-full max-w-[1600px] gap-10 px-4 sm:px-6 lg:grid-cols-[0.38fr_0.62fr] lg:gap-20 lg:px-10">
-            <p
-              className="text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased"
-              style={eyebrowStyle}
-            >
+            <p className={sectionEyebrowClass} style={eyebrowStyle}>
               {event.aboutEyebrow}
             </p>
-            <div
-              className="max-w-[820px] space-y-6 text-[16px] font-normal leading-[26px] text-[rgba(17,17,17,0.75)] antialiased"
-              style={eyebrowStyle}
-            >
+            <div className="w-full max-w-[732.25px] lg:w-[732.25px]">
               {event.description.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
+                <p
+                  key={paragraph}
+                  className="mb-6 w-full max-w-[732.25px] p-0 text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.8)] antialiased last:mb-0 lg:w-[732.25px]"
+                  style={eyebrowStyle}
+                >
+                  {paragraph}
+                </p>
               ))}
             </div>
           </div>
@@ -142,10 +144,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
         <section className="border-t border-[rgba(17,17,17,0.08)] bg-white py-16 sm:py-20 lg:py-24">
           <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-10">
             <div className="grid gap-10 lg:grid-cols-[0.22fr_1fr] lg:gap-20">
-              <p
-                className="text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased"
-                style={eyebrowStyle}
-              >
+              <p className={sectionEyebrowClass} style={eyebrowStyle}>
                 Tour Dates
               </p>
               <div>
@@ -207,11 +206,8 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
         <section className="border-t border-[rgba(17,17,17,0.08)] bg-[#f5f1ea] py-16 sm:py-20 lg:py-24">
           <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-10">
             <div className="mb-12 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-              <div>
-                <p
-                  className="mb-5 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased"
-                  style={eyebrowStyle}
-                >
+              <div className="flex flex-col gap-5">
+                <p className={sectionEyebrowClass} style={eyebrowStyle}>
                   {event.relatedEyebrow}
                 </p>
                 <h2

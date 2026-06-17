@@ -5,6 +5,7 @@ import { ArrowUpRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { homeTourFilters, type TourCardData, type TourFilter } from "@/data/tours";
 import { TourCard } from "@/components/TourCard";
+import { WhatsOnEventCard } from "@/components/WhatsOnEventCard";
 
 type EventShowcaseFilterValue = TourFilter | "all";
 
@@ -13,6 +14,7 @@ type EventShowcaseProps = {
   filters?: { label: string; value: EventShowcaseFilterValue }[];
   limit?: number;
   showViewMore?: boolean;
+  cardVariant?: "tour" | "whats-on";
 };
 
 function sortEventsByDateDesc(events: TourCardData[]) {
@@ -53,6 +55,7 @@ export function EventShowcase({
   filters = homeTourFilters,
   limit,
   showViewMore = false,
+  cardVariant = "tour",
 }: EventShowcaseProps) {
   const [activeFilter, setActiveFilter] = useState<EventShowcaseFilterValue | null>(
     filters[0]?.value === "all" ? "all" : null,
@@ -90,9 +93,19 @@ export function EventShowcase({
       </div>
 
       {visibleEvents.length > 0 ? (
-        <div className="highlights-grid">
+        <div
+          className={
+            cardVariant === "whats-on"
+              ? "grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-4"
+              : "highlights-grid"
+          }
+        >
           {visibleEvents.map((tour) => (
-            <TourCard key={tour.id} tour={tour} />
+            cardVariant === "whats-on" ? (
+              <WhatsOnEventCard key={tour.id} event={tour} />
+            ) : (
+              <TourCard key={tour.id} tour={tour} />
+            )
           ))}
         </div>
       ) : (

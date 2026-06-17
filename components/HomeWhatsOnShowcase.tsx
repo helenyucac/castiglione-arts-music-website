@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { TourCardData, TourCategory } from "@/data/tours";
+import { getWhatsOnDisplayCategory, WhatsOnEventCard } from "@/components/WhatsOnEventCard";
 
 type HomeFilter = "all" | "concert-theatre" | "live-music-festival" | "touring-exhibition";
 
@@ -23,18 +22,6 @@ const homeFilters: { label: string; value: HomeFilter }[] = [
   { label: "Touring Exhibition", value: "touring-exhibition" },
 ];
 
-const homeCategoryLabels: Record<HomeCategory, string> = {
-  "concert-theatre": "Concert & Theatre",
-  "live-music-festival": "Live Music & Festival",
-  "touring-exhibition": "Touring Exhibition",
-};
-
-const homeCategoryColors: Record<HomeCategory, string> = {
-  "concert-theatre": "#c74736",
-  "live-music-festival": "#3567e8",
-  "touring-exhibition": "#3f835c",
-};
-
 function getHomeCategory(category: TourCategory): HomeCategory | null {
   if (
     category === "anime-concert" ||
@@ -53,18 +40,6 @@ function getHomeCategory(category: TourCategory): HomeCategory | null {
   }
 
   return null;
-}
-
-function getHomeEventLabel(category: TourCategory, homeCategory: HomeCategory) {
-  if (category === "music-festival") {
-    return "Music Festival";
-  }
-
-  if (category === "lucid") {
-    return "Lucid Live";
-  }
-
-  return homeCategoryLabels[homeCategory];
 }
 
 function sortEventsByDateDesc(events: TourCardData[]) {
@@ -131,65 +106,13 @@ export function HomeWhatsOnShowcase({ events }: HomeWhatsOnShowcaseProps) {
       {visibleEvents.length > 0 ? (
         <div className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
           {visibleEvents.map((event) => {
-            const homeCategory = getHomeCategory(event.category);
+            const homeCategory = getWhatsOnDisplayCategory(event.category);
 
             if (!homeCategory) {
               return null;
             }
 
-            return (
-              <Link key={event.id} href={event.href ?? "#"} className="group block">
-                <article>
-                  <div className="relative overflow-hidden bg-[#e7e0d6]" style={{ aspectRatio: "4 / 5" }}>
-                    <Image
-                      src={event.image}
-                      alt=""
-                      fill
-                      sizes="(min-width: 1280px) 23vw, (min-width: 1024px) 31vw, (min-width: 640px) 46vw, 100vw"
-                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.025]"
-                    />
-                  </div>
-
-                  <div className="pt-6">
-                    <div className="mb-4 flex items-center gap-2">
-                      <span
-                        aria-hidden="true"
-                        className="size-2 shrink-0"
-                        style={{ backgroundColor: homeCategoryColors[homeCategory] }}
-                      />
-                      <p
-                        className="text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[rgba(17,17,17,0.55)] antialiased"
-                        style={{ fontFamily: "Inter, sans-serif" }}
-                      >
-                        {getHomeEventLabel(event.category, homeCategory)}
-                      </p>
-                    </div>
-
-                    <h3
-                      className="text-[20px] font-medium leading-[27.5px] tracking-[-0.1px] text-[#111111] antialiased transition-colors duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:text-[rgba(17,17,17,0.65)]"
-                      style={{ fontFamily: "Inter, sans-serif" }}
-                    >
-                      {event.title}
-                    </h3>
-
-                    <div className="mt-7">
-                      <p
-                        className="mb-2 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[#111111] antialiased"
-                        style={{ fontFamily: "Inter, sans-serif" }}
-                      >
-                        {event.dateLabel}
-                      </p>
-                      <p
-                        className="text-[11px] font-semibold uppercase leading-[18px] tracking-[2.2px] text-[rgba(17,17,17,0.52)] antialiased"
-                        style={{ fontFamily: "Inter, sans-serif" }}
-                      >
-                        {event.cities.join(" · ")}
-                      </p>
-                    </div>
-                  </div>
-                </article>
-              </Link>
-            );
+            return <WhatsOnEventCard key={event.id} event={event} displayCategory={homeCategory} />;
           })}
         </div>
       ) : (

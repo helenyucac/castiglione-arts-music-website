@@ -59,7 +59,7 @@ export default function ProgramConcertsPage() {
               </p>
             </div>
 
-            <EventShowcase events={concertEvents} filters={concertFilters} />
+            <EventShowcase events={concertEvents} filters={concertFilters} cardVariant="whats-on" />
           </div>
         </section>
       </main>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
-import { TourCard } from "@/components/TourCard";
+import { WhatsOnEventCard } from "@/components/WhatsOnEventCard";
 import { touringExhibitionProgramEvents } from "@/data/tours";
 
 const exhibitionsDescription =
@@ -40,9 +40,9 @@ export default function ProgramExhibitionsPage() {
               </p>
             </div>
 
-            <div className="highlights-grid">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
               {touringExhibitionProgramEvents.map((event) => (
-                <TourCard key={event.id} tour={event} />
+                <WhatsOnEventCard key={event.id} event={event} />
               ))}
             </div>
           </div>

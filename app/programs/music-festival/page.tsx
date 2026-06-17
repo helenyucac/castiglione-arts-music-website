@@ -1,21 +1,26 @@
 import type { Metadata } from "next";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
-import { WhatsOnEventCard } from "@/components/WhatsOnEventCard";
+import { ProgramEventFilter } from "@/components/ProgramEventFilter";
 import { liveMusicFestivalProgramEvents } from "@/data/tours";
 
 const musicFestivalDescription =
   "Explore Castiglione music festival programs across live music, Asian pop, and contemporary cultural experiences.";
 
+const liveMusicFilters = [
+  { label: "Lucid Live", value: "lucid" },
+  { label: "Music Festival", value: "music-festival" },
+] as const;
+
 export const metadata: Metadata = {
-  title: "Program - Music Festival | Castiglione",
+  title: "Program - Live Music & Festival | Castiglione",
   description: musicFestivalDescription,
   openGraph: {
-    title: "Program - Music Festival | Castiglione",
+    title: "Program - Live Music & Festival | Castiglione",
     description: musicFestivalDescription,
   },
   twitter: {
-    title: "Program - Music Festival | Castiglione",
+    title: "Program - Live Music & Festival | Castiglione",
     description: musicFestivalDescription,
   },
 };
@@ -32,7 +37,7 @@ export default function ProgramMusicFestivalPage() {
                 className="mb-5 text-[11px] font-black uppercase leading-none tracking-[2.2px] text-[rgba(17,17,17,0.55)] antialiased"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                PROGRAM / MUSIC FESTIVAL
+                PROGRAM / LIVE MUSIC & FESTIVAL
               </p>
               <p className="max-w-none text-lg font-black leading-8 tracking-normal sm:text-xl lg:max-w-7xl lg:text-xl lg:leading-8 xl:text-2xl xl:leading-9">
                 Explore music festival programs across live music, Asian pop, and
@@ -40,11 +45,11 @@ export default function ProgramMusicFestivalPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
-              {liveMusicFestivalProgramEvents.map((event) => (
-                <WhatsOnEventCard key={event.id} event={event} />
-              ))}
-            </div>
+            <ProgramEventFilter
+              events={liveMusicFestivalProgramEvents}
+              filters={liveMusicFilters}
+              defaultFilter="lucid"
+            />
           </div>
         </section>
       </main>

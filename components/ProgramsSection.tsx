@@ -15,7 +15,7 @@ const programs = [
   },
   {
     number: "02",
-    title: "Music Festival",
+    title: "Live Music & Festival",
     description:
       "Curating boutique festivals for Asian Pop and underground electronic scenes — including OddShapes and Sonica.",
     image:

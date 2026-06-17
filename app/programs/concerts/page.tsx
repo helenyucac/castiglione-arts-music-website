@@ -5,13 +5,12 @@ import { Navigation } from "@/components/Navigation";
 import { whatsOnConcertEvents, type TourCategory } from "@/data/tours";
 
 const concertsDescription =
-  "Explore Castiglione concert programs across anime concerts, gaming concerts, classical concerts, and Lucid Live projects.";
+  "Explore Castiglione concert programs across anime concerts, gaming concerts, and classical concerts.";
 
 const concertCategories: TourCategory[] = [
   "anime-concert",
   "gaming-concert",
   "classical-recital",
-  "lucid",
 ];
 
 const concertEvents = whatsOnConcertEvents.filter((event) =>
@@ -23,7 +22,6 @@ const concertFilters: { label: string; value: "all" | TourCategory }[] = [
   { label: "Anime Concerts", value: "anime-concert" },
   { label: "Gaming Concerts", value: "gaming-concert" },
   { label: "Classical Concerts", value: "classical-recital" },
-  { label: "Lucid Live", value: "lucid" },
 ];
 
 export const metadata: Metadata = {
@@ -55,7 +53,7 @@ export default function ProgramConcertsPage() {
               </p>
               <p className="max-w-none text-lg font-black leading-8 tracking-normal sm:text-xl lg:max-w-7xl lg:text-xl lg:leading-8 xl:text-2xl xl:leading-9">
                 Explore concert programs across anime concerts, gaming concerts,
-                classical concerts, and Lucid Live projects.
+                and classical concerts.
               </p>
             </div>
 

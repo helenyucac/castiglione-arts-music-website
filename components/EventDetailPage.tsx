@@ -121,7 +121,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
         </section>
 
         <section className="border-t border-[rgba(17,17,17,0.08)] bg-white py-16 sm:py-20 lg:py-24">
-          <div className="mx-auto grid w-full max-w-[1600px] gap-10 px-4 sm:px-6 lg:grid-cols-[0.38fr_0.62fr] lg:gap-20 lg:px-10">
+          <div className="mx-auto grid w-full max-w-[1600px] gap-10 px-4 sm:px-6 lg:grid-cols-[0.22fr_1fr] lg:gap-20 lg:px-10">
             <p className={sectionEyebrowClass} style={eyebrowStyle}>
               {event.aboutEyebrow}
             </p>
@@ -147,11 +147,12 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
             <div className="w-full max-w-[1200px]">
               <video
                 controls
+                playsInline
                 preload="metadata"
                 className="aspect-video w-full bg-black"
                 aria-label={`${event.title} trailer video`}
               >
-                <source src={event.trailerVideoSrc} type="video/quicktime" />
+                <source src={event.trailerVideoSrc} type="video/mp4" />
               </video>
             </div>
           </div>
@@ -168,7 +169,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
               </p>
               <div>
                 <h2
-                  className="m-0 text-[clamp(2.5rem,5vw,4rem)] font-semibold leading-[1.02] tracking-[-0.035em] text-[#111111] antialiased"
+                  className="m-0 w-full max-w-[967.75px] p-0 text-[48px] font-medium leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased lg:w-[967.75px]"
                   style={displayStyle}
                 >
                   Where to see it.

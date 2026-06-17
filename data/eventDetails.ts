@@ -71,7 +71,7 @@ export const narutoEventDetail: EventDetailData = {
     "Created as an exclusive film and musical montage for this concert experience, the production is designed for longtime fans and new audiences alike, blending rock, pop, and traditional Japanese colours into an immersive symphonic event.",
   ],
   trailerEyebrow: "TRAILER VIDEO",
-  trailerVideoSrc: "/media/naruto-au-trailer.mov",
+  trailerVideoSrc: "/media/naruto-au-trailer.mp4",
   tourDates: [
     {
       date: "03 OCT 2026",

@@ -168,13 +168,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                 Tour Dates
               </p>
               <div>
-                <h2
-                  className="m-0 w-full max-w-[967.75px] p-0 text-[48px] font-medium leading-[50.4px] tracking-[-0.96px] text-[#111111] antialiased lg:w-[967.75px]"
-                  style={displayStyle}
-                >
-                  Where to see it.
-                </h2>
-                <div className="mt-14 grid border border-[rgba(17,17,17,0.12)] lg:grid-cols-2">
+                <div className="grid border border-[rgba(17,17,17,0.12)] lg:grid-cols-2">
                   {event.tourDates.map((tourDate, index) => (
                     <article
                       key={`${tourDate.date}-${tourDate.city}`}
@@ -193,28 +187,26 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                         {tourDate.city}
                       </h3>
                       <p
-                        className="mt-2 text-[11px] font-semibold uppercase leading-[18px] tracking-[2.2px] text-[rgba(17,17,17,0.46)] antialiased"
+                        className="mt-2 mb-0 p-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[rgba(17,17,17,0.6)] antialiased"
                         style={eyebrowStyle}
                       >
                         {tourDate.venue}
                       </p>
-                      <div className="mt-10 border-t border-[rgba(17,17,17,0.10)] pt-5">
-                        <p
-                          className="text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[#d94a28] antialiased"
-                          style={eyebrowStyle}
-                        >
-                          {tourDate.date}
-                        </p>
-                        <a
-                          href={tourDate.ticketHref}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-6 inline-flex items-center justify-center bg-[#111111] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased transition-opacity hover:opacity-80"
-                          style={eyebrowStyle}
-                        >
-                          {tourDate.ticketLabel} →
-                        </a>
-                      </div>
+                      <p
+                        className="mt-10 mb-0 border-t border-[rgba(17,17,17,0.15)] pt-4 pb-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[#d94a28] antialiased"
+                        style={eyebrowStyle}
+                      >
+                        {tourDate.date}
+                      </p>
+                      <a
+                        href={tourDate.ticketHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-6 inline-flex items-center justify-center bg-[#111111] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased transition-opacity hover:opacity-80"
+                        style={eyebrowStyle}
+                      >
+                        {tourDate.ticketLabel} →
+                      </a>
                     </article>
                   ))}
                 </div>

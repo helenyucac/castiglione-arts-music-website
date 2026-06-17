@@ -81,9 +81,9 @@ export const narutoEventDetail: EventDetailData = {
       ticketHref: "https://premier.ticketek.com.au/shows/Show.aspx?sh=NARUTOX26",
     },
     {
-      date: "04 OCT 2026",
+      date: "10 OCT 2026",
       city: "Melbourne",
-      venue: "MCEC, The Plenary",
+      venue: "John Cain Arena",
       ticketLabel: "BUY TICKETS",
       ticketHref:
         "https://castiglione.flicket.io/474a1e8c-0e5a-4096-9b07-3e76a53ef154/releases/GP%20Sale%20Sale%20%5Bfull%20price%5D",

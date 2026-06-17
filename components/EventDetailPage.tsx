@@ -125,11 +125,11 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
             <p className={sectionEyebrowClass} style={eyebrowStyle}>
               {event.aboutEyebrow}
             </p>
-            <div className="w-full max-w-[732.25px] lg:w-[732.25px]">
+            <div className="w-full max-w-[1200px]">
               {event.description.map((paragraph) => (
                 <p
                   key={paragraph}
-                  className="mb-6 w-full max-w-[732.25px] p-0 text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.8)] antialiased last:mb-0 lg:w-[732.25px]"
+                  className="mb-6 w-full max-w-[1200px] p-0 text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.8)] antialiased last:mb-0"
                   style={eyebrowStyle}
                 >
                   {paragraph}

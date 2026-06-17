@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
+import { EventShowcase } from "@/components/EventShowcase";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
-import { ProgramEventFilter } from "@/components/ProgramEventFilter";
-import { liveMusicFestivalProgramEvents } from "@/data/tours";
+import { liveMusicFestivalProgramEvents, type TourFilter } from "@/data/tours";
 
 const musicFestivalDescription =
   "Explore Castiglione music festival programs across live music, Asian pop, and contemporary cultural experiences.";
 
-const liveMusicFilters = [
+const liveMusicFilters: { label: string; value: "all" | TourFilter }[] = [
+  { label: "View All", value: "all" },
   { label: "Lucid Live", value: "lucid" },
   { label: "Music Festival", value: "music-festival" },
-] as const;
+];
 
 export const metadata: Metadata = {
   title: "Program - Live Music & Festival | Castiglione",
@@ -45,10 +46,10 @@ export default function ProgramMusicFestivalPage() {
               </p>
             </div>
 
-            <ProgramEventFilter
+            <EventShowcase
               events={liveMusicFestivalProgramEvents}
               filters={liveMusicFilters}
-              defaultFilter="lucid"
+              cardVariant="whats-on"
             />
           </div>
         </section>

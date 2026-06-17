@@ -29,6 +29,8 @@ export type EventDetailData = {
   secondaryCtaHref: string;
   aboutEyebrow: string;
   description: string[];
+  trailerEyebrow: string;
+  trailerVideoSrc: string;
   tourDates: EventTourDate[];
   relatedEyebrow: string;
   relatedTitle: string;
@@ -59,7 +61,7 @@ export const narutoEventDetail: EventDetailData = {
   seasonLabel: "OCT 2026",
   citySummary: "SYDNEY · MELBOURNE",
   primaryCtaLabel: "BUY TICKETS",
-  primaryCtaHref: "https://premier.ticketek.com.au/shows/Show.aspx?sh=NARUTOX26",
+  primaryCtaHref: "#tour-dates",
   secondaryCtaLabel: "PARTNER ON THIS TOUR",
   secondaryCtaHref: "/partnerships",
   aboutEyebrow: "ABOUT THE PRODUCTION",
@@ -68,6 +70,8 @@ export const narutoEventDetail: EventDetailData = {
     "Across the concert, audiences revisit Naruto Uzumaki's journey to become Hokage through music, rivalry, growth, and unforgettable screen moments. The orchestra performs Masuda's soundtrack alongside the series' well-known openings and endings, inviting fans into a shared celebration of the music they love.",
     "Created as an exclusive film and musical montage for this concert experience, the production is designed for longtime fans and new audiences alike, blending rock, pop, and traditional Japanese colours into an immersive symphonic event.",
   ],
+  trailerEyebrow: "TRAILER VIDEO",
+  trailerVideoSrc: "/media/naruto-au-trailer.mov",
   tourDates: [
     {
       date: "03 OCT 2026",

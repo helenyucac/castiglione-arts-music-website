@@ -42,7 +42,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
 
         <section className="bg-white py-14 sm:py-16 lg:py-20">
           <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-10">
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_391px] lg:items-start lg:gap-24">
+            <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_460px] lg:items-start lg:gap-24">
               <div>
                 <div className="mb-7">
                   <p className={sectionEyebrowClass} style={eyebrowStyle}>
@@ -64,7 +64,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                 </p>
               </div>
 
-              <aside className="w-full max-w-[391px] bg-[#FBEDE9] p-8 lg:min-h-[315.5px] lg:w-[391px]">
+              <aside className="w-full max-w-[460px] bg-[#FBEDE9] p-8 lg:min-h-[315.5px] lg:w-[460px]">
                 <p
                   className="mb-6 text-[11px] font-semibold uppercase leading-none tracking-[2.75px] text-[rgba(17,17,17,0.42)] antialiased"
                   style={eyebrowStyle}
@@ -87,8 +87,6 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                 <div className="mt-8 grid gap-3">
                   <a
                     href={event.primaryCtaHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="inline-flex items-center justify-center bg-[#111111] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased transition-opacity hover:opacity-80"
                     style={eyebrowStyle}
                   >
@@ -142,6 +140,27 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
         </section>
 
         <section className="border-t border-[rgba(17,17,17,0.08)] bg-white py-16 sm:py-20 lg:py-24">
+          <div className="mx-auto grid w-full max-w-[1600px] gap-10 px-4 sm:px-6 lg:grid-cols-[0.22fr_1fr] lg:gap-20 lg:px-10">
+            <p className={sectionEyebrowClass} style={eyebrowStyle}>
+              {event.trailerEyebrow}
+            </p>
+            <div className="w-full max-w-[1200px]">
+              <video
+                controls
+                preload="metadata"
+                className="aspect-video w-full bg-black"
+                aria-label={`${event.title} trailer video`}
+              >
+                <source src={event.trailerVideoSrc} type="video/quicktime" />
+              </video>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="tour-dates"
+          className="scroll-mt-24 border-t border-[rgba(17,17,17,0.08)] bg-white py-16 sm:py-20 lg:py-24"
+        >
           <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-10">
             <div className="grid gap-10 lg:grid-cols-[0.22fr_1fr] lg:gap-20">
               <p className={sectionEyebrowClass} style={eyebrowStyle}>

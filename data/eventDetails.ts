@@ -1,3 +1,5 @@
+import { whatsOnConcertEvents, type TourCardData } from "@/data/tours";
+
 export type EventTourDate = {
   date: string;
   city: string;
@@ -13,76 +15,81 @@ export type EventGalleryImage = {
 
 export type EventDetailData = {
   slug: string;
+  breadcrumb: string[];
+  categoryLabel: string;
   title: string;
+  intro: string;
   heroImage: string;
   heroAlt: string;
-  tourDates: EventTourDate[];
-  infoSubtitle: string;
+  seasonLabel: string;
+  citySummary: string;
+  primaryCtaLabel: string;
+  primaryCtaHref: string;
+  secondaryCtaLabel: string;
+  secondaryCtaHref: string;
+  aboutEyebrow: string;
   description: string[];
-  trailerTitle: string;
-  trailerPlaceholder: string;
-  gallery: EventGalleryImage[];
-  presentedBy: string;
-  ctaCopy: string;
-  ctaHref: string;
-  ctaLabel: string;
+  tourDates: EventTourDate[];
+  relatedEyebrow: string;
+  relatedTitle: string;
+  relatedHref: string;
+  relatedLinkLabel: string;
+  relatedEvents: TourCardData[];
 };
+
+const relatedConcertEvents = whatsOnConcertEvents
+  .filter((event) => event.id !== "naruto-symphonic-experience")
+  .filter(
+    (event) =>
+      event.category === "anime-concert" ||
+      event.category === "gaming-concert" ||
+      event.category === "classical-recital",
+  )
+  .slice(0, 3);
 
 export const narutoEventDetail: EventDetailData = {
   slug: "naruto-the-symphonic-experience",
+  breadcrumb: ["Home", "What's On", "Anime Concerts"],
+  categoryLabel: "Anime Concerts",
   title: "NARUTO: THE SYMPHONIC EXPERIENCE",
+  intro:
+    "A live symphonic concert experience bringing Naruto's iconic story, music, and emotional world into the concert hall.",
   heroImage: "/media/naruto-hero.jpg",
   heroAlt: "Naruto: The Symphonic Experience horizontal key visual",
+  seasonLabel: "OCT 2026",
+  citySummary: "SYDNEY · MELBOURNE",
+  primaryCtaLabel: "BUY TICKETS",
+  primaryCtaHref: "https://premier.ticketek.com.au/shows/Show.aspx?sh=NARUTOX26",
+  secondaryCtaLabel: "PARTNER ON THIS TOUR",
+  secondaryCtaHref: "/partnerships",
+  aboutEyebrow: "ABOUT THE PRODUCTION",
+  description: [
+    "NARUTO: The Symphonic Experience brings the beloved anime to life on a grand scale, pairing a cinematic montage of iconic scenes with a live orchestra performing Toshio Masuda's original score.",
+    "Across the concert, audiences revisit Naruto Uzumaki's journey to become Hokage through music, rivalry, growth, and unforgettable screen moments. The orchestra performs Masuda's soundtrack alongside the series' well-known openings and endings, inviting fans into a shared celebration of the music they love.",
+    "Created as an exclusive film and musical montage for this concert experience, the production is designed for longtime fans and new audiences alike, blending rock, pop, and traditional Japanese colours into an immersive symphonic event.",
+  ],
   tourDates: [
     {
-      date: "OCT 03, 2026",
-      city: "SYDNEY",
-      venue: "Sydney ICC Darling Harbour Theatre",
+      date: "03 OCT 2026",
+      city: "Sydney",
+      venue: "ICC Darling Harbour Theatre",
       ticketLabel: "BUY TICKETS",
       ticketHref: "https://premier.ticketek.com.au/shows/Show.aspx?sh=NARUTOX26",
     },
     {
-      date: "OCT 04, 2026",
-      city: "MELBOURNE",
-      venue: "MCEC, THE PLENARY",
+      date: "04 OCT 2026",
+      city: "Melbourne",
+      venue: "MCEC, The Plenary",
       ticketLabel: "BUY TICKETS",
       ticketHref:
         "https://castiglione.flicket.io/474a1e8c-0e5a-4096-9b07-3e76a53ef154/releases/GP%20Sale%20Sale%20%5Bfull%20price%5D",
     },
   ],
-  infoSubtitle: "About the performance",
-  description: [
-    "Naruto: The Symphonic Experience brings the iconic music and emotional world of the beloved anime series into the concert hall. Performed live by orchestra, this touring concert experience invites audiences to revisit unforgettable themes, characters, and cinematic moments through a powerful symphonic lens.",
-    "Designed for anime fans, music lovers, and families alike, the production celebrates the connection between screen culture and live performance, transforming a beloved story into an immersive concert experience.",
-  ],
-  trailerTitle: "Trailer",
-  trailerPlaceholder: "Trailer coming soon",
-  gallery: [
-    {
-      src: "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1000&q=80",
-      alt: "Stage lighting over a live concert audience",
-    },
-    {
-      src: "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&w=1000&q=80",
-      alt: "Orchestra performing under warm concert lighting",
-    },
-    {
-      src: "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?auto=format&fit=crop&w=1000&q=80",
-      alt: "Concert hall with dramatic stage lighting",
-    },
-    {
-      src: "https://images.unsplash.com/photo-1526142684086-7ebd69df27a5?auto=format&fit=crop&w=1000&q=80",
-      alt: "Musicians performing on stage",
-    },
-    {
-      src: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=1000&q=80",
-      alt: "Live performance with illuminated stage",
-    },
-  ],
-  presentedBy: "Castiglione Arts & Culture",
-  ctaCopy: "Interested in creating extraordinary live experiences together?",
-  ctaHref: "/partnerships",
-  ctaLabel: "PARTNER WITH US",
+  relatedEyebrow: "ALSO PROGRAMMED",
+  relatedTitle: "More from Concert & Theatre.",
+  relatedHref: "/programs/concerts",
+  relatedLinkLabel: "SEE FULL SEASON",
+  relatedEvents: relatedConcertEvents,
 };
 
 export const eventDetailsBySlug: Record<string, EventDetailData> = {

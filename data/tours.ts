@@ -575,6 +575,87 @@ export const tourHighlights: TourCardData[] = [
   ...lucidLiveEvents,
 ];
 
-export const homeTourHighlights = tourHighlights.filter(
-  (tour) => tour.category !== "lucid",
+function sortTourCardsByDateDesc(events: TourCardData[]) {
+  return [...events].sort(
+    (first, second) => new Date(second.date).getTime() - new Date(first.date).getTime(),
+  );
+}
+
+export const whatsOnConcertEvents = sortTourCardsByDateDesc(
+  tourHighlights.filter(
+    (event) =>
+      event.category === "anime-concert" ||
+      event.category === "gaming-concert" ||
+      event.category === "classical-recital" ||
+      event.category === "lucid",
+  ),
 );
+
+export const musicFestivalProgramEvents: TourCardData[] = sortTourCardsByDateDesc([
+  {
+    id: "sonica-music-festival-2023",
+    category: "music-festival",
+    title: "Sonica Music Festival",
+    date: "2023-03-01",
+    dateLabel: "MAR 2023",
+    cities: ["Melbourne"],
+    status: "past",
+    image: "/media/naruto-hero.jpg",
+  },
+  {
+    id: "oddshapes-music-festival-2024",
+    category: "music-festival",
+    title: "Oddshapes Music Festival",
+    date: "2024-10-01",
+    dateLabel: "OCT 2024",
+    cities: ["Melbourne"],
+    status: "past",
+    image: "/media/naruto-hero.jpg",
+  },
+  {
+    id: "oddshapes-music-festival-2026",
+    category: "music-festival",
+    title: "Oddshapes Music Festival",
+    date: "2026-03-01",
+    dateLabel: "MAR 2026",
+    cities: ["Melbourne"],
+    status: "upcoming",
+    image: "/media/naruto-hero.jpg",
+  },
+]);
+
+export const liveMusicFestivalProgramEvents = sortTourCardsByDateDesc([
+  ...musicFestivalProgramEvents,
+  ...lucidLiveEvents,
+]);
+
+export const touringExhibitionProgramEvents: TourCardData[] = sortTourCardsByDateDesc([
+  {
+    id: "leonardo-da-vinci-taipei",
+    category: "exhibitions",
+    title: "The Man Behind the Myth - Leonardo Da Vinci TAIPEI",
+    date: "2022-12-01",
+    dateLabel: "DEC 2022",
+    cities: ["TAIPEI"],
+    status: "past",
+    image: "/media/our-touring-footprints.jpg",
+  },
+  {
+    id: "marilyn-the-woman-behind-the-icon",
+    category: "exhibitions",
+    title: "Marilyn - The Woman Behind the Icon",
+    date: "2023-07-01",
+    dateLabel: "JUL 2023",
+    cities: ["Sydney"],
+    status: "past",
+    image: "/media/our-touring-footprints.jpg",
+  },
+]);
+
+export const homepageWhatsOnEvents = sortTourCardsByDateDesc([
+  ...whatsOnConcertEvents,
+  ...musicFestivalProgramEvents,
+  ...touringExhibitionProgramEvents,
+]);
+
+export const homeTourHighlights = homepageWhatsOnEvents;

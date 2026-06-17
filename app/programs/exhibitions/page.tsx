@@ -2,33 +2,10 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
 import { TourCard } from "@/components/TourCard";
-import type { TourCardData } from "@/data/tours";
+import { touringExhibitionProgramEvents } from "@/data/tours";
 
 const exhibitionsDescription =
   "Explore Castiglione exhibition programs across touring cultural exhibitions and immersive experiences.";
-
-const exhibitionEvents: TourCardData[] = [
-  {
-    id: "leonardo-da-vinci-taipei",
-    category: "exhibitions",
-    title: "The Man Behind the Myth - Leonardo Da Vinci TAIPEI",
-    date: "2022-12-01",
-    dateLabel: "DEC 2022",
-    cities: ["TAIPEI"],
-    status: "past",
-    image: "/media/our-touring-footprints.jpg",
-  },
-  {
-    id: "marilyn-the-woman-behind-the-icon",
-    category: "exhibitions",
-    title: "Marilyn - The Woman Behind the Icon",
-    date: "2023-07-01",
-    dateLabel: "JUL 2023",
-    cities: ["Sydney"],
-    status: "past",
-    image: "/media/our-touring-footprints.jpg",
-  },
-];
 
 export const metadata: Metadata = {
   title: "Program - Exhibitions | Castiglione",
@@ -64,7 +41,7 @@ export default function ProgramExhibitionsPage() {
             </div>
 
             <div className="highlights-grid">
-              {exhibitionEvents.map((event) => (
+              {touringExhibitionProgramEvents.map((event) => (
                 <TourCard key={event.id} tour={event} />
               ))}
             </div>

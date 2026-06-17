@@ -2,43 +2,10 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
 import { TourCard } from "@/components/TourCard";
-import type { TourCardData } from "@/data/tours";
+import { liveMusicFestivalProgramEvents } from "@/data/tours";
 
 const musicFestivalDescription =
   "Explore Castiglione music festival programs across live music, Asian pop, and contemporary cultural experiences.";
-
-const musicFestivalEvents: TourCardData[] = [
-  {
-    id: "sonica-music-festival-2023",
-    category: "music-festival",
-    title: "Sonica Music Festival",
-    date: "2023-03-01",
-    dateLabel: "MAR 2023",
-    cities: ["Melbourne"],
-    status: "past",
-    image: "/media/naruto-hero.jpg",
-  },
-  {
-    id: "oddshapes-music-festival-2024",
-    category: "music-festival",
-    title: "Oddshapes Music Festival",
-    date: "2024-10-01",
-    dateLabel: "OCT 2024",
-    cities: ["Melbourne"],
-    status: "past",
-    image: "/media/naruto-hero.jpg",
-  },
-  {
-    id: "oddshapes-music-festival-2026",
-    category: "music-festival",
-    title: "Oddshapes Music Festival",
-    date: "2026-03-01",
-    dateLabel: "MAR 2026",
-    cities: ["Melbourne"],
-    status: "upcoming",
-    image: "/media/naruto-hero.jpg",
-  },
-];
 
 export const metadata: Metadata = {
   title: "Program - Music Festival | Castiglione",
@@ -74,7 +41,7 @@ export default function ProgramMusicFestivalPage() {
             </div>
 
             <div className="highlights-grid">
-              {musicFestivalEvents.map((event) => (
+              {liveMusicFestivalProgramEvents.map((event) => (
                 <TourCard key={event.id} tour={event} />
               ))}
             </div>

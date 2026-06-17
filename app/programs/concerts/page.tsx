@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { EventShowcase } from "@/components/EventShowcase";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
-import { tourHighlights, type TourCardData, type TourCategory } from "@/data/tours";
+import { whatsOnConcertEvents, type TourCategory } from "@/data/tours";
 
 const concertsDescription =
   "Explore Castiglione concert programs across anime concerts, gaming concerts, classical concerts, and Lucid Live projects.";
@@ -14,7 +14,7 @@ const concertCategories: TourCategory[] = [
   "lucid",
 ];
 
-const concertEvents: TourCardData[] = tourHighlights.filter((event) =>
+const concertEvents = whatsOnConcertEvents.filter((event) =>
   concertCategories.includes(event.category),
 );
 

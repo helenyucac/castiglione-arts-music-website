@@ -18,6 +18,7 @@ export type EventDetailData = {
   breadcrumb: string[];
   categoryLabel: string;
   title: string;
+  heroTitleOffset?: boolean;
   intro: string;
   heroImage: string;
   heroAlt: string;
@@ -39,21 +40,23 @@ export type EventDetailData = {
   relatedEvents: TourCardData[];
 };
 
-const relatedConcertEvents = whatsOnConcertEvents
-  .filter((event) => event.id !== "naruto-symphonic-experience")
-  .filter(
-    (event) =>
-      event.category === "anime-concert" ||
-      event.category === "gaming-concert" ||
-      event.category === "classical-recital",
-  )
-  .slice(0, 3);
+const getRelatedConcertEvents = (excludedId: string) =>
+  whatsOnConcertEvents
+    .filter((event) => event.id !== excludedId)
+    .filter(
+      (event) =>
+        event.category === "anime-concert" ||
+        event.category === "gaming-concert" ||
+        event.category === "classical-recital",
+    )
+    .slice(0, 3);
 
 export const narutoEventDetail: EventDetailData = {
   slug: "naruto-the-symphonic-experience",
   breadcrumb: ["Home", "What's On", "Anime Concerts"],
   categoryLabel: "Anime Concerts",
   title: "NARUTO: The Symphonic Experience",
+  heroTitleOffset: true,
   intro: "",
   heroImage: "/media/naruto-hero.jpg",
   heroAlt: "Naruto: The Symphonic Experience horizontal key visual",
@@ -94,9 +97,66 @@ export const narutoEventDetail: EventDetailData = {
   relatedTitle: "More from Concert & Theatre.",
   relatedHref: "/programs/concerts",
   relatedLinkLabel: "SEE FULL SEASON",
-  relatedEvents: relatedConcertEvents,
+  relatedEvents: getRelatedConcertEvents("naruto-symphonic-experience"),
+};
+
+export const attackOnTitanEventDetail: EventDetailData = {
+  slug: "attack-on-titan-beyond-the-walls-world-tour",
+  breadcrumb: ["Home", "What's On", "Anime Concerts"],
+  categoryLabel: "Anime Concerts",
+  title: '"Attack on Titan" - Beyond the Walls World Tour - The Official Concert',
+  intro:
+    "An epic anime concert experience bringing the iconic Attack on Titan soundtrack and immersive visuals to the concert hall.",
+  heroImage: "/media/aot-hero.jpg",
+  heroAlt: "Attack on Titan Beyond the Walls World Tour horizontal key visual",
+  seasonLabel: "JUL 2026",
+  citySummary: "MELBOURNE",
+  primaryCtaLabel: "BUY TICKETS",
+  primaryCtaHref: "#tour-dates",
+  secondaryCtaLabel: "PARTNER ON THIS TOUR",
+  secondaryCtaHref: "/partnerships",
+  aboutEyebrow: "ABOUT THE SHOW",
+  description: [
+    'Fans of the globally renowned anime phenomenon "Attack on Titan" are invited into a colossal celebration of music and anime, pairing the series’ iconic soundtrack with immersive visuals in a live concert setting.',
+    "The concert features music by Hiroyuki Sawano, composer for Seasons 1, 2, 3 and The Final Season, alongside Kohta Yamamoto, composer for The Final Season. The program brings defining tracks such as at'aek ON taitn, counter・attack-mankind, Apple Seed, and Footsteps of Doom into the concert hall.",
+    'Blending rock, orchestral power, vocal performances, anime footage and original materials, "Attack on Titan" - Beyond the Walls World Tour - The Official Concert is designed to transport audiences into the heart of the Attack on Titan universe.',
+  ],
+  trailerEyebrow: "TRAILER VIDEO",
+  trailerVideoSrc: "/media/aot-trailer.mp4",
+  tourDates: [
+    {
+      date: "05 JUL 2026, 7:30 PM",
+      city: "Melbourne",
+      venue: "Arts Centre Melbourne, Hamer Hall",
+      ticketLabel: "BUY TICKETS",
+      ticketHref:
+        "https://www.artscentremelbourne.com.au/whats-on/2026/contemporary-music/attack-on-titan",
+    },
+    {
+      date: "06 JUL 2026, 7:30 PM",
+      city: "Melbourne",
+      venue: "Arts Centre Melbourne, Hamer Hall",
+      ticketLabel: "BUY TICKETS",
+      ticketHref:
+        "https://www.artscentremelbourne.com.au/whats-on/2026/contemporary-music/attack-on-titan",
+    },
+    {
+      date: "07 JUL 2026, 7:30 PM",
+      city: "Melbourne",
+      venue: "Arts Centre Melbourne, Hamer Hall",
+      ticketLabel: "BUY TICKETS",
+      ticketHref:
+        "https://www.artscentremelbourne.com.au/whats-on/2026/contemporary-music/attack-on-titan",
+    },
+  ],
+  relatedEyebrow: "ALSO PROGRAMMED",
+  relatedTitle: "More from Concert & Theatre.",
+  relatedHref: "/programs/concerts",
+  relatedLinkLabel: "SEE FULL SEASON",
+  relatedEvents: getRelatedConcertEvents("attack-on-titan-world-tour"),
 };
 
 export const eventDetailsBySlug: Record<string, EventDetailData> = {
   [narutoEventDetail.slug]: narutoEventDetail,
+  [attackOnTitanEventDetail.slug]: attackOnTitanEventDetail,
 };

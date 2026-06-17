@@ -421,13 +421,13 @@ export const tourHighlights: TourCardData[] = [
   {
     id: "attack-on-titan-world-tour",
     category: "anime-concert",
-    title: '"Attack on Titan" - Beyond the Walls World Tour',
-    date: "2026-07-16",
+    title: '"Attack on Titan" - Beyond the Walls World Tour - The Official Concert',
+    date: "2026-07-07",
     dateLabel: "Jul 2026",
     cities: ["Melbourne"],
     status: "on-sale",
-    image:
-      "https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?auto=format&fit=crop&w=1200&q=80",
+    image: "/media/aot-poster.jpg",
+    href: "/tours/attack-on-titan-beyond-the-walls-world-tour",
   },
   {
     id: "game-worlds-live",

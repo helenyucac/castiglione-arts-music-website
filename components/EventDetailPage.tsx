@@ -21,6 +21,8 @@ const sectionEyebrowClass =
   "m-0 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased";
 
 export function EventDetailPage({ event }: EventDetailPageProps) {
+  const heroTitleOffsetClass = event.heroTitleOffset ? "lg:mt-14" : "";
+
   return (
     <>
       <Navigation />
@@ -51,7 +53,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                   </p>
                 </div>
                 <h1
-                  className="m-0 w-full max-w-[732.25px] p-0 text-[clamp(44px,6vw,68.25px)] font-medium leading-[1.04] tracking-[-0.02em] text-[#111111] antialiased lg:w-[732.25px] lg:text-[68.25px] lg:leading-[70.98px] lg:tracking-[-1.365px]"
+                  className={`m-0 w-full max-w-[732.25px] p-0 text-[clamp(44px,6vw,68.25px)] font-medium leading-[1.04] tracking-[-0.02em] text-[#111111] antialiased lg:w-[732.25px] lg:text-[68.25px] lg:leading-[70.98px] lg:tracking-[-1.365px] ${heroTitleOffsetClass}`}
                   style={displayStyle}
                 >
                   {event.title}

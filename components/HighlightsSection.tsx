@@ -1,10 +1,11 @@
-import { homeTourHighlights, type TourCardData } from "@/data/tours";
+import { homeTourHighlights, lucidLiveEvents, type TourCardData } from "@/data/tours";
 import { HomeWhatsOnShowcase } from "@/components/HomeWhatsOnShowcase";
 
 const homepageProgramHighlights: TourCardData[] = [
   ...homeTourHighlights.filter(
     (event) => event.category !== "music-festival" && event.category !== "exhibitions",
   ),
+  ...lucidLiveEvents,
   {
     id: "home-sonica-music-festival-2023",
     category: "music-festival",

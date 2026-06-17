@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { TourCardData, TourCategory } from "@/data/tours";
 
-type HomeFilter = "all" | "concert-theatre" | "music-festival" | "touring-exhibition";
+type HomeFilter = "all" | "concert-theatre" | "live-music-festival" | "touring-exhibition";
 
 type HomeCategory = Exclude<HomeFilter, "all">;
 
@@ -19,19 +19,19 @@ const LOAD_MORE_COUNT = 8;
 const homeFilters: { label: string; value: HomeFilter }[] = [
   { label: "All Programs", value: "all" },
   { label: "Concert & Theatre", value: "concert-theatre" },
-  { label: "Music Festival", value: "music-festival" },
+  { label: "Live Music & Festival", value: "live-music-festival" },
   { label: "Touring Exhibition", value: "touring-exhibition" },
 ];
 
 const homeCategoryLabels: Record<HomeCategory, string> = {
   "concert-theatre": "Concert & Theatre",
-  "music-festival": "Music Festival",
+  "live-music-festival": "Live Music & Festival",
   "touring-exhibition": "Touring Exhibition",
 };
 
 const homeCategoryColors: Record<HomeCategory, string> = {
   "concert-theatre": "#c74736",
-  "music-festival": "#3567e8",
+  "live-music-festival": "#3567e8",
   "touring-exhibition": "#3f835c",
 };
 
@@ -44,8 +44,8 @@ function getHomeCategory(category: TourCategory): HomeCategory | null {
     return "concert-theatre";
   }
 
-  if (category === "music-festival") {
-    return "music-festival";
+  if (category === "music-festival" || category === "lucid") {
+    return "live-music-festival";
   }
 
   if (category === "exhibitions") {
@@ -53,6 +53,18 @@ function getHomeCategory(category: TourCategory): HomeCategory | null {
   }
 
   return null;
+}
+
+function getHomeEventLabel(category: TourCategory, homeCategory: HomeCategory) {
+  if (category === "music-festival") {
+    return "Music Festival";
+  }
+
+  if (category === "lucid") {
+    return "Lucid Live";
+  }
+
+  return homeCategoryLabels[homeCategory];
 }
 
 function sortEventsByDateDesc(events: TourCardData[]) {
@@ -149,7 +161,7 @@ export function HomeWhatsOnShowcase({ events }: HomeWhatsOnShowcaseProps) {
                         className="text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[rgba(17,17,17,0.55)] antialiased"
                         style={{ fontFamily: "Inter, sans-serif" }}
                       >
-                        {homeCategoryLabels[homeCategory]}
+                        {getHomeEventLabel(event.category, homeCategory)}
                       </p>
                     </div>
 

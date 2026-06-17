@@ -48,7 +48,7 @@ export default function ProgramExhibitionsPage() {
     <>
       <Navigation />
       <main>
-        <section className="bg-white py-14 sm:py-20 lg:py-24">
+        <section className="bg-[#f5f1ea] py-14 sm:py-20 lg:py-24">
           <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
             <div className="mb-10 border-b border-black pb-8">
               <p

@@ -56,12 +56,14 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                 >
                   {event.title}
                 </h1>
-                <p
-                  className="mt-8 mb-0 w-full max-w-[576px] p-0 text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.75)] antialiased lg:w-[576px]"
-                  style={eyebrowStyle}
-                >
-                  {event.intro}
-                </p>
+                {event.intro ? (
+                  <p
+                    className="mt-8 mb-0 w-full max-w-[576px] p-0 text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.75)] antialiased lg:w-[576px]"
+                    style={eyebrowStyle}
+                  >
+                    {event.intro}
+                  </p>
+                ) : null}
               </div>
 
               <aside className="w-full max-w-[460px] bg-[#FBEDE9] p-8 lg:min-h-[315.5px] lg:w-[460px]">

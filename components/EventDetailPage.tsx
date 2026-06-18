@@ -222,7 +222,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                   {sortedTourDates.map((tourDate, index) => (
                     <article
                       key={`${tourDate.date}-${tourDate.city}`}
-                      className="grid gap-6 py-8 lg:grid-cols-[120px_220px_minmax(0,1fr)_auto] lg:items-start lg:gap-8 lg:pt-0 lg:pb-8"
+                      className="grid gap-6 border-b border-[rgba(17,17,17,0.15)] py-8 last:border-b-0 lg:grid-cols-[120px_220px_minmax(0,1fr)_auto] lg:items-start lg:gap-8 lg:pt-0 lg:pb-8"
                     >
                       <p
                         className="m-0 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased lg:pt-4"
@@ -236,7 +236,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                       >
                         {tourDate.date}
                       </p>
-                      <div className="lg:pt-4">
+                      <div className="lg:self-center">
                         <h3
                           className="m-0 text-[34px] font-medium leading-[38px] tracking-[-0.03em] text-[#111111] antialiased"
                           style={displayStyle}

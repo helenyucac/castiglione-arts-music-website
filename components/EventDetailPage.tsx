@@ -20,8 +20,54 @@ const displayStyle = {
 const sectionEyebrowClass =
   "m-0 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased";
 
+const tourDateMonthIndexes: Record<string, number> = {
+  JAN: 0,
+  FEB: 1,
+  MAR: 2,
+  APR: 3,
+  MAY: 4,
+  JUN: 5,
+  JUL: 6,
+  AUG: 7,
+  SEP: 8,
+  OCT: 9,
+  NOV: 10,
+  DEC: 11,
+};
+
+function getTourDateTimestamp(date: string) {
+  const match = date.match(
+    /^(\d{1,2})\s+([A-Z]{3})\s+(\d{4})(?:,\s*(\d{1,2})(?::(\d{2}))?\s*(AM|PM))?/i,
+  );
+
+  if (!match) {
+    const timestamp = Date.parse(date);
+    return Number.isNaN(timestamp) ? 0 : timestamp;
+  }
+
+  const [, day, month, year, hourRaw, minuteRaw, meridiemRaw] = match;
+  const monthIndex = tourDateMonthIndexes[month.toUpperCase()] ?? 0;
+  let hour = hourRaw ? Number(hourRaw) : 0;
+  const minute = minuteRaw ? Number(minuteRaw) : 0;
+  const meridiem = meridiemRaw?.toUpperCase();
+
+  if (meridiem === "PM" && hour < 12) {
+    hour += 12;
+  }
+
+  if (meridiem === "AM" && hour === 12) {
+    hour = 0;
+  }
+
+  return new Date(Number(year), monthIndex, Number(day), hour, minute).getTime();
+}
+
 export function EventDetailPage({ event }: EventDetailPageProps) {
   const heroTitleOffsetClass = event.heroTitleOffset ? "lg:mt-14" : "";
+  const sortedTourDates = [...event.tourDates].sort(
+    (firstDate, secondDate) =>
+      getTourDateTimestamp(firstDate.date) - getTourDateTimestamp(secondDate.date),
+  );
 
   return (
     <>
@@ -171,46 +217,50 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
               <p className={sectionEyebrowClass} style={eyebrowStyle}>
                 Tour Dates
               </p>
-              <div>
-                <div className="grid border border-[rgba(17,17,17,0.12)] lg:grid-cols-2">
-                  {event.tourDates.map((tourDate, index) => (
+              <div className="w-full max-w-[1200px]">
+                <div className="grid">
+                  {sortedTourDates.map((tourDate, index) => (
                     <article
                       key={`${tourDate.date}-${tourDate.city}`}
-                      className="border-b border-[rgba(17,17,17,0.12)] p-8 last:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0"
+                      className="grid gap-6 border-t border-[rgba(17,17,17,0.15)] py-8 lg:grid-cols-[120px_220px_minmax(0,1fr)_auto] lg:items-start lg:gap-8 lg:border-t-0 lg:pt-0 lg:pb-8"
                     >
                       <p
-                        className="mb-8 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[rgba(17,17,17,0.38)] antialiased"
+                        className="m-0 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased lg:border-t lg:border-[rgba(17,17,17,0.15)] lg:pt-4"
                         style={eyebrowStyle}
                       >
-                        {String(index + 1).padStart(2, "0")}
-                      </p>
-                      <h3
-                        className="m-0 text-[34px] font-medium leading-[38px] tracking-[-0.03em] text-[#111111] antialiased"
-                        style={displayStyle}
-                      >
-                        {tourDate.city}
-                      </h3>
-                      <p
-                        className="mt-2 mb-0 p-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[rgba(17,17,17,0.6)] antialiased"
-                        style={eyebrowStyle}
-                      >
-                        {tourDate.venue}
+                        Show {index + 1}
                       </p>
                       <p
-                        className="mt-10 mb-0 border-t border-[rgba(17,17,17,0.15)] pt-4 pb-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[#d94a28] antialiased"
+                        className="mt-0 mb-0 border-t border-[rgba(17,17,17,0.15)] pt-4 pb-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[#d94a28] antialiased"
                         style={eyebrowStyle}
                       >
                         {tourDate.date}
                       </p>
-                      <a
-                        href={tourDate.ticketHref}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-6 inline-flex items-center justify-center bg-[#111111] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased transition-opacity hover:opacity-80"
-                        style={eyebrowStyle}
-                      >
-                        {tourDate.ticketLabel} →
-                      </a>
+                      <div className="lg:border-t lg:border-[rgba(17,17,17,0.15)] lg:pt-4">
+                        <h3
+                          className="m-0 text-[34px] font-medium leading-[38px] tracking-[-0.03em] text-[#111111] antialiased"
+                          style={displayStyle}
+                        >
+                          {tourDate.city}
+                        </h3>
+                        <p
+                          className="mt-2 mb-0 p-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[rgba(17,17,17,0.6)] antialiased"
+                          style={eyebrowStyle}
+                        >
+                          {tourDate.venue}
+                        </p>
+                      </div>
+                      <div className="lg:flex lg:justify-end lg:border-t lg:border-[rgba(17,17,17,0.15)] lg:pt-4">
+                        <a
+                          href={tourDate.ticketHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center bg-[#111111] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased transition-opacity hover:opacity-80"
+                          style={eyebrowStyle}
+                        >
+                          {tourDate.ticketLabel} →
+                        </a>
+                      </div>
                     </article>
                   ))}
                 </div>

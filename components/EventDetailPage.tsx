@@ -222,21 +222,21 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                   {sortedTourDates.map((tourDate, index) => (
                     <article
                       key={`${tourDate.date}-${tourDate.city}`}
-                      className="grid gap-6 border-t border-[rgba(17,17,17,0.15)] py-8 lg:grid-cols-[120px_220px_minmax(0,1fr)_auto] lg:items-start lg:gap-8 lg:border-t-0 lg:pt-0 lg:pb-8"
+                      className="grid gap-6 py-8 lg:grid-cols-[120px_220px_minmax(0,1fr)_auto] lg:items-start lg:gap-8 lg:pt-0 lg:pb-8"
                     >
                       <p
-                        className="m-0 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased lg:border-t lg:border-[rgba(17,17,17,0.15)] lg:pt-4"
+                        className="m-0 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased lg:pt-4"
                         style={eyebrowStyle}
                       >
                         Show {index + 1}
                       </p>
                       <p
-                        className="mt-0 mb-0 border-t border-[rgba(17,17,17,0.15)] pt-4 pb-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[#d94a28] antialiased"
+                        className="mt-0 mb-0 pt-4 pb-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[#d94a28] antialiased"
                         style={eyebrowStyle}
                       >
                         {tourDate.date}
                       </p>
-                      <div className="lg:border-t lg:border-[rgba(17,17,17,0.15)] lg:pt-4">
+                      <div className="lg:pt-4">
                         <h3
                           className="m-0 text-[34px] font-medium leading-[38px] tracking-[-0.03em] text-[#111111] antialiased"
                           style={displayStyle}
@@ -250,7 +250,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                           {tourDate.venue}
                         </p>
                       </div>
-                      <div className="lg:flex lg:justify-end lg:border-t lg:border-[rgba(17,17,17,0.15)] lg:pt-4">
+                      <div className="lg:flex lg:justify-end lg:pt-4">
                         <a
                           href={tourDate.ticketHref}
                           target="_blank"

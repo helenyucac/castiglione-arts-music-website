@@ -29,12 +29,12 @@ export function Navigation() {
           aria-label="Castiglione home"
         >
           <Image
-            src="/media/logo/castiglione-logo.jpg"
+            src="/media/logo/castiglione-logo.png"
             alt="Castiglione"
             width={260}
             height={60}
             priority
-            className="h-auto w-[170px] object-contain sm:w-[200px] lg:w-[240px]"
+            className="h-auto w-[130px] object-contain sm:w-[150px] lg:w-[170px]"
           />
         </Link>
 

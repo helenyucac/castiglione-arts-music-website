@@ -1,60 +1,74 @@
-import { ArrowUpRight } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+
+const storyStats = [
+  { value: "11", label: "Years", accent: true },
+  { value: "15+", label: "Cities" },
+  { value: "120+", label: "Productions" },
+];
 
 export function WhoWeAre() {
   return (
-    <section id="about" className="bg-white py-14 sm:py-20 lg:py-24">
-      <div className="mx-auto grid w-full max-w-[1760px] gap-8 px-4 sm:px-6 lg:grid-cols-[0.78fr_1.42fr] lg:px-10">
-        <div className="flex flex-col justify-between">
-          <div>
-            <h2 className="max-w-3xl text-[clamp(2.25rem,4.8vw,4.8rem)] font-black uppercase leading-[0.92] tracking-normal">
-              Who We Are
-            </h2>
-          </div>
-          <Link
-            href="/partnerships"
-            className="mt-8 inline-flex w-fit items-center gap-2 border border-black bg-black px-5 py-4 text-sm font-black uppercase text-white transition-colors hover:bg-[#ffcf33] hover:text-black"
+    <section id="about" className="bg-white py-20 sm:py-24 lg:py-32">
+      <div className="mx-auto grid w-full max-w-[1760px] gap-12 px-4 sm:px-6 lg:grid-cols-[0.35fr_0.65fr] lg:gap-20 lg:px-10 xl:gap-28">
+        <div>
+          <p
+            className="mb-7 text-xs font-semibold uppercase tracking-[0.36em] text-[#d24a37]"
+            style={{ fontFamily: "Inter, sans-serif" }}
           >
-            Partner with us
-            <ArrowUpRight aria-hidden="true" size={18} />
-          </Link>
+            OUR STORY
+          </p>
+          <h2
+            className="m-0 text-left text-[54.6px] font-medium leading-[57.33px] tracking-[-1.092px] text-[#111111] antialiased"
+            style={{
+              fontFamily:
+                'Fraunces, Canela, "Canela Deck", "Cormorant Garamond", serif',
+            }}
+          >
+            <span className="block">Cultural</span>
+            <span className="block">Journeys.</span>
+          </h2>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 xl:gap-14">
-          <div className="space-y-5 text-lg leading-8">
-            <p>
-              Since its founding in Melbourne in 2015, Castiglione has developed
-              touring productions for audiences across Australia and beyond,
-              connecting global artists, beloved screen worlds, and major concert
-              venues.
-            </p>
-            <p>
-              Our work spans live orchestral anime and gaming concerts, master
-              classical concerts, chamber music, and cross-cultural projects.
-              Every tour is shaped through artist relationships, venue planning,
-              production logistics, and a deep respect for the audience journey.
-            </p>
-            <p id="lucid-live">
-              Through Lucid Live, we also support contemporary Asian pop and
-              adjacent live music projects with the same touring discipline and
-              audience-first care.
-            </p>
-          </div>
+        <div className="pt-1 lg:pt-2">
+          <p
+            className="mb-14 max-w-5xl text-left text-[17px] font-normal leading-[29.75px] text-[rgba(17,17,17,0.75)] antialiased"
+            style={{ fontFamily: "Inter, sans-serif" }}
+          >
+            Since 2015, Castiglione Arts & Culture has connected artists,
+            audiences and ideas across the Asia-Pacific. Through concerts,
+            festivals and exhibitions, we create experiences that travel beyond
+            borders and resonate within local communities.
+          </p>
 
-          <div className="relative min-h-[360px] overflow-hidden border border-black bg-black lg:min-h-full">
-            <Image
-              src="https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?auto=format&fit=crop&w=1000&q=80"
-              alt="Concert crowd under stage lights"
-              fill
-              sizes="(min-width: 1024px) 35vw, 100vw"
-              className="object-cover opacity-90"
-            />
-            <div className="absolute inset-x-0 bottom-0 bg-[#ffcf33] p-5 text-black">
-              <p className="text-sm font-black uppercase tracking-normal">
-                Touring production from Melbourne to major stages across the region.
-              </p>
+          <div className="border-t border-[rgba(17,17,17,0.08)] pt-10 sm:pt-12">
+            <div className="grid gap-10 sm:grid-cols-3 sm:gap-8">
+              {storyStats.map((stat) => (
+                <div key={stat.label}>
+                  <p
+                    className={`m-0 text-[clamp(3rem,5vw,4.4rem)] font-medium leading-none tracking-[-0.04em] antialiased ${
+                      stat.accent ? "text-[#d24a37]" : "text-[rgba(17,17,17,0.28)]"
+                    }`}
+                    style={{ fontFamily: 'Fraunces, "Cormorant Garamond", serif' }}
+                  >
+                    {stat.value}
+                  </p>
+                  <p
+                    className="mt-2 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[rgba(17,17,17,0.45)] antialiased"
+                    style={{ fontFamily: "Inter, sans-serif" }}
+                  >
+                    {stat.label}
+                  </p>
+                </div>
+              ))}
             </div>
+
+            <Link
+              href="/about"
+              className="mt-12 inline-flex border-b border-[#111111] pb-2 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[#111111] antialiased transition-opacity duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] hover:opacity-70"
+              style={{ fontFamily: "Inter, sans-serif" }}
+            >
+              Read Our Story →
+            </Link>
           </div>
         </div>
       </div>

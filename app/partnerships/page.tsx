@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
 import { PartnershipForm } from "@/components/PartnershipForm";
+import { PartnershipTabs } from "@/components/PartnershipTabs";
 
 const partnershipsDescription =
-  "We collaborate with venues, presenters, rights holders, producers, sponsors, and cultural organisations to transform creative concepts into touring productions and cultural experiences that connect with audiences.";
+  "We collaborate with artists, rights holders, brands and cultural institutions to create extraordinary experiences across the Asia-Pacific.";
 
 export const metadata: Metadata = {
   title: "Partnerships | Castiglione",
@@ -19,39 +20,55 @@ export const metadata: Metadata = {
   },
 };
 
+const interFont = {
+  fontFamily: "Inter, sans-serif",
+};
+
+const displayFont = {
+  fontFamily: 'Fraunces, "Cormorant Garamond", serif',
+};
+
 export default function PartnershipsPage() {
   return (
     <>
       <Navigation />
-      <main>
-        <section className="bg-white py-14 sm:py-20 lg:py-24">
-          <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
-            <div className="pb-10">
-              <h1 className="max-w-5xl text-[clamp(2.6rem,6vw,5.6rem)] font-black uppercase leading-[0.92] tracking-normal">
-                Partnerships
+      <main className="bg-[#f5f1ea] text-[#111111]">
+        <section className="border-t border-[rgba(17,17,17,0.06)] pb-20 pt-20 sm:pb-24 sm:pt-24 lg:pb-28 lg:pt-28">
+          <div className="mx-auto grid w-full max-w-[1540px] gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-10 lg:px-10">
+            <div className="lg:col-span-7">
+              <p
+                className="m-0 mb-7 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[rgb(217,74,40)] antialiased"
+                style={interFont}
+              >
+                Partnership
+              </p>
+              <h1
+                className="m-0 max-w-[738.914px] p-0 text-[81.9px] font-medium leading-[83.538px] tracking-[-1.638px] text-[rgb(17,17,17)] antialiased"
+                style={displayFont}
+              >
+                <span className="block">Let&apos;s build</span>
+                <span className="flex flex-wrap items-baseline gap-x-[0.26em]">
+                  <span className="italic">experiences</span>
+                  <span>together.</span>
+                </span>
               </h1>
-              <p className="mt-8 max-w-4xl text-xl font-black leading-8 tracking-normal sm:text-2xl lg:text-3xl lg:leading-10">
-                Where great ideas become unforgettable live experiences.
-              </p>
-              <p className="mt-5 max-w-5xl text-lg leading-8 sm:text-xl">
-                We collaborate with venues, presenters, rights holders,
-                producers, sponsors, and cultural organisations to transform
-                creative concepts into touring productions and cultural
-                experiences that connect with audiences.
-              </p>
-              <div className="mt-10 border-t border-black" aria-hidden="true" />
             </div>
 
-            <div className="py-12 lg:py-16">
-              <section className="max-w-5xl">
-                <h2 className="mb-8 text-xl font-black uppercase leading-none tracking-normal sm:text-2xl">
-                  Partnership Enquiry
-                </h2>
-                <PartnershipForm />
-              </section>
+            <div className="lg:col-span-4 lg:col-start-9 lg:pt-12">
+              <p
+                className="m-0 max-w-[420px] text-[15px] font-normal leading-[24.375px] text-[rgba(17,17,17,0.75)] antialiased"
+                style={interFont}
+              >
+                We collaborate with artists, rights holders, brands and cultural
+                institutions to create extraordinary experiences across the
+                Asia-Pacific.
+              </p>
             </div>
           </div>
         </section>
+
+        <PartnershipTabs />
+        <PartnershipForm />
       </main>
       <Footer />
     </>

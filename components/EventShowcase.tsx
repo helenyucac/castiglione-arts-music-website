@@ -5,12 +5,16 @@ import { ArrowUpRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import { homeTourFilters, type TourCardData, type TourFilter } from "@/data/tours";
 import { TourCard } from "@/components/TourCard";
+import { WhatsOnEventCard } from "@/components/WhatsOnEventCard";
+
+type EventShowcaseFilterValue = TourFilter | "all";
 
 type EventShowcaseProps = {
   events: TourCardData[];
-  filters?: { label: string; value: TourFilter }[];
+  filters?: { label: string; value: EventShowcaseFilterValue }[];
   limit?: number;
   showViewMore?: boolean;
+  cardVariant?: "tour" | "whats-on";
 };
 
 function sortEventsByDateDesc(events: TourCardData[]) {
@@ -19,7 +23,11 @@ function sortEventsByDateDesc(events: TourCardData[]) {
   );
 }
 
-function filterEvents(events: TourCardData[], filter: TourFilter) {
+function filterEvents(events: TourCardData[], filter: EventShowcaseFilterValue) {
+  if (filter === "all") {
+    return events;
+  }
+
   if (filter === "whats-on") {
     return events.filter((event) => event.status === "on-sale" || event.status === "upcoming");
   }
@@ -33,6 +41,7 @@ function filterEvents(events: TourCardData[], filter: TourFilter) {
     filter === "gaming-concert" ||
     filter === "classical-recital" ||
     filter === "exhibitions" ||
+    filter === "music-festival" ||
     filter === "lucid"
   ) {
     return events.filter((event) => event.category === filter);
@@ -46,8 +55,11 @@ export function EventShowcase({
   filters = homeTourFilters,
   limit,
   showViewMore = false,
+  cardVariant = "tour",
 }: EventShowcaseProps) {
-  const [activeFilter, setActiveFilter] = useState<TourFilter | null>(null);
+  const [activeFilter, setActiveFilter] = useState<EventShowcaseFilterValue | null>(
+    filters[0]?.value === "all" ? "all" : null,
+  );
 
   const visibleEvents = useMemo(() => {
     const filteredEvents = activeFilter ? filterEvents(events, activeFilter) : events;
@@ -81,9 +93,19 @@ export function EventShowcase({
       </div>
 
       {visibleEvents.length > 0 ? (
-        <div className="highlights-grid">
+        <div
+          className={
+            cardVariant === "whats-on"
+              ? "grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-4"
+              : "highlights-grid"
+          }
+        >
           {visibleEvents.map((tour) => (
-            <TourCard key={tour.id} tour={tour} />
+            cardVariant === "whats-on" ? (
+              <WhatsOnEventCard key={tour.id} event={tour} />
+            ) : (
+              <TourCard key={tour.id} tour={tour} />
+            )
           ))}
         </div>
       ) : (

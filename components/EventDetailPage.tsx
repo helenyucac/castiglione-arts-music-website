@@ -64,6 +64,7 @@ function getTourDateTimestamp(date: string) {
 
 export function EventDetailPage({ event }: EventDetailPageProps) {
   const heroTitleOffsetClass = event.heroTitleOffset ? "lg:mt-14" : "";
+  const galleryImages = event.galleryImages ?? [];
   const sortedTourDates = [...event.tourDates].sort(
     (firstDate, secondDate) =>
       getTourDateTimestamp(firstDate.date) - getTourDateTimestamp(secondDate.date),
@@ -189,24 +190,26 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
           </div>
         </section>
 
-        <section className="border-t border-[rgba(17,17,17,0.08)] bg-white py-16 sm:py-20 lg:py-24">
-          <div className="mx-auto grid w-full max-w-[1600px] gap-10 px-4 sm:px-6 lg:grid-cols-[0.22fr_1fr] lg:gap-20 lg:px-10">
-            <p className={sectionEyebrowClass} style={eyebrowStyle}>
-              {event.trailerEyebrow}
-            </p>
-            <div className="w-full max-w-[1200px]">
-              <video
-                controls
-                playsInline
-                preload="metadata"
-                className="aspect-video w-full bg-black"
-                aria-label={`${event.title} trailer video`}
-              >
-                <source src={event.trailerVideoSrc} type="video/mp4" />
-              </video>
+        {event.trailerVideoSrc ? (
+          <section className="border-t border-[rgba(17,17,17,0.08)] bg-white py-16 sm:py-20 lg:py-24">
+            <div className="mx-auto grid w-full max-w-[1600px] gap-10 px-4 sm:px-6 lg:grid-cols-[0.22fr_1fr] lg:gap-20 lg:px-10">
+              <p className={sectionEyebrowClass} style={eyebrowStyle}>
+                {event.trailerEyebrow ?? "TRAILER VIDEO"}
+              </p>
+              <div className="w-full max-w-[1200px]">
+                <video
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="aspect-video w-full bg-black"
+                  aria-label={`${event.title} trailer video`}
+                >
+                  <source src={event.trailerVideoSrc} type="video/mp4" />
+                </video>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : null}
 
         <section
           id="tour-dates"
@@ -268,6 +271,46 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
             </div>
           </div>
         </section>
+
+        {galleryImages.length > 0 ? (
+          <section className="border-t border-[rgba(17,17,17,0.08)] bg-white py-16 sm:py-20 lg:py-24">
+            <div className="mx-auto grid w-full max-w-[1600px] gap-10 px-4 sm:px-6 lg:grid-cols-[0.22fr_1fr] lg:gap-20 lg:px-10">
+              <p className={sectionEyebrowClass} style={eyebrowStyle}>
+                Photo Gallery
+              </p>
+              <div className="grid w-full max-w-[1200px] gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+                {galleryImages.map((image, index) => (
+                  <figure
+                    key={`${image.src}-${index}`}
+                    className={index === 0 ? "sm:col-span-2 lg:col-span-2" : undefined}
+                  >
+                    <div className="relative aspect-[4/5] overflow-hidden bg-[#e7e0d6]">
+                      <Image
+                        src={image.src}
+                        alt={image.alt}
+                        fill
+                        sizes={
+                          index === 0
+                            ? "(min-width: 1024px) 760px, (min-width: 640px) 92vw, 100vw"
+                            : "(min-width: 1024px) 380px, (min-width: 640px) 46vw, 100vw"
+                        }
+                        className="object-cover"
+                      />
+                    </div>
+                    {image.caption ? (
+                      <figcaption
+                        className="mt-3 text-[12px] font-normal leading-[18px] text-[rgba(17,17,17,0.62)] antialiased"
+                        style={eyebrowStyle}
+                      >
+                        {image.caption}
+                      </figcaption>
+                    ) : null}
+                  </figure>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         <section className="border-t border-[rgba(17,17,17,0.08)] bg-[#f5f1ea] py-16 sm:py-20 lg:py-24">
           <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-10">

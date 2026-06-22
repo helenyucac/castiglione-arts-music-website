@@ -11,6 +11,7 @@ export type EventTourDate = {
 export type EventGalleryImage = {
   src: string;
   alt: string;
+  caption?: string;
 };
 
 export type EventDetailData = {
@@ -30,8 +31,9 @@ export type EventDetailData = {
   secondaryCtaHref: string;
   aboutEyebrow: string;
   description: string[];
-  trailerEyebrow: string;
-  trailerVideoSrc: string;
+  trailerEyebrow?: string;
+  trailerVideoSrc?: string;
+  galleryImages?: EventGalleryImage[];
   tourDates: EventTourDate[];
   relatedEyebrow: string;
   relatedTitle: string;

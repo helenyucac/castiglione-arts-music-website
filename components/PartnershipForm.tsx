@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useRef, useState } from "react";
 import { formLabels } from "@/data/siteSettings";
 
 const interFont = {
@@ -28,6 +28,7 @@ export function PartnershipForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [selectedType, setSelectedType] = useState(enquiryTypes[0]);
   const [fileName, setFileName] = useState<string>(formLabels.noFileChosen);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -35,8 +36,23 @@ export function PartnershipForm() {
   }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-    const selectedFile = event.target.files?.[0];
-    setFileName(selectedFile?.name ?? formLabels.noFileChosen);
+    const selectedFiles = Array.from(event.target.files ?? []);
+
+    if (selectedFiles.length === 0) {
+      setFileName(formLabels.noFileChosen);
+      return;
+    }
+
+    if (selectedFiles.length === 1) {
+      setFileName(selectedFiles[0].name);
+      return;
+    }
+
+    setFileName(`${selectedFiles.length} ${formLabels.filesSelected}`);
+  }
+
+  function handleFileButtonClick() {
+    fileInputRef.current?.click();
   }
 
   return (
@@ -167,13 +183,14 @@ export function PartnershipForm() {
               Supporting Materials
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-4">
-              <label
-                htmlFor="partner-materials"
+              <button
+                type="button"
+                onClick={handleFileButtonClick}
                 className="inline-flex min-h-10 cursor-pointer items-center border border-[rgba(17,17,17,0.22)] bg-white px-5 text-[13px] font-semibold text-[#111111] transition-colors hover:border-[#111111]"
                 style={interFont}
               >
                 {formLabels.fileUploadButton}
-              </label>
+              </button>
               <span
                 className="text-[13px] font-normal leading-[21px] text-[rgba(17,17,17,0.58)]"
                 style={interFont}
@@ -181,10 +198,12 @@ export function PartnershipForm() {
                 {fileName}
               </span>
               <input
+                ref={fileInputRef}
                 id="partner-materials"
                 name="materials"
                 type="file"
-                className="sr-only"
+                hidden
+                multiple
                 onChange={handleFileChange}
               />
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useRef, useState } from "react";
+import { useRef, useState, type CSSProperties, type ChangeEvent, type FormEvent } from "react";
 import { formLabels } from "@/data/siteSettings";
 
 const interFont = {
@@ -16,6 +16,20 @@ const inputClass =
 
 const labelClass =
   "m-0 block text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[rgba(17,17,17,0.48)] antialiased";
+
+const fileUploadStatusStyle: CSSProperties = {
+  fontFamily: "Inter, Arial, sans-serif",
+  fontSize: "13px",
+  fontWeight: 400,
+  lineHeight: "21px",
+  letterSpacing: 0,
+  textTransform: "none",
+  fontVariantLigatures: "normal",
+  fontFeatureSettings: '"liga" 1, "calt" 1',
+  color: "rgba(17, 17, 17, 0.58)",
+  display: "inline-flex",
+  alignItems: "center",
+};
 
 const enquiryTypes = [
   "Artists & Producers",
@@ -191,10 +205,7 @@ export function PartnershipForm() {
               >
                 {formLabels.fileUploadButton}
               </button>
-              <span
-                className="text-[13px] font-normal leading-[21px] text-[rgba(17,17,17,0.58)]"
-                style={interFont}
-              >
+              <span className="fileUploadStatus" style={fileUploadStatusStyle}>
                 {fileName}
               </span>
               <input

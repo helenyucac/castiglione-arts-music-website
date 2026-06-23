@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useState } from "react";
+import { formLabels } from "@/data/siteSettings";
 
 const interFont = {
   fontFamily: "Inter, sans-serif",
@@ -26,7 +27,7 @@ const enquiryTypes = [
 export function PartnershipForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [selectedType, setSelectedType] = useState(enquiryTypes[0]);
-  const [fileName, setFileName] = useState("未選擇任何檔案");
+  const [fileName, setFileName] = useState<string>(formLabels.noFileChosen);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -35,7 +36,7 @@ export function PartnershipForm() {
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const selectedFile = event.target.files?.[0];
-    setFileName(selectedFile?.name ?? "未選擇任何檔案");
+    setFileName(selectedFile?.name ?? formLabels.noFileChosen);
   }
 
   return (
@@ -171,7 +172,7 @@ export function PartnershipForm() {
                 className="inline-flex min-h-10 cursor-pointer items-center border border-[rgba(17,17,17,0.22)] bg-white px-5 text-[13px] font-semibold text-[#111111] transition-colors hover:border-[#111111]"
                 style={interFont}
               >
-                選擇檔案
+                {formLabels.fileUploadButton}
               </label>
               <span
                 className="text-[13px] font-normal leading-[20px] text-[rgba(17,17,17,0.58)]"

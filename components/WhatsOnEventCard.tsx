@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { CSSProperties } from "react";
+import { BRAND_COLORS } from "@/data/siteSettings";
 import type { TourCardData, TourCategory } from "@/data/tours";
 
 export type WhatsOnDisplayCategory =
@@ -23,6 +25,11 @@ const categoryColors: Record<WhatsOnDisplayCategory, string> = {
   "live-music-festival": "#3567e8",
   "touring-exhibition": "#3f835c",
 };
+
+const eventTitleStyle = {
+  fontFamily: "Inter, sans-serif",
+  "--event-title-hover-color": BRAND_COLORS.red,
+} as CSSProperties & Record<"--event-title-hover-color", string>;
 
 function getDisplayCategory(category: TourCategory): WhatsOnDisplayCategory | null {
   if (
@@ -96,8 +103,8 @@ export function WhatsOnEventCard({ event, displayCategory }: WhatsOnEventCardPro
           </div>
 
           <h3
-            className="text-[20px] font-medium leading-[27.5px] tracking-[-0.1px] text-[#111111] antialiased transition-colors duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:text-[rgba(17,17,17,0.65)]"
-            style={{ fontFamily: "Inter, sans-serif" }}
+            className="text-[20px] font-medium leading-[27.5px] tracking-[-0.1px] text-[#111111] antialiased transition-colors duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:text-[var(--event-title-hover-color)]"
+            style={eventTitleStyle}
           >
             {event.title}
           </h3>

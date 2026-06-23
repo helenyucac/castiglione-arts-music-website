@@ -1,4 +1,4 @@
-import { SocialLinks } from "@/components/SocialLinks";
+import { siteSettings } from "@/data/siteSettings";
 
 type HeroVideoProps = {
   videoSrc?: string;
@@ -50,9 +50,17 @@ export function HeroVideo({ videoSrc, posterSrc }: HeroVideoProps) {
             <span className="block whitespace-nowrap">Curating Global</span>
             <span className="block whitespace-nowrap">Culture and Artistry.</span>
           </h1>
-          <div className="mt-8 flex flex-col items-start gap-5">
-            <SocialLinks className="justify-start" variant="hero" />
-          </div>
+          <p
+            className="mt-8 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[3.08px] text-[rgba(255,255,255,0.9)] antialiased"
+            style={{ fontFamily: "Inter, sans-serif" }}
+          >
+            {siteSettings.heroStats.map((stat, index) => (
+              <span key={stat}>
+                {index > 0 ? <span aria-hidden="true"> · </span> : null}
+                {stat}
+              </span>
+            ))}
+          </p>
         </div>
       </div>
     </section>

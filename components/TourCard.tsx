@@ -1,6 +1,8 @@
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import type { CSSProperties } from "react";
+import { BRAND_COLORS } from "@/data/siteSettings";
 import {
   tourCategoryColors,
   tourCategoryLabels,
@@ -20,6 +22,10 @@ function hexToRgba(hex: string, alpha: number) {
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
 
+const eventTitleHoverStyle = {
+  "--event-title-hover-color": BRAND_COLORS.red,
+} as CSSProperties & Record<"--event-title-hover-color", string>;
+
 export function TourCard({ tour }: TourCardProps) {
   const accentColor = tourCategoryColors[tour.category];
   const softenedAccentColor = hexToRgba(accentColor, 0.7);
@@ -27,7 +33,10 @@ export function TourCard({ tour }: TourCardProps) {
 
   return (
     <Link href={tour.href ?? "#"} className="block h-full" aria-label={tour.title}>
-      <article className="tour-card group flex h-full flex-col overflow-hidden border border-black bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(17,17,17,0.12)]">
+      <article
+        className="tour-card group flex h-full flex-col overflow-hidden border border-black bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(17,17,17,0.12)]"
+        style={eventTitleHoverStyle}
+      >
         <div className="tour-card-media relative shrink-0 overflow-hidden bg-black">
           <Image
             src={tour.image}
@@ -49,7 +58,7 @@ export function TourCard({ tour }: TourCardProps) {
             <p className="tour-card-category break-words font-black uppercase tracking-normal opacity-80">
               {tourCategoryLabels[tour.category]}
             </p>
-            <h3 className="tour-card-title mt-3 break-words font-black uppercase leading-none tracking-normal sm:mt-5">
+            <h3 className="tour-card-title mt-3 break-words font-black uppercase leading-none tracking-normal transition-colors duration-300 group-hover:text-[var(--event-title-hover-color)] sm:mt-5">
               {tour.title}
             </h3>
           </div>

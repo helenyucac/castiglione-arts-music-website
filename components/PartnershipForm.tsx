@@ -175,7 +175,7 @@ export function PartnershipForm() {
                 {formLabels.fileUploadButton}
               </label>
               <span
-                className="text-[13px] font-normal leading-[20px] text-[rgba(17,17,17,0.58)]"
+                className="text-[13px] font-normal leading-[21px] text-[rgba(17,17,17,0.58)]"
                 style={interFont}
               >
                 {fileName}

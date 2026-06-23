@@ -1,4 +1,4 @@
-import { siteSettings } from "@/data/siteSettings";
+import { BRAND_COLORS, siteSettings } from "@/data/siteSettings";
 
 type HeroVideoProps = {
   videoSrc?: string;
@@ -55,9 +55,10 @@ export function HeroVideo({ videoSrc, posterSrc }: HeroVideoProps) {
             style={{ fontFamily: "Inter, sans-serif" }}
           >
             {siteSettings.heroStats.map((stat, index) => (
-              <span key={stat}>
+              <span key={`${stat.value}-${stat.label}`}>
                 {index > 0 ? <span aria-hidden="true"> · </span> : null}
-                {stat}
+                <span style={{ color: BRAND_COLORS.red }}>{stat.value}</span>{" "}
+                <span>{stat.label}</span>
               </span>
             ))}
           </p>

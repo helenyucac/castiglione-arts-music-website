@@ -3,7 +3,20 @@ export const BRAND_COLORS = {
 } as const;
 
 export const siteSettings = {
-  heroStats: ["11 YEARS", "15+ CITIES", "120+ PRODUCTIONS"],
+  heroStats: [
+    {
+      value: "11",
+      label: "YEARS",
+    },
+    {
+      value: "15+",
+      label: "CITIES",
+    },
+    {
+      value: "120+",
+      label: "PRODUCTIONS",
+    },
+  ],
 } as const;
 
 export const formLabels = {

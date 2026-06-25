@@ -2,28 +2,20 @@ import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { BRAND_COLORS } from "@/data/siteSettings";
-import type { TourCardData, TourCategory } from "@/data/tours";
+import {
+  getTourProgram,
+  tourProgramColors,
+  tourProgramLabels,
+  type TourCardData,
+  type TourCategory,
+  type TourProgram,
+} from "@/data/tours";
 
-export type WhatsOnDisplayCategory =
-  | "concert-theatre"
-  | "live-music-festival"
-  | "touring-exhibition";
+export type WhatsOnDisplayCategory = TourProgram;
 
 type WhatsOnEventCardProps = {
   event: TourCardData;
   displayCategory?: WhatsOnDisplayCategory;
-};
-
-const categoryLabels: Record<WhatsOnDisplayCategory, string> = {
-  "concert-theatre": "Concert & Theatre",
-  "live-music-festival": "Live Music & Festival",
-  "touring-exhibition": "Touring Exhibition",
-};
-
-const categoryColors: Record<WhatsOnDisplayCategory, string> = {
-  "concert-theatre": "#c74736",
-  "live-music-festival": "#3567e8",
-  "touring-exhibition": "#3f835c",
 };
 
 const eventTitleStyle = {
@@ -32,35 +24,11 @@ const eventTitleStyle = {
 } as CSSProperties & Record<"--event-title-hover-color", string>;
 
 function getDisplayCategory(category: TourCategory): WhatsOnDisplayCategory | null {
-  if (
-    category === "anime-concert" ||
-    category === "gaming-concert" ||
-    category === "classical-recital"
-  ) {
-    return "concert-theatre";
-  }
-
-  if (category === "music-festival" || category === "lucid") {
-    return "live-music-festival";
-  }
-
-  if (category === "exhibitions") {
-    return "touring-exhibition";
-  }
-
-  return null;
+  return getTourProgram(category);
 }
 
-function getEventLabel(category: TourCategory, displayCategory: WhatsOnDisplayCategory) {
-  if (category === "music-festival") {
-    return "Music Festival";
-  }
-
-  if (category === "lucid") {
-    return "Lucid Live";
-  }
-
-  return categoryLabels[displayCategory];
+function getEventLabel(displayCategory: WhatsOnDisplayCategory) {
+  return tourProgramLabels[displayCategory];
 }
 
 export function getWhatsOnDisplayCategory(category: TourCategory) {
@@ -92,13 +60,13 @@ export function WhatsOnEventCard({ event, displayCategory }: WhatsOnEventCardPro
             <span
               aria-hidden="true"
               className="size-2 shrink-0"
-              style={{ backgroundColor: categoryColors[resolvedCategory] }}
+              style={{ backgroundColor: tourProgramColors[resolvedCategory] }}
             />
             <p
               className="text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[rgba(17,17,17,0.55)] antialiased"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
-              {getEventLabel(event.category, resolvedCategory)}
+              {getEventLabel(resolvedCategory)}
             </p>
           </div>
 

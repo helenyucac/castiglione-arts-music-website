@@ -4,8 +4,10 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { BRAND_COLORS } from "@/data/siteSettings";
 import {
+  getTourProgram,
   tourCategoryColors,
   tourCategoryLabels,
+  tourProgramLabels,
   type TourCardData,
 } from "@/data/tours";
 
@@ -28,6 +30,8 @@ const eventTitleHoverStyle = {
 
 export function TourCard({ tour }: TourCardProps) {
   const accentColor = tourCategoryColors[tour.category];
+  const program = getTourProgram(tour.category);
+  const categoryLabel = program ? tourProgramLabels[program] : tourCategoryLabels[tour.category];
   const softenedAccentColor = hexToRgba(accentColor, 0.7);
   const details = `${tour.dateLabel} / ${tour.cities.join(", ")}`;
 
@@ -56,7 +60,7 @@ export function TourCard({ tour }: TourCardProps) {
         >
           <div>
             <p className="tour-card-category break-words font-black uppercase tracking-normal opacity-80">
-              {tourCategoryLabels[tour.category]}
+              {categoryLabel}
             </p>
             <h3 className="tour-card-title mt-3 break-words font-black uppercase leading-none tracking-normal transition-colors duration-300 group-hover:text-[var(--event-title-hover-color)] sm:mt-5">
               {tour.title}

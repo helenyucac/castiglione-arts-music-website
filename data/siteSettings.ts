@@ -22,4 +22,5 @@ export const siteSettings = {
 export const formLabels = {
   fileUploadButton: "CHOOSE FILES",
   noFileChosen: "No file chosen",
+  filesSelected: "files selected",
 } as const;

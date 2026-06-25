@@ -18,14 +18,14 @@ const concertEvents = whatsOnConcertEvents.filter((event) => {
 });
 
 export const metadata: Metadata = {
-  title: "Program - Concerts | Castiglione",
+  title: "Program - Concert | Castiglione",
   description: concertsDescription,
   openGraph: {
-    title: "Program - Concerts | Castiglione",
+    title: "Program - Concert | Castiglione",
     description: concertsDescription,
   },
   twitter: {
-    title: "Program - Concerts | Castiglione",
+    title: "Program - Concert | Castiglione",
     description: concertsDescription,
   },
 };
@@ -42,7 +42,7 @@ export default function ProgramConcertsPage() {
                 className="mb-5 text-[11px] font-black uppercase leading-none tracking-[2.2px] text-[rgba(17,17,17,0.55)] antialiased"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                PROGRAM / CONCERTS
+                PROGRAM / CONCERT
               </p>
               <p className="max-w-none text-lg font-black leading-8 tracking-normal sm:text-xl lg:max-w-7xl lg:text-xl lg:leading-8 xl:text-2xl xl:leading-9">
                 Explore concert programs across anime concerts, gaming concerts,

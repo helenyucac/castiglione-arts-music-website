@@ -10,7 +10,7 @@ const musicFestivalDescription =
 const liveMusicFilters: { label: string; value: "all" | TourFilter }[] = [
   { label: "View All", value: "all" },
   { label: "Lucid Live", value: "lucid" },
-  { label: "Music Festival", value: "music-festival" },
+  { label: "Music Festivals", value: "music-festival" },
 ];
 
 export const metadata: Metadata = {

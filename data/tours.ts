@@ -72,10 +72,10 @@ export const tourCategoryColors: Record<TourCategory, string> = {
 };
 
 export const tourProgramLabels: Record<TourProgram, string> = {
-  "anime-gaming-concerts": "Anime and Gaming Concerts",
-  "classical-concert-theatre": "Classical Concert & Theatre",
-  "live-music-festival": "Live Music & Festival",
-  "touring-exhibition": "Touring Exhibition",
+  "anime-gaming-concerts": "Anime & Gaming Concerts",
+  "classical-concert-theatre": "Classical Concerts & Theatre",
+  "live-music-festival": "Live Music & Festivals",
+  "touring-exhibition": "Touring Exhibitions",
 };
 
 export const tourProgramColors: Record<TourProgram, string> = {
@@ -87,15 +87,15 @@ export const tourProgramColors: Record<TourProgram, string> = {
 
 export const whatsOnProgramFilters: { label: string; value: "all" | TourProgram }[] = [
   { label: "All Programs", value: "all" },
-  { label: "Anime and Gaming Concerts", value: "anime-gaming-concerts" },
-  { label: "Classical Concert & Theatre", value: "classical-concert-theatre" },
-  { label: "Live Music & Festival", value: "live-music-festival" },
-  { label: "Touring Exhibition", value: "touring-exhibition" },
+  { label: "Anime & Gaming Concerts", value: "anime-gaming-concerts" },
+  { label: "Classical Concerts & Theatre", value: "classical-concert-theatre" },
+  { label: "Live Music & Festivals", value: "live-music-festival" },
+  { label: "Touring Exhibitions", value: "touring-exhibition" },
 ];
 
 export const concertProgramFilters: { label: string; value: TourProgram }[] = [
-  { label: "Anime and Gaming Concerts", value: "anime-gaming-concerts" },
-  { label: "Classical Concert & Theatre", value: "classical-concert-theatre" },
+  { label: "Anime & Gaming Concerts", value: "anime-gaming-concerts" },
+  { label: "Classical Concerts & Theatre", value: "classical-concert-theatre" },
 ];
 
 export function getTourProgram(category: TourCategory): TourProgram | null {

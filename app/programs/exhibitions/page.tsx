@@ -8,14 +8,14 @@ const exhibitionsDescription =
   "Explore Castiglione exhibition programs across touring cultural exhibitions and immersive experiences.";
 
 export const metadata: Metadata = {
-  title: "Program - Exhibitions | Castiglione",
+  title: "Program - Exhibition | Castiglione",
   description: exhibitionsDescription,
   openGraph: {
-    title: "Program - Exhibitions | Castiglione",
+    title: "Program - Exhibition | Castiglione",
     description: exhibitionsDescription,
   },
   twitter: {
-    title: "Program - Exhibitions | Castiglione",
+    title: "Program - Exhibition | Castiglione",
     description: exhibitionsDescription,
   },
 };
@@ -32,7 +32,7 @@ export default function ProgramExhibitionsPage() {
                 className="mb-5 text-[11px] font-black uppercase leading-none tracking-[2.2px] text-[rgba(17,17,17,0.55)] antialiased"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                PROGRAM / EXHIBITIONS
+                PROGRAM / EXHIBITION
               </p>
               <p className="max-w-none text-lg font-black leading-8 tracking-normal sm:text-xl lg:max-w-7xl lg:text-xl lg:leading-8 xl:text-2xl xl:leading-9">
                 Explore touring exhibitions and immersive cultural experiences

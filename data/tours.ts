@@ -93,7 +93,8 @@ export const whatsOnProgramFilters: { label: string; value: "all" | TourProgram 
   { label: "Touring Exhibitions", value: "touring-exhibition" },
 ];
 
-export const concertProgramFilters: { label: string; value: TourProgram }[] = [
+export const concertProgramFilters: { label: string; value: "all" | TourProgram }[] = [
+  { label: "View All", value: "all" },
   { label: "Anime & Gaming Concerts", value: "anime-gaming-concerts" },
   { label: "Classical Concerts & Theatre", value: "classical-concert-theatre" },
 ];

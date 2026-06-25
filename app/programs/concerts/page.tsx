@@ -2,27 +2,20 @@ import type { Metadata } from "next";
 import { EventShowcase } from "@/components/EventShowcase";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
-import { whatsOnConcertEvents, type TourCategory } from "@/data/tours";
+import {
+  concertProgramFilters,
+  getTourProgram,
+  whatsOnConcertEvents,
+} from "@/data/tours";
 
 const concertsDescription =
   "Explore Castiglione concert programs across anime concerts, gaming concerts, and classical concerts.";
 
-const concertCategories: TourCategory[] = [
-  "anime-concert",
-  "gaming-concert",
-  "classical-recital",
-];
+const concertEvents = whatsOnConcertEvents.filter((event) => {
+  const program = getTourProgram(event.category);
 
-const concertEvents = whatsOnConcertEvents.filter((event) =>
-  concertCategories.includes(event.category),
-);
-
-const concertFilters: { label: string; value: "all" | TourCategory }[] = [
-  { label: "All", value: "all" },
-  { label: "Anime Concerts", value: "anime-concert" },
-  { label: "Gaming Concerts", value: "gaming-concert" },
-  { label: "Classical Concerts", value: "classical-recital" },
-];
+  return program === "anime-gaming-concerts" || program === "classical-concert-theatre";
+});
 
 export const metadata: Metadata = {
   title: "Program - Concerts | Castiglione",
@@ -57,7 +50,11 @@ export default function ProgramConcertsPage() {
               </p>
             </div>
 
-            <EventShowcase events={concertEvents} filters={concertFilters} cardVariant="whats-on" />
+            <EventShowcase
+              events={concertEvents}
+              filters={concertProgramFilters}
+              cardVariant="whats-on"
+            />
           </div>
         </section>
       </main>

@@ -3,11 +3,17 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { useMemo, useState } from "react";
-import { homeTourFilters, type TourCardData, type TourFilter } from "@/data/tours";
+import {
+  getTourProgram,
+  homeTourFilters,
+  type TourCardData,
+  type TourFilter,
+  type TourProgram,
+} from "@/data/tours";
 import { TourCard } from "@/components/TourCard";
 import { WhatsOnEventCard } from "@/components/WhatsOnEventCard";
 
-type EventShowcaseFilterValue = TourFilter | "all";
+type EventShowcaseFilterValue = TourFilter | TourProgram | "all";
 
 type EventShowcaseProps = {
   events: TourCardData[];
@@ -45,6 +51,15 @@ function filterEvents(events: TourCardData[], filter: EventShowcaseFilterValue) 
     filter === "lucid"
   ) {
     return events.filter((event) => event.category === filter);
+  }
+
+  if (
+    filter === "anime-gaming-concerts" ||
+    filter === "classical-concert-theatre" ||
+    filter === "live-music-festival" ||
+    filter === "touring-exhibition"
+  ) {
+    return events.filter((event) => getTourProgram(event.category) === filter);
   }
 
   return events;

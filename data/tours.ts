@@ -5,6 +5,11 @@ export type TourCategory =
   | "exhibitions"
   | "music-festival"
   | "lucid";
+export type TourProgram =
+  | "anime-gaming-concerts"
+  | "classical-concert-theatre"
+  | "live-music-festival"
+  | "touring-exhibition";
 export type TourStatus = "on-sale" | "upcoming" | "past";
 
 export type TourTicketLink = {
@@ -65,6 +70,53 @@ export const tourCategoryColors: Record<TourCategory, string> = {
   "music-festival": "#D7CEC4",
   lucid: "#BEC2B8",
 };
+
+export const tourProgramLabels: Record<TourProgram, string> = {
+  "anime-gaming-concerts": "Anime and Gaming Concerts",
+  "classical-concert-theatre": "Classical Concert & Theatre",
+  "live-music-festival": "Live Music & Festival",
+  "touring-exhibition": "Touring Exhibition",
+};
+
+export const tourProgramColors: Record<TourProgram, string> = {
+  "anime-gaming-concerts": "#c74736",
+  "classical-concert-theatre": "#8b6f5f",
+  "live-music-festival": "#3567e8",
+  "touring-exhibition": "#3f835c",
+};
+
+export const whatsOnProgramFilters: { label: string; value: "all" | TourProgram }[] = [
+  { label: "All Programs", value: "all" },
+  { label: "Anime and Gaming Concerts", value: "anime-gaming-concerts" },
+  { label: "Classical Concert & Theatre", value: "classical-concert-theatre" },
+  { label: "Live Music & Festival", value: "live-music-festival" },
+  { label: "Touring Exhibition", value: "touring-exhibition" },
+];
+
+export const concertProgramFilters: { label: string; value: TourProgram }[] = [
+  { label: "Anime and Gaming Concerts", value: "anime-gaming-concerts" },
+  { label: "Classical Concert & Theatre", value: "classical-concert-theatre" },
+];
+
+export function getTourProgram(category: TourCategory): TourProgram | null {
+  if (category === "anime-concert" || category === "gaming-concert") {
+    return "anime-gaming-concerts";
+  }
+
+  if (category === "classical-recital") {
+    return "classical-concert-theatre";
+  }
+
+  if (category === "music-festival" || category === "lucid") {
+    return "live-music-festival";
+  }
+
+  if (category === "exhibitions") {
+    return "touring-exhibition";
+  }
+
+  return null;
+}
 
 const lucidLiveImage = "/media/naruto-hero.jpg";
 

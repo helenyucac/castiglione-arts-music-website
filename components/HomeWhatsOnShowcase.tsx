@@ -1,12 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { TourCardData, TourCategory } from "@/data/tours";
+import {
+  getTourProgram,
+  whatsOnProgramFilters,
+  type TourCardData,
+  type TourProgram,
+} from "@/data/tours";
 import { getWhatsOnDisplayCategory, WhatsOnEventCard } from "@/components/WhatsOnEventCard";
 
-type HomeFilter = "all" | "concert-theatre" | "live-music-festival" | "touring-exhibition";
-
-type HomeCategory = Exclude<HomeFilter, "all">;
+type HomeFilter = "all" | TourProgram;
 
 type HomeWhatsOnShowcaseProps = {
   events: TourCardData[];
@@ -14,33 +17,6 @@ type HomeWhatsOnShowcaseProps = {
 
 const INITIAL_VISIBLE_COUNT = 12;
 const LOAD_MORE_COUNT = 8;
-
-const homeFilters: { label: string; value: HomeFilter }[] = [
-  { label: "All Programs", value: "all" },
-  { label: "Concert & Theatre", value: "concert-theatre" },
-  { label: "Live Music & Festival", value: "live-music-festival" },
-  { label: "Touring Exhibition", value: "touring-exhibition" },
-];
-
-function getHomeCategory(category: TourCategory): HomeCategory | null {
-  if (
-    category === "anime-concert" ||
-    category === "gaming-concert" ||
-    category === "classical-recital"
-  ) {
-    return "concert-theatre";
-  }
-
-  if (category === "music-festival" || category === "lucid") {
-    return "live-music-festival";
-  }
-
-  if (category === "exhibitions") {
-    return "touring-exhibition";
-  }
-
-  return null;
-}
 
 function sortEventsByDateDesc(events: TourCardData[]) {
   return [...events].sort(
@@ -53,7 +29,7 @@ function filterEvents(events: TourCardData[], activeFilter: HomeFilter) {
     return events;
   }
 
-  return events.filter((event) => getHomeCategory(event.category) === activeFilter);
+  return events.filter((event) => getTourProgram(event.category) === activeFilter);
 }
 
 export function HomeWhatsOnShowcase({ events }: HomeWhatsOnShowcaseProps) {
@@ -77,7 +53,7 @@ export function HomeWhatsOnShowcase({ events }: HomeWhatsOnShowcaseProps) {
           >
             VIEW:
           </p>
-          {homeFilters.map((filter) => {
+          {whatsOnProgramFilters.map((filter) => {
             const isActive = filter.value === activeFilter;
 
             return (

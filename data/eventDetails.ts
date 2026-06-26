@@ -47,10 +47,32 @@ export type EventDetailData = {
   relatedEvents: TourCardData[];
 };
 
+const activeRelatedStatuses = new Set(["on-sale", "upcoming"]);
+
+function getLocalDateTimestamp(date: string) {
+  const isoDate = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (isoDate) {
+    const [, year, month, day] = isoDate;
+    return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
+  }
+
+  const timestamp = Date.parse(date);
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function getTodayTimestamp() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today.getTime();
+}
+
 const getRelatedProgramEvents = (program: TourProgram, excludedId: string) =>
   homepageWhatsOnEvents
     .filter((event) => event.id !== excludedId)
     .filter((event) => getTourProgram(event.category) === program)
+    .filter((event) => activeRelatedStatuses.has(event.status))
+    .filter((event) => getLocalDateTimestamp(event.date) >= getTodayTimestamp())
     .slice(0, 3);
 
 export const narutoEventDetail: EventDetailData = {

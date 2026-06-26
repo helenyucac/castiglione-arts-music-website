@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { EventShowcase } from "@/components/EventShowcase";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
-import { liveMusicFestivalProgramEvents, type TourFilter } from "@/data/tours";
+import { type TourFilter } from "@/data/tours";
+import { getLiveMusicFestivalProgramEvents } from "@/lib/wix/listingData";
 
 const musicFestivalDescription =
   "Explore Castiglione music festival programs across live music, Asian pop, and contemporary cultural experiences.";
@@ -26,7 +27,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ProgramMusicFestivalPage() {
+export default async function ProgramMusicFestivalPage() {
+  const events = await getLiveMusicFestivalProgramEvents();
+
   return (
     <>
       <Navigation />
@@ -47,7 +50,7 @@ export default function ProgramMusicFestivalPage() {
             </div>
 
             <EventShowcase
-              events={liveMusicFestivalProgramEvents}
+              events={events}
               filters={liveMusicFilters}
               cardVariant="whats-on"
             />

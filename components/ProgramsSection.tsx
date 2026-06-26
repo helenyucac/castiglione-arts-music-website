@@ -1,43 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getHomepageProgramCards } from "@/lib/wix/listingData";
 
-const programs = [
-  {
-    number: "01",
-    title: "Concert",
-    description:
-      "Classical recitals, contemporary dance, anime symphonies and gaming concerts — produced for the Asia-Pacific's most prestigious stages.",
-    image:
-      "https://images.unsplash.com/photo-1518834107812-67b0b7c58434?auto=format&fit=crop&w=1400&q=80",
-    imageAlt: "Dancer performing on a stage under warm lights",
-    href: "/programs/concerts",
-    badgeColor: "#d92525",
-  },
-  {
-    number: "02",
-    title: "Live Music & Festival",
-    description:
-      "Curating boutique festivals for Asian Pop and underground electronic scenes — including OddShapes and Sonica.",
-    image:
-      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1400&q=80",
-    imageAlt: "Outdoor music festival crowd at dusk",
-    href: "/programs/music-festival",
-    badgeColor: "#2563eb",
-  },
-  {
-    number: "03",
-    title: "Exhibition",
-    description:
-      "Large-scale immersive IP exhibitions and multimedia experiences brought to flagship cultural venues across the region.",
-    image:
-      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1400&q=80",
-    imageAlt: "Immersive exhibition with colorful light projections",
-    href: "/programs/exhibitions",
-    badgeColor: "#1f7a4d",
-  },
-];
+export async function ProgramsSection() {
+  const programs = await getHomepageProgramCards();
 
-export function ProgramsSection() {
   return (
     <section id="programs" className="bg-white py-16 sm:py-20 lg:py-24">
       <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">

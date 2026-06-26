@@ -300,6 +300,7 @@ export function normalizeEvent(item: WixCollectionItem): NormalizedEvent {
   const category = normalizeCategory(program, categoryLabel);
   const slug = stringValue(fields.slug, "MANUAL");
   const ticketPrimaryUrl = optionalString(fields.ticketPrimaryUrl);
+  const image = optionalString(fields.cardImage) ?? optionalString(fields.heroImage) ?? "";
 
   return {
     id: idOf(fields),
@@ -309,7 +310,7 @@ export function normalizeEvent(item: WixCollectionItem): NormalizedEvent {
     dateLabel: stringValue(fields.eventCardDate ?? fields.displayDate),
     cities: splitList(fields.eventCardCities),
     status: normalizeStatus(fields.status),
-    image: stringValue(fields.cardImage ?? fields.heroImage),
+    image,
     href: slug && slug !== "MANUAL" ? `/tours/${slug}` : undefined,
     ticketLinks: ticketPrimaryUrl
       ? [

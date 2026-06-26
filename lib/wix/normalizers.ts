@@ -351,7 +351,7 @@ export function normalizeTourDate(item: WixCollectionItem): NormalizedTourDate {
     ticketLabel: stringValue(fields.ticketLabel, "BUY TICKETS"),
     ticketHref: stringValue(fields.ticketUrl, "#"),
     ticketStatus: optionalString(fields.ticketStatus),
-    order: numberValue(fields.order),
+    order: numberValue(fields.order, Number.MAX_SAFE_INTEGER),
     isVisible: booleanValue(fields.isVisible, true),
   };
 }

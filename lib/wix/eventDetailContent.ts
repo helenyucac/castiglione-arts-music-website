@@ -3,8 +3,9 @@ import { eventDetailsBySlug, type EventDetailData } from "@/data/eventDetails";
 import { isWixConfigured, queryWixCollection, visibleFilter } from "@/lib/wix/client";
 import { getTourProgram, tourProgramLabels } from "@/data/tours";
 import { getWixFields } from "@/lib/wix/normalizers";
+import { getTourDates } from "@/lib/wix/eventDetails";
 import type { TourProgram, TourStatus } from "@/data/tours";
-import type { WixRecordFields } from "@/lib/wix/types";
+import type { NormalizedTourDate, WixCollectionItem, WixRecordFields } from "@/lib/wix/types";
 
 function stringValue(value: unknown, fallback = "") {
   if (typeof value === "string") {
@@ -26,6 +27,18 @@ function optionalString(value: unknown) {
   }
 
   return text;
+}
+
+function hasRequiredTourDateFields(tourDate: NormalizedTourDate) {
+  const ticketHref = optionalString(tourDate.ticketHref);
+
+  return Boolean(
+    optionalString(tourDate.date) &&
+      optionalString(tourDate.city) &&
+      optionalString(tourDate.venue) &&
+      ticketHref &&
+      ticketHref !== "#",
+  );
 }
 
 function splitRichText(value: unknown) {
@@ -178,13 +191,41 @@ function mergeCmsEventDetail(
   };
 }
 
-async function getWixEventFieldsBySlug(slug: string) {
+function getWixItemId(item: WixCollectionItem) {
+  const fields = getWixFields(item);
+
+  return (
+    optionalString(item._id) ??
+    optionalString(item.id) ??
+    optionalString(fields._id) ??
+    optionalString(fields.id)
+  );
+}
+
+async function getWixEventBySlug(slug: string) {
   const items = await queryWixCollection("Events", {
     filter: visibleFilter({ slug }),
     limit: 1,
   });
 
-  return items[0] ? getWixFields(items[0]) : null;
+  if (!items[0]) {
+    return null;
+  }
+
+  return {
+    id: getWixItemId(items[0]),
+    fields: getWixFields(items[0]),
+  };
+}
+
+async function getWixTourDatesForEvent(slug: string, eventId?: string) {
+  const tourDates = await getTourDates(slug, eventId ? [eventId] : []);
+
+  if (tourDates.length === 0 || !tourDates.every(hasRequiredTourDateFields)) {
+    return null;
+  }
+
+  return tourDates;
 }
 
 export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
@@ -195,15 +236,17 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
   }
 
   try {
-    const fields = await getWixEventFieldsBySlug(slug);
+    const cmsEvent = await getWixEventBySlug(slug);
+    const cmsTourDates = await getWixTourDatesForEvent(slug, cmsEvent?.id);
 
-    if (!fields) {
+    if (!cmsEvent && !cmsTourDates) {
       return fallback;
     }
 
-    const status = normalizeStatus(fields.status);
+    const fields = cmsEvent?.fields ?? {};
 
-    return mergeCmsEventDetail(
+    const status = normalizeStatus(fields.status);
+    const mergedEvent = mergeCmsEventDetail(
       {
         ...fields,
         status: status ?? fields.status,
@@ -211,6 +254,11 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
       },
       fallback,
     );
+
+    return {
+      ...mergedEvent,
+      tourDates: cmsTourDates ?? fallback.tourDates,
+    };
   } catch {
     return fallback;
   }

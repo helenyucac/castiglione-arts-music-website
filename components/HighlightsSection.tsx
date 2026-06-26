@@ -1,7 +1,9 @@
-import { homepageWhatsOnEvents } from "@/data/tours";
 import { HomeWhatsOnShowcase } from "@/components/HomeWhatsOnShowcase";
+import { getHomepageWhatsOnEvents } from "@/lib/wix/listingData";
 
-export function HighlightsSection() {
+export async function HighlightsSection() {
+  const events = await getHomepageWhatsOnEvents();
+
   return (
     <section id="whats-on" className="bg-[#f4f0ea] py-16 sm:py-20 lg:py-24">
       <div className="mx-auto w-full max-w-[1760px] px-4 sm:px-6 lg:px-10">
@@ -23,7 +25,7 @@ export function HighlightsSection() {
           </h2>
         </div>
 
-        <HomeWhatsOnShowcase events={homepageWhatsOnEvents} />
+        <HomeWhatsOnShowcase events={events} />
       </div>
     </section>
   );

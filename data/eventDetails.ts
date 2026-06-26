@@ -1,4 +1,9 @@
-import { whatsOnConcertEvents, type TourCardData } from "@/data/tours";
+import {
+  getTourProgram,
+  homepageWhatsOnEvents,
+  type TourCardData,
+  type TourProgram,
+} from "@/data/tours";
 
 export type EventTourDate = {
   date: string;
@@ -42,15 +47,32 @@ export type EventDetailData = {
   relatedEvents: TourCardData[];
 };
 
-const getRelatedConcertEvents = (excludedId: string) =>
-  whatsOnConcertEvents
+const activeRelatedStatuses = new Set(["on-sale", "upcoming"]);
+
+function getLocalDateTimestamp(date: string) {
+  const isoDate = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (isoDate) {
+    const [, year, month, day] = isoDate;
+    return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
+  }
+
+  const timestamp = Date.parse(date);
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function getTodayTimestamp() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today.getTime();
+}
+
+const getRelatedProgramEvents = (program: TourProgram, excludedId: string) =>
+  homepageWhatsOnEvents
     .filter((event) => event.id !== excludedId)
-    .filter(
-      (event) =>
-        event.category === "anime-concert" ||
-        event.category === "gaming-concert" ||
-        event.category === "classical-recital",
-    )
+    .filter((event) => getTourProgram(event.category) === program)
+    .filter((event) => activeRelatedStatuses.has(event.status))
+    .filter((event) => getLocalDateTimestamp(event.date) >= getTodayTimestamp())
     .slice(0, 3);
 
 export const narutoEventDetail: EventDetailData = {
@@ -99,7 +121,7 @@ export const narutoEventDetail: EventDetailData = {
   relatedTitle: "More from Anime & Gaming Concerts.",
   relatedHref: "/programs/concerts",
   relatedLinkLabel: "SEE FULL SEASON",
-  relatedEvents: getRelatedConcertEvents("naruto-symphonic-experience"),
+  relatedEvents: getRelatedProgramEvents("anime-gaming-concerts", "naruto-symphonic-experience"),
 };
 
 export const attackOnTitanEventDetail: EventDetailData = {
@@ -155,7 +177,7 @@ export const attackOnTitanEventDetail: EventDetailData = {
   relatedTitle: "More from Anime & Gaming Concerts.",
   relatedHref: "/programs/concerts",
   relatedLinkLabel: "SEE FULL SEASON",
-  relatedEvents: getRelatedConcertEvents("attack-on-titan-world-tour"),
+  relatedEvents: getRelatedProgramEvents("anime-gaming-concerts", "attack-on-titan-world-tour"),
 };
 
 export const eventDetailsBySlug: Record<string, EventDetailData> = {

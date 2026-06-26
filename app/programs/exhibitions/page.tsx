@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
 import { WhatsOnEventCard } from "@/components/WhatsOnEventCard";
-import { touringExhibitionProgramEvents } from "@/data/tours";
+import { getTouringExhibitionProgramEvents } from "@/lib/wix/listingData";
 
 const exhibitionsDescription =
   "Explore Castiglione exhibition programs across touring cultural exhibitions and immersive experiences.";
@@ -20,7 +20,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ProgramExhibitionsPage() {
+export default async function ProgramExhibitionsPage() {
+  const events = await getTouringExhibitionProgramEvents();
+
   return (
     <>
       <Navigation />
@@ -41,7 +43,7 @@ export default function ProgramExhibitionsPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
-              {touringExhibitionProgramEvents.map((event) => (
+              {events.map((event) => (
                 <WhatsOnEventCard key={event.id} event={event} />
               ))}
             </div>

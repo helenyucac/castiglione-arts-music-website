@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { EventShowcase } from "@/components/EventShowcase";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
-import { tourHighlights, tourTypeFilters } from "@/data/tours";
+import { tourTypeFilters } from "@/data/tours";
+import { getToursArchiveEvents } from "@/lib/wix/listingData";
 
 const toursDescription =
   "Explore Castiglione touring archive and current listings across anime concerts, gaming concerts, exhibitions, Lucid Live projects, and classical concert productions.";
@@ -20,7 +21,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ToursPage() {
+export default async function ToursPage() {
+  const events = await getToursArchiveEvents();
+
   return (
     <>
       <Navigation />
@@ -35,7 +38,7 @@ export default function ToursPage() {
               </p>
             </div>
 
-            <EventShowcase events={tourHighlights} filters={tourTypeFilters} />
+            <EventShowcase events={events} filters={tourTypeFilters} />
           </div>
         </section>
       </main>

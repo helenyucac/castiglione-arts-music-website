@@ -1,34 +1,44 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./site.css";
+import {
+  designSettingsToCssVariables,
+  getResolvedDesignSettings,
+  getResolvedSiteSettings,
+} from "@/lib/wix/globalConfig";
 
-export const metadata: Metadata = {
-  title: "Castiglione",
-  description:
-    "Castiglione is an Australia-based touring production company for anime concerts, gaming concerts, classical concerts, exhibitions, Lucid Live projects, and cultural live experiences.",
-  openGraph: {
-    title: "Castiglione",
-    description:
-      "Castiglione is an Australia-based touring production company for anime concerts, gaming concerts, classical concerts, exhibitions, Lucid Live projects, and cultural live experiences.",
-    siteName: "Castiglione",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Castiglione",
-    description:
-      "Castiglione is an Australia-based touring production company for anime concerts, gaming concerts, classical concerts, exhibitions, Lucid Live projects, and cultural live experiences.",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const siteSettings = await getResolvedSiteSettings();
+  const title = siteSettings.defaultSeoTitle ?? siteSettings.siteName;
+  const description = siteSettings.defaultSeoDescription;
 
-export default function RootLayout({
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      siteName: siteSettings.siteName,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const designSettings = await getResolvedDesignSettings();
+
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body style={designSettingsToCssVariables(designSettings)}>{children}</body>
     </html>
   );
 }

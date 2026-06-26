@@ -2,20 +2,11 @@ import type { Metadata } from "next";
 import { EventShowcase } from "@/components/EventShowcase";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
-import {
-  concertProgramFilters,
-  getTourProgram,
-  whatsOnConcertEvents,
-} from "@/data/tours";
+import { concertProgramFilters } from "@/data/tours";
+import { getConcertProgramEvents } from "@/lib/wix/listingData";
 
 const concertsDescription =
   "Explore Castiglione concert programs across anime concerts, gaming concerts, and classical concerts.";
-
-const concertEvents = whatsOnConcertEvents.filter((event) => {
-  const program = getTourProgram(event.category);
-
-  return program === "anime-gaming-concerts" || program === "classical-concert-theatre";
-});
 
 export const metadata: Metadata = {
   title: "Program - Concert | Castiglione",
@@ -30,7 +21,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ProgramConcertsPage() {
+export default async function ProgramConcertsPage() {
+  const concertEvents = await getConcertProgramEvents();
+
   return (
     <>
       <Navigation />

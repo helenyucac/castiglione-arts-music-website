@@ -1,4 +1,9 @@
-import { whatsOnConcertEvents, type TourCardData } from "@/data/tours";
+import {
+  getTourProgram,
+  homepageWhatsOnEvents,
+  type TourCardData,
+  type TourProgram,
+} from "@/data/tours";
 
 export type EventTourDate = {
   date: string;
@@ -42,15 +47,10 @@ export type EventDetailData = {
   relatedEvents: TourCardData[];
 };
 
-const getRelatedConcertEvents = (excludedId: string) =>
-  whatsOnConcertEvents
+const getRelatedProgramEvents = (program: TourProgram, excludedId: string) =>
+  homepageWhatsOnEvents
     .filter((event) => event.id !== excludedId)
-    .filter(
-      (event) =>
-        event.category === "anime-concert" ||
-        event.category === "gaming-concert" ||
-        event.category === "classical-recital",
-    )
+    .filter((event) => getTourProgram(event.category) === program)
     .slice(0, 3);
 
 export const narutoEventDetail: EventDetailData = {
@@ -99,7 +99,7 @@ export const narutoEventDetail: EventDetailData = {
   relatedTitle: "More from Anime & Gaming Concerts.",
   relatedHref: "/programs/concerts",
   relatedLinkLabel: "SEE FULL SEASON",
-  relatedEvents: getRelatedConcertEvents("naruto-symphonic-experience"),
+  relatedEvents: getRelatedProgramEvents("anime-gaming-concerts", "naruto-symphonic-experience"),
 };
 
 export const attackOnTitanEventDetail: EventDetailData = {
@@ -155,7 +155,7 @@ export const attackOnTitanEventDetail: EventDetailData = {
   relatedTitle: "More from Anime & Gaming Concerts.",
   relatedHref: "/programs/concerts",
   relatedLinkLabel: "SEE FULL SEASON",
-  relatedEvents: getRelatedConcertEvents("attack-on-titan-world-tour"),
+  relatedEvents: getRelatedProgramEvents("anime-gaming-concerts", "attack-on-titan-world-tour"),
 };
 
 export const eventDetailsBySlug: Record<string, EventDetailData> = {

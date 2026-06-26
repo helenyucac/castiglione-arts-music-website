@@ -21,6 +21,8 @@ export type EventGalleryImage = {
 
 export type EventDetailData = {
   slug: string;
+  seoTitle?: string;
+  seoDescription?: string;
   breadcrumb: string[];
   categoryLabel: string;
   title: string;

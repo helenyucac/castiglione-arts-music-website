@@ -6,7 +6,8 @@ import {
   normalizeTourDate,
   sortByOrder,
 } from "@/lib/wix/normalizers";
-import type { NormalizedTourDate, WixRecordFields } from "@/lib/wix/types";
+import { getVenues } from "@/lib/wix/venues";
+import type { NormalizedTourDate, NormalizedVenue, WixRecordFields } from "@/lib/wix/types";
 
 const tourDateMonthIndexes: Record<string, number> = {
   JAN: 0,
@@ -76,6 +77,8 @@ function getReferenceCandidates(value: unknown): string[] {
     record.id,
     record.slug,
     record.title,
+    record.name,
+    record.venueName,
     record.event,
     record.data,
     record.fieldData,
@@ -115,6 +118,81 @@ function sortByOrderThenUploadOrder<T extends { order: number }>(items: T[]) {
     .map(({ item }) => item);
 }
 
+function normalizeLookupKey(value: string) {
+  return value.trim().toLowerCase();
+}
+
+function getVenueLookupKeys(venue: NormalizedVenue) {
+  return [venue.id, venue.venueName]
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+function buildVenueIndex(venues: NormalizedVenue[]) {
+  const venueIndex = new Map<string, NormalizedVenue>();
+
+  for (const venue of venues) {
+    if (!venue.isVisible || !venue.venueName.trim()) {
+      continue;
+    }
+
+    for (const key of getVenueLookupKeys(venue)) {
+      venueIndex.set(normalizeLookupKey(key), venue);
+    }
+  }
+
+  return venueIndex;
+}
+
+function findVenueMatch(
+  fields: WixRecordFields,
+  tourDate: NormalizedTourDate,
+  venueIndex: Map<string, NormalizedVenue>,
+) {
+  const venueCandidates = [
+    ...getReferenceCandidates(fields.venue),
+    ...getReferenceCandidates(fields.venueId),
+    ...getReferenceCandidates(fields.venueRef),
+    ...getReferenceCandidates(fields.venueName),
+    tourDate.venue,
+  ];
+
+  for (const candidate of venueCandidates) {
+    const venue = venueIndex.get(normalizeLookupKey(candidate));
+
+    if (venue?.venueName.trim()) {
+      return venue;
+    }
+  }
+
+  return null;
+}
+
+function resolveTourDateVenue(
+  fields: WixRecordFields,
+  tourDate: NormalizedTourDate,
+  venueIndex: Map<string, NormalizedVenue>,
+): NormalizedTourDate {
+  const venue = findVenueMatch(fields, tourDate, venueIndex);
+
+  if (!venue) {
+    return tourDate;
+  }
+
+  return {
+    ...tourDate,
+    venue: venue.venueName,
+    venueDetails: {
+      venueName: venue.venueName,
+      city: venue.city,
+      country: venue.country,
+      address: venue.address,
+      website: venue.website,
+      mapUrl: venue.mapUrl,
+    },
+  };
+}
+
 export async function getTourDates(eventIdOrSlug: string, alternateEventIds: string[] = []) {
   if (!isWixConfigured()) {
     return [];
@@ -134,13 +212,17 @@ export async function getTourDates(eventIdOrSlug: string, alternateEventIds: str
     sort: sortAsc("order"),
     limit: 1000,
   });
+  const venueIndex = buildVenueIndex(await getVenues());
 
   const matchingTourDates = items
     .filter((item) => {
       const fields = getWixFields(item);
       return hasMatchingEventReference(fields, eventIds);
     })
-    .map(normalizeTourDate)
+    .map((item) => {
+      const fields = getWixFields(item);
+      return resolveTourDateVenue(fields, normalizeTourDate(item), venueIndex);
+    })
     .filter((tourDate) => tourDate.isVisible);
 
   return sortTourDatesByOrderThenDate(matchingTourDates);

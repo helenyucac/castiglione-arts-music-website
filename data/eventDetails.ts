@@ -9,8 +9,18 @@ export type EventTourDate = {
   date: string;
   city: string;
   venue: string;
+  venueDetails?: EventVenue;
   ticketLabel: string;
   ticketHref: string;
+};
+
+export type EventVenue = {
+  venueName: string;
+  city?: string;
+  country?: string;
+  address?: string;
+  website?: string;
+  mapUrl?: string;
 };
 
 export type EventGalleryImage = {

@@ -5,6 +5,7 @@ export async function getVenues() {
   const items = await queryWixCollection("Venues", {
     filter: visibleFilter(),
     sort: [{ fieldName: "venueName", order: "ASC" }],
+    limit: 1000,
   });
 
   return items.map(normalizeVenue).sort((first, second) =>

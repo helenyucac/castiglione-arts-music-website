@@ -131,13 +131,35 @@ export async function getTourDates(eventIdOrSlug: string, alternateEventIds: str
   return sortTourDatesByOrderThenDate(matchingTourDates);
 }
 
-export async function getEventVideos(eventIdOrSlug: string) {
+export async function getEventVideos(eventIdOrSlug: string, alternateEventIds: string[] = []) {
+  if (!isWixConfigured()) {
+    return [];
+  }
+
+  const eventIds = new Set(
+    [eventIdOrSlug, ...alternateEventIds]
+      .map((candidate) => candidate.trim())
+      .filter(Boolean),
+  );
+
+  if (eventIds.size === 0) {
+    return [];
+  }
+
   const items = await queryWixCollection("EventVideos", {
-    filter: visibleFilter({ event: eventIdOrSlug }),
     sort: sortAsc("order"),
+    limit: 1000,
   });
 
-  return sortByOrder(items.map(normalizeEventVideo));
+  const matchingVideos = items
+    .filter((item) => {
+      const fields = getWixFields(item);
+      return hasMatchingEventReference(fields, eventIds);
+    })
+    .map(normalizeEventVideo)
+    .filter((video) => video.isVisible);
+
+  return sortByOrder(matchingVideos);
 }
 
 export async function getEventGallery(eventIdOrSlug: string) {

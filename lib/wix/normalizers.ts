@@ -83,6 +83,39 @@ function optionalString(value: unknown) {
   return text;
 }
 
+function optionalMediaUrl(value: unknown): string | undefined {
+  const text = optionalString(value);
+
+  if (text) {
+    return text;
+  }
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const record = value as WixRecordFields;
+  const mediaSources = [
+    record.url,
+    record.src,
+    record.fileUrl,
+    record.videoUrl,
+    record.mediaUrl,
+    record.downloadUrl,
+    record.uri,
+  ];
+
+  for (const source of mediaSources) {
+    const sourceUrl = optionalMediaUrl(source);
+
+    if (sourceUrl) {
+      return sourceUrl;
+    }
+  }
+
+  return undefined;
+}
+
 function numberValue(value: unknown, fallback = 0) {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
@@ -363,9 +396,9 @@ export function normalizeEventVideo(item: WixCollectionItem): NormalizedEventVid
     id: idOf(fields),
     event: stringValue(fields.event),
     title: stringValue(fields.title, "TRAILER VIDEO"),
-    src: optionalString(fields.videoFile),
-    videoUrl: optionalString(fields.videoUrl),
-    posterImage: optionalString(fields.posterImage),
+    src: optionalMediaUrl(fields.videoFile),
+    videoUrl: optionalMediaUrl(fields.videoUrl),
+    posterImage: optionalMediaUrl(fields.posterImage),
     videoType: optionalString(fields.videoType),
     caption: optionalString(fields.caption),
     order: numberValue(fields.order),

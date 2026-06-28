@@ -4,10 +4,12 @@ import { isWixConfigured, queryWixCollection, visibleFilter } from "@/lib/wix/cl
 import { getTourProgram, tourProgramLabels } from "@/data/tours";
 import { getWixFields } from "@/lib/wix/normalizers";
 import { getEventGallery, getEventVideos, getTourDates } from "@/lib/wix/eventDetails";
+import { getPartnersByEvent } from "@/lib/wix/partners";
 import type { TourProgram, TourStatus } from "@/data/tours";
 import type {
   NormalizedEventGalleryImage,
   NormalizedEventVideo,
+  NormalizedPartner,
   NormalizedTourDate,
   WixCollectionItem,
   WixRecordFields,
@@ -57,6 +59,10 @@ function hasRequiredEventVideoFields(video: NormalizedEventVideo) {
 
 function hasRequiredGalleryImageFields(image: NormalizedEventGalleryImage) {
   return Boolean(optionalString(image.src) && optionalString(image.alt));
+}
+
+function hasRequiredPartnerFields(partner: NormalizedPartner) {
+  return Boolean(optionalString(partner.name));
 }
 
 function splitRichText(value: unknown) {
@@ -267,6 +273,16 @@ async function getWixGalleryImagesForEvent(slug: string, eventId?: string) {
   return galleryImages;
 }
 
+async function getWixPartnersForEvent(slug: string, eventId?: string) {
+  const partners = await getPartnersByEvent(slug, eventId ? [eventId] : []);
+
+  if (partners.length === 0 || !partners.every(hasRequiredPartnerFields)) {
+    return null;
+  }
+
+  return partners;
+}
+
 export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
   const fallback = eventDetailsBySlug[slug];
 
@@ -279,8 +295,9 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
     const cmsTourDates = await getWixTourDatesForEvent(slug, cmsEvent?.id);
     const cmsTrailerVideo = await getWixTrailerVideoForEvent(slug, cmsEvent?.id);
     const cmsGalleryImages = await getWixGalleryImagesForEvent(slug, cmsEvent?.id);
+    const cmsPartners = await getWixPartnersForEvent(slug, cmsEvent?.id);
 
-    if (!cmsEvent && !cmsTourDates && !cmsTrailerVideo && !cmsGalleryImages) {
+    if (!cmsEvent && !cmsTourDates && !cmsTrailerVideo && !cmsGalleryImages && !cmsPartners) {
       return fallback;
     }
 
@@ -305,6 +322,7 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
         ? getEventVideoSource(cmsTrailerVideo)
         : fallback.trailerVideoSrc,
       galleryImages: cmsGalleryImages ?? fallback.galleryImages,
+      partners: cmsPartners ?? fallback.partners,
     };
   } catch {
     return fallback;

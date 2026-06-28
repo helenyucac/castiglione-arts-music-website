@@ -414,11 +414,11 @@ export function normalizeEventGalleryImage(
   return {
     id: idOf(fields),
     event: stringValue(fields.event),
-    src: stringValue(fields.image),
+    src: optionalMediaUrl(fields.image) ?? "",
     alt: stringValue(fields.altText),
     caption: optionalString(fields.caption),
     credit: optionalString(fields.credit),
-    order: numberValue(fields.order),
+    order: numberValue(fields.order, Number.MAX_SAFE_INTEGER),
     isVisible: booleanValue(fields.isVisible, true),
   };
 }

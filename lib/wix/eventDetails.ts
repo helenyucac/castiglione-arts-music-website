@@ -1,4 +1,4 @@
-import { isWixConfigured, queryWixCollection, sortAsc, visibleFilter } from "@/lib/wix/client";
+import { isWixConfigured, queryWixCollection, sortAsc } from "@/lib/wix/client";
 import {
   getWixFields,
   normalizeEventGalleryImage,
@@ -100,6 +100,21 @@ function sortTourDatesByOrderThenDate(tourDates: NormalizedTourDate[]) {
   });
 }
 
+function sortByOrderThenUploadOrder<T extends { order: number }>(items: T[]) {
+  return [...items]
+    .map((item, uploadIndex) => ({ item, uploadIndex }))
+    .sort((first, second) => {
+      const orderDifference = first.item.order - second.item.order;
+
+      if (orderDifference !== 0) {
+        return orderDifference;
+      }
+
+      return first.uploadIndex - second.uploadIndex;
+    })
+    .map(({ item }) => item);
+}
+
 export async function getTourDates(eventIdOrSlug: string, alternateEventIds: string[] = []) {
   if (!isWixConfigured()) {
     return [];
@@ -162,11 +177,32 @@ export async function getEventVideos(eventIdOrSlug: string, alternateEventIds: s
   return sortByOrder(matchingVideos);
 }
 
-export async function getEventGallery(eventIdOrSlug: string) {
+export async function getEventGallery(eventIdOrSlug: string, alternateEventIds: string[] = []) {
+  if (!isWixConfigured()) {
+    return [];
+  }
+
+  const eventIds = new Set(
+    [eventIdOrSlug, ...alternateEventIds]
+      .map((candidate) => candidate.trim())
+      .filter(Boolean),
+  );
+
+  if (eventIds.size === 0) {
+    return [];
+  }
+
   const items = await queryWixCollection("EventGallery", {
-    filter: visibleFilter({ event: eventIdOrSlug }),
-    sort: sortAsc("order"),
+    limit: 1000,
   });
 
-  return sortByOrder(items.map(normalizeEventGalleryImage));
+  const matchingImages = items
+    .filter((item) => {
+      const fields = getWixFields(item);
+      return hasMatchingEventReference(fields, eventIds);
+    })
+    .map(normalizeEventGalleryImage)
+    .filter((image) => image.isVisible);
+
+  return sortByOrderThenUploadOrder(matchingImages);
 }

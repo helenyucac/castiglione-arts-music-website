@@ -3,9 +3,14 @@ import { eventDetailsBySlug, type EventDetailData } from "@/data/eventDetails";
 import { isWixConfigured, queryWixCollection, visibleFilter } from "@/lib/wix/client";
 import { getTourProgram, tourProgramLabels } from "@/data/tours";
 import { getWixFields } from "@/lib/wix/normalizers";
-import { getTourDates } from "@/lib/wix/eventDetails";
+import { getEventVideos, getTourDates } from "@/lib/wix/eventDetails";
 import type { TourProgram, TourStatus } from "@/data/tours";
-import type { NormalizedTourDate, WixCollectionItem, WixRecordFields } from "@/lib/wix/types";
+import type {
+  NormalizedEventVideo,
+  NormalizedTourDate,
+  WixCollectionItem,
+  WixRecordFields,
+} from "@/lib/wix/types";
 
 function stringValue(value: unknown, fallback = "") {
   if (typeof value === "string") {
@@ -39,6 +44,14 @@ function hasRequiredTourDateFields(tourDate: NormalizedTourDate) {
       ticketHref &&
       ticketHref !== "#",
   );
+}
+
+function getEventVideoSource(video: NormalizedEventVideo) {
+  return optionalString(video.src) ?? optionalString(video.videoUrl);
+}
+
+function hasRequiredEventVideoFields(video: NormalizedEventVideo) {
+  return Boolean(getEventVideoSource(video));
 }
 
 function splitRichText(value: unknown) {
@@ -228,6 +241,17 @@ async function getWixTourDatesForEvent(slug: string, eventId?: string) {
   return tourDates;
 }
 
+async function getWixTrailerVideoForEvent(slug: string, eventId?: string) {
+  const videos = await getEventVideos(slug, eventId ? [eventId] : []);
+  const trailerVideo = videos.find(hasRequiredEventVideoFields);
+
+  if (!trailerVideo) {
+    return null;
+  }
+
+  return trailerVideo;
+}
+
 export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
   const fallback = eventDetailsBySlug[slug];
 
@@ -238,8 +262,9 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
   try {
     const cmsEvent = await getWixEventBySlug(slug);
     const cmsTourDates = await getWixTourDatesForEvent(slug, cmsEvent?.id);
+    const cmsTrailerVideo = await getWixTrailerVideoForEvent(slug, cmsEvent?.id);
 
-    if (!cmsEvent && !cmsTourDates) {
+    if (!cmsEvent && !cmsTourDates && !cmsTrailerVideo) {
       return fallback;
     }
 
@@ -258,6 +283,11 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
     return {
       ...mergedEvent,
       tourDates: cmsTourDates ?? fallback.tourDates,
+      trailerEyebrow:
+        cmsTrailerVideo ? optionalString(cmsTrailerVideo.title) ?? fallback.trailerEyebrow : fallback.trailerEyebrow,
+      trailerVideoSrc: cmsTrailerVideo
+        ? getEventVideoSource(cmsTrailerVideo)
+        : fallback.trailerVideoSrc,
     };
   } catch {
     return fallback;

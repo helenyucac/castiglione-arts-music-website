@@ -429,10 +429,10 @@ export function normalizePartner(item: WixCollectionItem): NormalizedPartner {
   return {
     id: idOf(fields),
     name: stringValue(fields.name),
-    logo: optionalString(fields.logo),
+    logo: optionalMediaUrl(fields.logo),
     website: optionalString(fields.website),
     type: optionalString(fields.type),
-    order: numberValue(fields.order),
+    order: numberValue(fields.order, Number.MAX_SAFE_INTEGER),
     isVisible: booleanValue(fields.isVisible, true),
   };
 }

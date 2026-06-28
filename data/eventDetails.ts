@@ -19,6 +19,13 @@ export type EventGalleryImage = {
   caption?: string;
 };
 
+export type EventPartner = {
+  name: string;
+  logo?: string;
+  website?: string;
+  type?: string;
+};
+
 export type EventDetailData = {
   slug: string;
   seoTitle?: string;
@@ -41,6 +48,7 @@ export type EventDetailData = {
   trailerEyebrow?: string;
   trailerVideoSrc?: string;
   galleryImages?: EventGalleryImage[];
+  partners?: EventPartner[];
   tourDates: EventTourDate[];
   relatedEyebrow: string;
   relatedTitle: string;

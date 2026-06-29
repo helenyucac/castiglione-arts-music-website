@@ -5,11 +5,13 @@ import { getTourProgram, tourProgramLabels } from "@/data/tours";
 import { getWixFields } from "@/lib/wix/normalizers";
 import { getEventGallery, getEventVideos, getTourDates } from "@/lib/wix/eventDetails";
 import { getPartnersByEvent } from "@/lib/wix/partners";
+import { getTestimonialsByEvent } from "@/lib/wix/testimonials";
 import type { TourProgram, TourStatus } from "@/data/tours";
 import type {
   NormalizedEventGalleryImage,
   NormalizedEventVideo,
   NormalizedPartner,
+  NormalizedTestimonial,
   NormalizedTourDate,
   WixCollectionItem,
   WixRecordFields,
@@ -63,6 +65,10 @@ function hasRequiredGalleryImageFields(image: NormalizedEventGalleryImage) {
 
 function hasRequiredPartnerFields(partner: NormalizedPartner) {
   return Boolean(optionalString(partner.name));
+}
+
+function hasRequiredTestimonialFields(testimonial: NormalizedTestimonial) {
+  return Boolean(optionalString(testimonial.quote) && optionalString(testimonial.name));
 }
 
 function splitRichText(value: unknown) {
@@ -283,6 +289,16 @@ async function getWixPartnersForEvent(slug: string, eventId?: string) {
   return partners;
 }
 
+async function getWixTestimonialsForEvent(slug: string, eventId?: string) {
+  const testimonials = await getTestimonialsByEvent(slug, eventId ? [eventId] : []);
+
+  if (testimonials.length === 0 || !testimonials.every(hasRequiredTestimonialFields)) {
+    return null;
+  }
+
+  return testimonials;
+}
+
 export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
   const fallback = eventDetailsBySlug[slug];
 
@@ -296,8 +312,16 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
     const cmsTrailerVideo = await getWixTrailerVideoForEvent(slug, cmsEvent?.id);
     const cmsGalleryImages = await getWixGalleryImagesForEvent(slug, cmsEvent?.id);
     const cmsPartners = await getWixPartnersForEvent(slug, cmsEvent?.id);
+    const cmsTestimonials = await getWixTestimonialsForEvent(slug, cmsEvent?.id);
 
-    if (!cmsEvent && !cmsTourDates && !cmsTrailerVideo && !cmsGalleryImages && !cmsPartners) {
+    if (
+      !cmsEvent &&
+      !cmsTourDates &&
+      !cmsTrailerVideo &&
+      !cmsGalleryImages &&
+      !cmsPartners &&
+      !cmsTestimonials
+    ) {
       return fallback;
     }
 
@@ -323,6 +347,7 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
         : fallback.trailerVideoSrc,
       galleryImages: cmsGalleryImages ?? fallback.galleryImages,
       partners: cmsPartners ?? fallback.partners,
+      testimonials: cmsTestimonials ?? fallback.testimonials,
     };
   } catch {
     return fallback;

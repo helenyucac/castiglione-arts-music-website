@@ -36,6 +36,17 @@ export type EventPartner = {
   type?: string;
 };
 
+export type EventTestimonial = {
+  quote: string;
+  name: string;
+  title?: string;
+  company?: string;
+  logo?: string;
+  portraitImage?: string;
+  relatedEvent?: string;
+  relatedPartner?: string;
+};
+
 export type EventDetailData = {
   slug: string;
   seoTitle?: string;
@@ -59,6 +70,7 @@ export type EventDetailData = {
   trailerVideoSrc?: string;
   galleryImages?: EventGalleryImage[];
   partners?: EventPartner[];
+  testimonials?: EventTestimonial[];
   tourDates: EventTourDate[];
   relatedEyebrow: string;
   relatedTitle: string;

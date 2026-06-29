@@ -461,11 +461,11 @@ export function normalizeTestimonial(item: WixCollectionItem): NormalizedTestimo
     name: stringValue(fields.name),
     title: optionalString(fields.title),
     company: optionalString(fields.company),
-    logo: optionalString(fields.logo),
-    portraitImage: optionalString(fields.portraitImage),
+    logo: optionalMediaUrl(fields.logo),
+    portraitImage: optionalMediaUrl(fields.portraitImage),
     relatedEvent: optionalString(fields.relatedEvent),
     relatedPartner: optionalString(fields.relatedPartner),
-    order: numberValue(fields.order),
+    order: numberValue(fields.order, Number.MAX_SAFE_INTEGER),
     isVisible: booleanValue(fields.isVisible, true),
   };
 }

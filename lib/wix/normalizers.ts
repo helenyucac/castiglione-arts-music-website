@@ -26,6 +26,20 @@ const programLabelToProgram: Record<string, TourProgram> = {
   "touring exhibitions": "touring-exhibition",
 };
 
+const programSlugToProgram: Record<string, TourProgram> = {
+  "anime-gaming-concerts": "anime-gaming-concerts",
+  "classical-concert-theatre": "classical-concert-theatre",
+  "live-music-festival": "live-music-festival",
+  "touring-exhibition": "touring-exhibition",
+};
+
+const programToLabel: Record<TourProgram, string> = {
+  "anime-gaming-concerts": "Anime & Gaming Concerts",
+  "classical-concert-theatre": "Classical Concerts & Theatre",
+  "live-music-festival": "Live Music & Festivals",
+  "touring-exhibition": "Touring Exhibitions",
+};
+
 const programToCategory: Record<TourProgram, TourCategory> = {
   "anime-gaming-concerts": "anime-concert",
   "classical-concert-theatre": "classical-recital",
@@ -163,6 +177,32 @@ function splitList(value: unknown) {
     .filter(Boolean);
 }
 
+function stringCandidates(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.flatMap(stringCandidates);
+  }
+
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    const candidate = String(value).trim();
+    return candidate ? [candidate] : [];
+  }
+
+  if (!isRecord(value)) {
+    return [];
+  }
+
+  return [
+    value.slug,
+    value.title,
+    value.name,
+    value.label,
+    value._id,
+    value.id,
+    value.data,
+    value.fieldData,
+  ].flatMap(stringCandidates);
+}
+
 function parseHeroStats(value: unknown): NormalizedHeroStat[] {
   if (Array.isArray(value)) {
     return value
@@ -190,8 +230,16 @@ function parseHeroStats(value: unknown): NormalizedHeroStat[] {
 }
 
 function normalizeProgram(value: unknown): TourProgram | null {
-  const key = stringValue(value).toLowerCase();
-  return programLabelToProgram[key] ?? null;
+  for (const candidate of stringCandidates(value)) {
+    const key = candidate.toLowerCase();
+    const program = programLabelToProgram[key] ?? programSlugToProgram[key];
+
+    if (program) {
+      return program;
+    }
+  }
+
+  return null;
 }
 
 function normalizeCategory(program: TourProgram | null, categoryLabel: string): TourCategory {
@@ -329,7 +377,10 @@ export function normalizeSocialLink(item: WixCollectionItem): NormalizedSocialLi
 export function normalizeEvent(item: WixCollectionItem): NormalizedEvent {
   const fields = getWixFields(item);
   const program = normalizeProgram(fields.program);
-  const categoryLabel = stringValue(fields.categoryLabel ?? fields.program);
+  const categoryLabel = stringValue(
+    fields.categoryLabel ?? fields.programLabel ?? fields.program,
+    program ? programToLabel[program] : "",
+  );
   const category = normalizeCategory(program, categoryLabel);
   const slug = stringValue(fields.slug, "MANUAL");
   const ticketPrimaryUrl = optionalString(fields.ticketPrimaryUrl);
@@ -357,7 +408,7 @@ export function normalizeEvent(item: WixCollectionItem): NormalizedEvent {
     sourceUrl: optionalString(fields.sourceUrl),
     slug,
     program,
-    programLabel: stringValue(fields.program),
+    programLabel: stringValue(fields.programLabel ?? fields.program, program ? programToLabel[program] : ""),
     categoryLabel,
     sortDate: stringValue(fields.sortDate),
     isFeaturedHome: booleanValue(fields.isFeaturedHome, false),

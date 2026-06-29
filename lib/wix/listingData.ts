@@ -121,6 +121,8 @@ function hydrateEventsWithLocalFallback(cmsEvents: TourCardData[], localEvents: 
 
     return {
       ...event,
+      id: event.id && event.id !== "manual-id" ? event.id : localEvent?.id ?? event.id,
+      title: event.title || localEvent?.title || "",
       image: isUsableAsset(event.image)
         ? event.image
         : localEvent?.image ?? findDefaultLocalImage(event, localEvents),
@@ -134,6 +136,19 @@ function hydrateEventsWithLocalFallback(cmsEvents: TourCardData[], localEvents: 
   });
 }
 
+function hasRequiredListingEventFields(event: TourCardData) {
+  return Boolean(
+    event.id &&
+      event.id !== "manual-id" &&
+      event.title &&
+      event.date &&
+      event.dateLabel &&
+      event.cities.length > 0 &&
+      event.image &&
+      getTourProgram(event.category),
+  );
+}
+
 async function getCmsEventsWithFallback(
   request: () => Promise<TourCardData[]>,
   localEvents: TourCardData[],
@@ -144,7 +159,13 @@ async function getCmsEventsWithFallback(
 
   try {
     const cmsEvents = await request();
-    return hydrateEventsWithLocalFallback(cmsEvents, localEvents);
+    const hydratedEvents = hydrateEventsWithLocalFallback(cmsEvents, localEvents);
+
+    if (hydratedEvents.length === 0 || !hydratedEvents.every(hasRequiredListingEventFields)) {
+      return localEvents;
+    }
+
+    return hydratedEvents;
   } catch {
     return localEvents;
   }

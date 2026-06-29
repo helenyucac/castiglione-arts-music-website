@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
 import { WhatsOnEventCard } from "@/components/WhatsOnEventCard";
 import type { EventDetailData } from "@/data/eventDetails";
+import { formatPublicDateDisplay } from "@/lib/dateDisplay";
 
 type EventDetailPageProps = {
   event: EventDetailData;
@@ -237,7 +238,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                         className="mt-0 mb-0 pt-4 pb-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[#d94a28] antialiased"
                         style={eyebrowStyle}
                       >
-                        {tourDate.date}
+                        {formatPublicDateDisplay(tourDate.date) ?? tourDate.date}
                       </p>
                       <div className="lg:self-center">
                         <h3

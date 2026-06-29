@@ -1,4 +1,5 @@
 import type { TourCategory, TourProgram, TourStatus } from "@/data/tours";
+import { formatPublicEventDate } from "@/lib/dateDisplay";
 import type {
   NavigationLocation,
   NormalizedDesignSettings,
@@ -385,13 +386,19 @@ export function normalizeEvent(item: WixCollectionItem): NormalizedEvent {
   const slug = stringValue(fields.slug, "MANUAL");
   const ticketPrimaryUrl = optionalString(fields.ticketPrimaryUrl);
   const image = optionalString(fields.cardImage) ?? optionalString(fields.heroImage) ?? "";
+  const dateLabel =
+    formatPublicEventDate({
+      startDate: optionalString(fields.startDate),
+      endDate: optionalString(fields.endDate),
+      fallback: optionalString(fields.eventCardDate ?? fields.displayDate),
+    }) ?? stringValue(fields.eventCardDate ?? fields.displayDate);
 
   return {
     id: idOf(fields),
     category,
     title: stringValue(fields.title),
     date: stringValue(fields.sortDate ?? fields.startDate),
-    dateLabel: stringValue(fields.eventCardDate ?? fields.displayDate),
+    dateLabel,
     cities: splitList(fields.eventCardCities),
     status: normalizeStatus(fields.status),
     image,

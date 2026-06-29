@@ -2,6 +2,7 @@ import { cache } from "react";
 import { eventDetailsBySlug, type EventDetailData } from "@/data/eventDetails";
 import { isWixConfigured, queryWixCollection, visibleFilter } from "@/lib/wix/client";
 import { getTourProgram, tourProgramLabels } from "@/data/tours";
+import { formatPublicEventDate } from "@/lib/dateDisplay";
 import { getWixFields } from "@/lib/wix/normalizers";
 import { getEventGallery, getEventVideos, getTourDates } from "@/lib/wix/eventDetails";
 import { getPartnersByEvent } from "@/lib/wix/partners";
@@ -189,6 +190,15 @@ function mergeCmsEventDetail(
     optionalString(fields.partnerButtonLabel) ?? fallback.secondaryCtaLabel;
   const secondaryCtaHref =
     optionalString(fields.partnerButtonUrl) ?? fallback.secondaryCtaHref;
+  const seasonLabel =
+    formatPublicEventDate({
+      startDate: optionalString(fields.startDate),
+      endDate: optionalString(fields.endDate),
+      fallback:
+        optionalString(fields.seasonLabel) ??
+        optionalString(fields.eventCardDate) ??
+        fallback.seasonLabel,
+    }) ?? fallback.seasonLabel;
 
   return {
     ...fallback,
@@ -203,10 +213,7 @@ function mergeCmsEventDetail(
       optionalString(fields.heroAlt) ??
       optionalString(fields.posterAlt) ??
       fallback.heroAlt,
-    seasonLabel:
-      optionalString(fields.seasonLabel) ??
-      optionalString(fields.eventCardDate) ??
-      fallback.seasonLabel,
+    seasonLabel,
     citySummary:
       optionalString(fields.citySummary) ??
       optionalString(fields.eventCardCities) ??

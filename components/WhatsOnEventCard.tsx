@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { BRAND_COLORS } from "@/data/siteSettings";
+import { formatPublicDateDisplay } from "@/lib/dateDisplay";
 import {
   getTourProgram,
   tourProgramColors,
@@ -37,6 +38,7 @@ export function getWhatsOnDisplayCategory(category: TourCategory) {
 
 export function WhatsOnEventCard({ event, displayCategory }: WhatsOnEventCardProps) {
   const resolvedCategory = displayCategory ?? getDisplayCategory(event.category);
+  const displayDate = formatPublicDateDisplay(event.dateLabel) ?? event.dateLabel;
 
   if (!resolvedCategory) {
     return null;
@@ -82,7 +84,7 @@ export function WhatsOnEventCard({ event, displayCategory }: WhatsOnEventCardPro
               className="mb-2 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[#111111] antialiased"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
-              {event.dateLabel}
+              {displayDate}
             </p>
             <p
               className="text-[11px] font-semibold uppercase leading-[18px] tracking-[2.2px] text-[rgba(17,17,17,0.52)] antialiased"

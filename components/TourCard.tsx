@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { BRAND_COLORS } from "@/data/siteSettings";
+import { formatPublicDateDisplay } from "@/lib/dateDisplay";
 import {
   getTourProgram,
   tourCategoryColors,
@@ -33,7 +34,8 @@ export function TourCard({ tour }: TourCardProps) {
   const program = getTourProgram(tour.category);
   const categoryLabel = program ? tourProgramLabels[program] : tourCategoryLabels[tour.category];
   const softenedAccentColor = hexToRgba(accentColor, 0.7);
-  const details = `${tour.dateLabel} / ${tour.cities.join(", ")}`;
+  const displayDate = formatPublicDateDisplay(tour.dateLabel) ?? tour.dateLabel;
+  const details = `${displayDate} / ${tour.cities.join(", ")}`;
 
   return (
     <Link href={tour.href ?? "#"} className="block h-full" aria-label={tour.title}>

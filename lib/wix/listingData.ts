@@ -6,6 +6,7 @@ import {
   touringExhibitionProgramEvents,
   whatsOnConcertEvents,
 } from "@/data/tours";
+import { formatPublicDateDisplay } from "@/lib/dateDisplay";
 import { isWixConfigured } from "@/lib/wix/client";
 import { getEvents, getEventsByProgram, getFeaturedHomeEvents } from "@/lib/wix/events";
 import { getPrograms } from "@/lib/wix/programs";
@@ -118,6 +119,7 @@ function hydrateEventsWithLocalFallback(cmsEvents: TourCardData[], localEvents: 
 
   return cmsEvents.map((event) => {
     const localEvent = findLocalEvent(event, localEvents);
+    const dateLabel = event.dateLabel || localEvent?.dateLabel || event.date;
 
     return {
       ...event,
@@ -128,7 +130,7 @@ function hydrateEventsWithLocalFallback(cmsEvents: TourCardData[], localEvents: 
         : localEvent?.image ?? findDefaultLocalImage(event, localEvents),
       href: event.href ?? localEvent?.href,
       cities: event.cities.length > 0 ? event.cities : localEvent?.cities ?? [],
-      dateLabel: event.dateLabel || localEvent?.dateLabel || event.date,
+      dateLabel: formatPublicDateDisplay(dateLabel) ?? dateLabel,
       date: event.date || localEvent?.date || "",
       ticketLinks: event.ticketLinks ?? localEvent?.ticketLinks,
       sourceUrl: event.sourceUrl ?? localEvent?.sourceUrl,

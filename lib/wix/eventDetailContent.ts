@@ -1,8 +1,8 @@
 import { cache } from "react";
-import { eventDetailsBySlug, type EventDetailData } from "@/data/eventDetails";
+import { eventDetailsBySlug, type EventDetailData, type EventTourDate } from "@/data/eventDetails";
 import { isWixConfigured, queryWixCollection, visibleFilter } from "@/lib/wix/client";
-import { getTourProgram, tourProgramLabels } from "@/data/tours";
-import { formatPublicEventDate } from "@/lib/dateDisplay";
+import { getTourProgram, homepageWhatsOnEvents, tourProgramLabels } from "@/data/tours";
+import { formatPublicDateRangeFromValues, formatPublicEventDate } from "@/lib/dateDisplay";
 import { getWixFields } from "@/lib/wix/normalizers";
 import { getEventGallery, getEventVideos, getTourDates } from "@/lib/wix/eventDetails";
 import { getPartnersByEvent } from "@/lib/wix/partners";
@@ -17,6 +17,10 @@ import type {
   WixCollectionItem,
   WixRecordFields,
 } from "@/lib/wix/types";
+
+const DEFAULT_EVENT_HERO_IMAGE = "/media/naruto-hero.jpg";
+const DEFAULT_SEASON_LABEL = "DATES TO BE ANNOUNCED";
+const DEFAULT_CITY_SUMMARY = "TO BE ANNOUNCED";
 
 function stringValue(value: unknown, fallback = "") {
   if (typeof value === "string") {
@@ -38,6 +42,81 @@ function optionalString(value: unknown) {
   }
 
   return text;
+}
+
+function optionalMediaUrl(value: unknown): string | undefined {
+  const text = optionalString(value);
+
+  if (text) {
+    return text;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const mediaUrl = optionalMediaUrl(item);
+
+      if (mediaUrl) {
+        return mediaUrl;
+      }
+    }
+
+    return undefined;
+  }
+
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  const record = value as WixRecordFields;
+  const mediaSources = [
+    record.url,
+    record.src,
+    record.fileUrl,
+    record.videoUrl,
+    record.mediaUrl,
+    record.downloadUrl,
+    record.uri,
+  ];
+
+  for (const source of mediaSources) {
+    const mediaUrl = optionalMediaUrl(source);
+
+    if (mediaUrl) {
+      return mediaUrl;
+    }
+  }
+
+  return undefined;
+}
+
+function stringCandidates(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.flatMap(stringCandidates);
+  }
+
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    const candidate = String(value).trim();
+    return candidate ? [candidate] : [];
+  }
+
+  if (!value || typeof value !== "object") {
+    return [];
+  }
+
+  const record = value as WixRecordFields;
+
+  return [
+    record.slug,
+    record.title,
+    record.name,
+    record.label,
+    record.categoryLabel,
+    record.programLabel,
+    record._id,
+    record.id,
+    record.data,
+    record.fieldData,
+  ].flatMap(stringCandidates);
 }
 
 function hasRequiredTourDateFields(tourDate: NormalizedTourDate) {
@@ -92,25 +171,39 @@ function splitRichText(value: unknown) {
 }
 
 function normalizeProgram(value: unknown): TourProgram | undefined {
-  const label = stringValue(value).toLowerCase();
+  const candidates = stringCandidates(value);
 
-  if (label.includes("anime") || label.includes("gaming")) {
-    return "anime-gaming-concerts";
-  }
+  for (const candidate of candidates) {
+    const label = candidate.toLowerCase();
 
-  if (label.includes("classical") || label.includes("theatre")) {
-    return "classical-concert-theatre";
-  }
+    if (label.includes("anime") || label.includes("gaming")) {
+      return "anime-gaming-concerts";
+    }
 
-  if (label.includes("live") || label.includes("festival") || label.includes("lucid")) {
-    return "live-music-festival";
-  }
+    if (label.includes("classical") || label.includes("theatre")) {
+      return "classical-concert-theatre";
+    }
 
-  if (label.includes("exhibition")) {
-    return "touring-exhibition";
+    if (label.includes("live") || label.includes("festival") || label.includes("lucid")) {
+      return "live-music-festival";
+    }
+
+    if (label.includes("exhibition")) {
+      return "touring-exhibition";
+    }
   }
 
   return undefined;
+}
+
+function resolveProgram(fields: WixRecordFields) {
+  return normalizeProgram(
+    fields.program ??
+      fields.programLabel ??
+      fields.categoryLabel ??
+      fields.category ??
+      fields.eyebrow,
+  );
 }
 
 function normalizeStatus(value: unknown): TourStatus | undefined {
@@ -127,6 +220,7 @@ function resolveCategoryLabel(fields: WixRecordFields, fallback: EventDetailData
   return (
     optionalString(fields.eyebrow) ??
     optionalString(fields.categoryLabel) ??
+    optionalString(fields.programLabel) ??
     optionalString(fields.category) ??
     optionalString(fields.program) ??
     fallback.categoryLabel
@@ -154,7 +248,7 @@ function resolveDescription(fields: WixRecordFields, fallback: EventDetailData) 
 }
 
 function resolveRelatedTitle(fields: WixRecordFields, fallback: EventDetailData) {
-  const program = normalizeProgram(fields.program);
+  const program = resolveProgram(fields);
 
   if (!program) {
     return fallback.relatedTitle;
@@ -169,9 +263,9 @@ function mergeCmsEventDetail(
 ): EventDetailData {
   const categoryLabel = resolveCategoryLabel(fields, fallback);
   const heroImage =
-    optionalString(fields.heroImage) ??
-    optionalString(fields.posterImage) ??
-    optionalString(fields.cardImage) ??
+    optionalMediaUrl(fields.heroImage) ??
+    optionalMediaUrl(fields.posterImage) ??
+    optionalMediaUrl(fields.cardImage) ??
     fallback.heroImage;
   const intro =
     optionalString(fields.shortDescription) ??
@@ -226,6 +320,102 @@ function mergeCmsEventDetail(
     description: resolveDescription(fields, fallback),
     relatedTitle: resolveRelatedTitle(fields, fallback),
   };
+}
+
+function resolveProgramHref(program: TourProgram | undefined) {
+  if (program === "anime-gaming-concerts" || program === "classical-concert-theatre") {
+    return "/programs/concerts";
+  }
+
+  if (program === "live-music-festival") {
+    return "/programs/music-festival";
+  }
+
+  if (program === "touring-exhibition") {
+    return "/programs/exhibitions";
+  }
+
+  return "/#whats-on";
+}
+
+function getRelatedEventsForProgram(program: TourProgram | undefined, slug: string) {
+  if (!program) {
+    return [];
+  }
+
+  return homepageWhatsOnEvents
+    .filter((event) => getTourProgram(event.category) === program)
+    .filter((event) => event.href !== `/tours/${slug}`)
+    .slice(0, 3);
+}
+
+function createCmsOnlyFallback(fields: WixRecordFields, requestedSlug: string) {
+  const title = optionalString(fields.title);
+  const slug = optionalString(fields.slug) ?? requestedSlug;
+
+  if (!title || !slug) {
+    return null;
+  }
+
+  const program = resolveProgram(fields);
+  const programLabel = program ? tourProgramLabels[program] : "What's On";
+  const shortDescription =
+    optionalString(fields.shortDescription) ??
+    optionalString(fields.subtitle) ??
+    optionalString(fields.intro);
+
+  const fallback: EventDetailData = {
+    slug,
+    seoTitle: optionalString(fields.seoTitle) ?? `${title} | Castiglione`,
+    seoDescription: optionalString(fields.seoDescription) ?? shortDescription,
+    breadcrumb: ["Home", "What's On", programLabel],
+    categoryLabel: programLabel,
+    title,
+    intro: "",
+    heroImage: DEFAULT_EVENT_HERO_IMAGE,
+    heroAlt: `${title} event image`,
+    seasonLabel: DEFAULT_SEASON_LABEL,
+    citySummary: DEFAULT_CITY_SUMMARY,
+    primaryCtaLabel: "BUY TICKETS",
+    primaryCtaHref: "#tour-dates",
+    secondaryCtaLabel: "PARTNER ON THIS TOUR",
+    secondaryCtaHref: "/partnerships",
+    aboutEyebrow: "ABOUT THE SHOW",
+    description: [],
+    trailerEyebrow: "TRAILER VIDEO",
+    tourDates: [],
+    relatedEyebrow: "ALSO PROGRAMMED",
+    relatedTitle: program ? `More from ${programLabel}.` : "More from What's On.",
+    relatedHref: resolveProgramHref(program),
+    relatedLinkLabel: "SEE FULL SEASON",
+    relatedEvents: getRelatedEventsForProgram(program, slug),
+  };
+
+  return mergeCmsEventDetail(fields, fallback);
+}
+
+function summarizeTourDateCities(tourDates: EventTourDate[]) {
+  const cities = Array.from(
+    new Set(
+      tourDates
+        .map((tourDate) => optionalString(tourDate.city))
+        .filter((city): city is string => Boolean(city)),
+    ),
+  );
+
+  return cities.length > 0 ? cities.map((city) => city.toUpperCase()).join(" · ") : undefined;
+}
+
+function summarizeTourDateSeason(tourDates: EventTourDate[]) {
+  return formatPublicDateRangeFromValues(tourDates.map((tourDate) => tourDate.date));
+}
+
+async function optionalCmsSection<T>(loadSection: () => Promise<T | null>) {
+  try {
+    return await loadSection();
+  } catch {
+    return null;
+  }
 }
 
 function getWixItemId(item: WixCollectionItem) {
@@ -309,19 +499,35 @@ async function getWixTestimonialsForEvent(slug: string, eventId?: string) {
 export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
   const fallback = eventDetailsBySlug[slug];
 
-  if (!fallback || !isWixConfigured()) {
+  if (!isWixConfigured()) {
     return fallback ?? null;
   }
 
   try {
     const cmsEvent = await getWixEventBySlug(slug);
-    const cmsTourDates = await getWixTourDatesForEvent(slug, cmsEvent?.id);
-    const cmsTrailerVideo = await getWixTrailerVideoForEvent(slug, cmsEvent?.id);
-    const cmsGalleryImages = await getWixGalleryImagesForEvent(slug, cmsEvent?.id);
-    const cmsPartners = await getWixPartnersForEvent(slug, cmsEvent?.id);
-    const cmsTestimonials = await getWixTestimonialsForEvent(slug, cmsEvent?.id);
+
+    if (!fallback && !cmsEvent) {
+      return null;
+    }
+
+    const cmsTourDates = await optionalCmsSection(() =>
+      getWixTourDatesForEvent(slug, cmsEvent?.id),
+    );
+    const cmsTrailerVideo = await optionalCmsSection(() =>
+      getWixTrailerVideoForEvent(slug, cmsEvent?.id),
+    );
+    const cmsGalleryImages = await optionalCmsSection(() =>
+      getWixGalleryImagesForEvent(slug, cmsEvent?.id),
+    );
+    const cmsPartners = await optionalCmsSection(() =>
+      getWixPartnersForEvent(slug, cmsEvent?.id),
+    );
+    const cmsTestimonials = await optionalCmsSection(() =>
+      getWixTestimonialsForEvent(slug, cmsEvent?.id),
+    );
 
     if (
+      fallback &&
       !cmsEvent &&
       !cmsTourDates &&
       !cmsTrailerVideo &&
@@ -333,30 +539,54 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
     }
 
     const fields = cmsEvent?.fields ?? {};
+    const baseEvent = fallback ?? createCmsOnlyFallback(fields, slug);
 
+    if (!baseEvent) {
+      return null;
+    }
+
+    const resolvedTourDates = cmsTourDates ?? baseEvent.tourDates;
+    const cmsOnlySeasonLabel =
+      baseEvent.seasonLabel === DEFAULT_SEASON_LABEL
+        ? summarizeTourDateSeason(resolvedTourDates)
+        : undefined;
+    const cmsOnlyCitySummary =
+      baseEvent.citySummary === DEFAULT_CITY_SUMMARY
+        ? summarizeTourDateCities(resolvedTourDates)
+        : undefined;
     const status = normalizeStatus(fields.status);
-    const mergedEvent = mergeCmsEventDetail(
-      {
-        ...fields,
-        status: status ?? fields.status,
-        program: fields.program ?? getTourProgram(fallback.relatedEvents[0]?.category),
-      },
-      fallback,
-    );
+    const mergedEvent = cmsEvent
+      ? mergeCmsEventDetail(
+          {
+            ...fields,
+            status: status ?? fields.status,
+            program:
+              fields.program ??
+              fields.programLabel ??
+              fields.categoryLabel ??
+              getTourProgram(baseEvent.relatedEvents[0]?.category),
+          },
+          baseEvent,
+        )
+      : baseEvent;
 
     return {
       ...mergedEvent,
-      tourDates: cmsTourDates ?? fallback.tourDates,
+      seasonLabel: cmsOnlySeasonLabel ?? mergedEvent.seasonLabel,
+      citySummary: cmsOnlyCitySummary ?? mergedEvent.citySummary,
+      tourDates: resolvedTourDates,
       trailerEyebrow:
-        cmsTrailerVideo ? optionalString(cmsTrailerVideo.title) ?? fallback.trailerEyebrow : fallback.trailerEyebrow,
+        cmsTrailerVideo
+          ? optionalString(cmsTrailerVideo.title) ?? mergedEvent.trailerEyebrow
+          : mergedEvent.trailerEyebrow,
       trailerVideoSrc: cmsTrailerVideo
         ? getEventVideoSource(cmsTrailerVideo)
-        : fallback.trailerVideoSrc,
-      galleryImages: cmsGalleryImages ?? fallback.galleryImages,
-      partners: cmsPartners ?? fallback.partners,
-      testimonials: cmsTestimonials ?? fallback.testimonials,
+        : mergedEvent.trailerVideoSrc,
+      galleryImages: cmsGalleryImages ?? mergedEvent.galleryImages,
+      partners: cmsPartners ?? mergedEvent.partners,
+      testimonials: cmsTestimonials ?? mergedEvent.testimonials,
     };
   } catch {
-    return fallback;
+    return fallback ?? null;
   }
 });

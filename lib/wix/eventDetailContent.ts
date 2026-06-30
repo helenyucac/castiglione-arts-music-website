@@ -498,15 +498,46 @@ async function getWixTestimonialsForEvent(slug: string, eventId?: string) {
 
 export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
   const fallback = eventDetailsBySlug[slug];
+  const shouldDebugMischa = slug === "mischa-maisky-recital";
+
+  if (shouldDebugMischa) {
+    console.info("[Wix CMS debug] resolver start", {
+      slug,
+      hasLocalFallback: Boolean(fallback),
+      isWixConfigured: isWixConfigured(),
+    });
+  }
 
   if (!isWixConfigured()) {
+    if (shouldDebugMischa) {
+      console.info("[Wix CMS debug] resolver returning before Wix query", {
+        reason: "Wix CMS is not configured",
+        result: fallback ? "local fallback" : "null",
+      });
+    }
+
     return fallback ?? null;
   }
 
   try {
     const cmsEvent = await getWixEventBySlug(slug);
 
+    if (shouldDebugMischa) {
+      console.info("[Wix CMS debug] resolver Wix event result", {
+        slug,
+        hasCmsEvent: Boolean(cmsEvent),
+        cmsEventId: cmsEvent?.id,
+      });
+    }
+
     if (!fallback && !cmsEvent) {
+      if (shouldDebugMischa) {
+        console.info("[Wix CMS debug] resolver returning null", {
+          reason: "No local fallback and no CMS event",
+          nextRouteBehavior: "app/tours/[slug]/page.tsx will call notFound()",
+        });
+      }
+
       return null;
     }
 
@@ -542,6 +573,14 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
     const baseEvent = fallback ?? createCmsOnlyFallback(fields, slug);
 
     if (!baseEvent) {
+      if (shouldDebugMischa) {
+        console.info("[Wix CMS debug] resolver returning null", {
+          reason: "CMS event exists but could not construct EventDetailData",
+          likelyMissingFields: ["title", "slug"],
+          nextRouteBehavior: "app/tours/[slug]/page.tsx will call notFound()",
+        });
+      }
+
       return null;
     }
 
@@ -586,7 +625,15 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
       partners: cmsPartners ?? mergedEvent.partners,
       testimonials: cmsTestimonials ?? mergedEvent.testimonials,
     };
-  } catch {
+  } catch (error) {
+    if (shouldDebugMischa) {
+      console.info("[Wix CMS debug] resolver caught Wix error", {
+        error: error instanceof Error ? error.message : String(error),
+        result: fallback ? "local fallback" : "null",
+        nextRouteBehavior: fallback ? "render local fallback" : "app/tours/[slug]/page.tsx will call notFound()",
+      });
+    }
+
     return fallback ?? null;
   }
 });

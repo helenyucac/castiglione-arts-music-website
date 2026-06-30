@@ -70,12 +70,40 @@ export function sortDesc(fieldName: string) {
   return [{ fieldName, order: "DESC" as const }];
 }
 
+function shouldDebugWixQuery(collectionName: WixCollectionName, options: WixQueryOptions) {
+  return collectionName === "Events" && options.filter?.slug === "mischa-maisky-recital";
+}
+
 export async function queryWixCollection<TFields extends WixRecordFields = WixRecordFields>(
   collectionName: WixCollectionName,
   options: WixQueryOptions = {},
 ) {
   const config = getWixClientConfig();
   const collectionId = getCollectionId(collectionName);
+  const requestBody = {
+    dataCollectionId: collectionId,
+    query: {
+      filter: options.filter ?? {},
+      sort: options.sort ?? [],
+      paging: {
+        limit: options.limit ?? 100,
+        offset: options.skip ?? 0,
+      },
+    },
+  };
+  const shouldDebug = shouldDebugWixQuery(collectionName, options);
+
+  if (shouldDebug) {
+    console.info("[Wix CMS debug] Events query request", {
+      url: `${config.baseUrl}/query`,
+      collectionName,
+      collectionId,
+      hasApiKey: Boolean(config.apiKey),
+      hasSiteId: Boolean(config.siteId),
+      body: requestBody,
+    });
+  }
+
   const response = await fetch(`${config.baseUrl}/query`, {
     method: "POST",
     headers: {
@@ -83,19 +111,18 @@ export async function queryWixCollection<TFields extends WixRecordFields = WixRe
       "Content-Type": "application/json",
       "wix-site-id": config.siteId,
     },
-    body: JSON.stringify({
-      dataCollectionId: collectionId,
-      query: {
-        filter: options.filter ?? {},
-        sort: options.sort ?? [],
-        paging: {
-          limit: options.limit ?? 100,
-          offset: options.skip ?? 0,
-        },
-      },
-    }),
+    body: JSON.stringify(requestBody),
     cache: "no-store",
   });
+  const responseBody = await response.text();
+
+  if (shouldDebug) {
+    console.info("[Wix CMS debug] Events query response", {
+      status: response.status,
+      statusText: response.statusText,
+      body: responseBody,
+    });
+  }
 
   if (!response.ok) {
     throw new Error(
@@ -103,7 +130,7 @@ export async function queryWixCollection<TFields extends WixRecordFields = WixRe
     );
   }
 
-  const payload = (await response.json()) as WixQueryResponse<TFields>;
+  const payload = (responseBody ? JSON.parse(responseBody) : {}) as WixQueryResponse<TFields>;
   return (payload.items ?? payload.dataItems ?? []) as WixCollectionItem<TFields>[];
 }
 

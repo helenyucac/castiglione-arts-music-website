@@ -76,6 +76,18 @@ export async function queryWixCollection<TFields extends WixRecordFields = WixRe
 ) {
   const config = getWixClientConfig();
   const collectionId = getCollectionId(collectionName);
+  const requestBody = {
+    dataCollectionId: collectionId,
+    query: {
+      filter: options.filter ?? {},
+      sort: options.sort ?? [],
+      paging: {
+        limit: options.limit ?? 100,
+        offset: options.skip ?? 0,
+      },
+    },
+  };
+
   const response = await fetch(`${config.baseUrl}/query`, {
     method: "POST",
     headers: {
@@ -83,19 +95,10 @@ export async function queryWixCollection<TFields extends WixRecordFields = WixRe
       "Content-Type": "application/json",
       "wix-site-id": config.siteId,
     },
-    body: JSON.stringify({
-      dataCollectionId: collectionId,
-      query: {
-        filter: options.filter ?? {},
-        sort: options.sort ?? [],
-        paging: {
-          limit: options.limit ?? 100,
-          offset: options.skip ?? 0,
-        },
-      },
-    }),
+    body: JSON.stringify(requestBody),
     cache: "no-store",
   });
+  const responseBody = await response.text();
 
   if (!response.ok) {
     throw new Error(
@@ -103,7 +106,7 @@ export async function queryWixCollection<TFields extends WixRecordFields = WixRe
     );
   }
 
-  const payload = (await response.json()) as WixQueryResponse<TFields>;
+  const payload = (responseBody ? JSON.parse(responseBody) : {}) as WixQueryResponse<TFields>;
   return (payload.items ?? payload.dataItems ?? []) as WixCollectionItem<TFields>[];
 }
 

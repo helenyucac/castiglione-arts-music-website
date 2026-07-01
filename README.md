@@ -23,6 +23,25 @@ From the project folder:
 pnpm install
 ```
 
+## Environment Variables
+
+Wix CMS integration reads these environment variables:
+
+```env
+WIX_API_KEY=
+WIX_SITE_ID=
+WIX_COLLECTION_EVENTS_ID=Import4
+```
+
+- `WIX_API_KEY`: Wix API key used for CMS requests.
+- `WIX_SITE_ID`: Wix site ID used by the Wix Data API.
+- `WIX_COLLECTION_EVENTS_ID`: actual Wix CMS collection ID for the Events collection.
+
+The Events CMS collection ID is currently `Import4`. The default fallback value
+`"Events"` does **not** work for this Wix site. If the CMS collection is
+recreated in the future, verify the collection ID using the Wix Data Collections
+API before deployment, then update `WIX_COLLECTION_EVENTS_ID`.
+
 ## Local Development
 
 Start the local preview:

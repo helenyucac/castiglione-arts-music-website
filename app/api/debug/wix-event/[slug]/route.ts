@@ -10,6 +10,7 @@ type DebugWixEventRouteContext = {
 
 const WIX_DATA_API_BASE_URL =
   process.env.WIX_DATA_API_BASE_URL ?? "https://www.wixapis.com/wix-data/v2/items";
+const WIX_DATA_COLLECTIONS_API_URL = WIX_DATA_API_BASE_URL.replace(/\/items\/?$/, "/collections");
 
 function isRecord(value: unknown): value is WixRecordFields {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -52,6 +53,107 @@ function getMissingRequiredFields(fields: WixRecordFields) {
   return ["title", "slug"].filter((field) => !fields[field]);
 }
 
+function getCollectionArray(body: unknown) {
+  if (!isRecord(body)) {
+    return [];
+  }
+
+  const possibleKeys = ["dataCollections", "collections", "items"];
+
+  for (const key of possibleKeys) {
+    const value = body[key];
+
+    if (Array.isArray(value)) {
+      return value;
+    }
+  }
+
+  return [];
+}
+
+function summarizeCollection(collection: unknown) {
+  const fields = getFields(collection);
+  const id = fields._id ?? fields.id ?? fields.collectionId ?? fields.dataCollectionId;
+  const displayName = fields.displayName ?? fields.name ?? fields.title;
+  const collectionType = fields.collectionType ?? fields.type;
+
+  return {
+    id,
+    displayName,
+    collectionType,
+  };
+}
+
+function getStringValue(value: unknown) {
+  return typeof value === "string" ? value : "";
+}
+
+function getEventCollectionCandidates(collections: unknown[]) {
+  return collections
+    .map(summarizeCollection)
+    .filter((collection) => {
+      const id = getStringValue(collection.id).toLowerCase();
+      const displayName = getStringValue(collection.displayName).toLowerCase();
+
+      return id.includes("event") || displayName.includes("event");
+    });
+}
+
+async function fetchCollectionsDebug(apiKey: string, siteId: string) {
+  try {
+    const response = await fetch(WIX_DATA_COLLECTIONS_API_URL, {
+      method: "GET",
+      headers: {
+        Authorization: apiKey,
+        "Content-Type": "application/json",
+        "wix-site-id": siteId,
+      },
+      cache: "no-store",
+    });
+    const responseText = await response.text();
+    const responseBody = parseResponseBody(responseText);
+    const collections = getCollectionArray(responseBody);
+    const collectionSummaries = collections.map(summarizeCollection);
+    const eventCollectionCandidates = getEventCollectionCandidates(collections);
+    const exactEventsCollection = eventCollectionCandidates.find(
+      (collection) => getStringValue(collection.displayName).toLowerCase() === "events",
+    );
+
+    return {
+      collectionListRequest: {
+        url: WIX_DATA_COLLECTIONS_API_URL,
+        method: "GET",
+      },
+      collectionListHttpStatus: response.status,
+      collectionListHttpStatusText: response.statusText,
+      collectionListResponseBody: responseBody,
+      collectionListCount: collections.length,
+      collectionSummaries,
+      eventCollectionCandidates,
+      recommendedWixCollectionEventsId: exactEventsCollection?.id ?? eventCollectionCandidates[0]?.id ?? null,
+      collectionListReason: response.ok
+        ? "Wix returned accessible data collections. Use the id from the matching Events collection as WIX_COLLECTION_EVENTS_ID."
+        : `Wix collection listing returned HTTP ${response.status}. The API key may not have Manage Data Collections permission.`,
+    };
+  } catch (error) {
+    return {
+      collectionListRequest: {
+        url: WIX_DATA_COLLECTIONS_API_URL,
+        method: "GET",
+      },
+      collectionListHttpStatus: null,
+      collectionListHttpStatusText: null,
+      collectionListResponseBody: null,
+      collectionListCount: 0,
+      collectionSummaries: [],
+      eventCollectionCandidates: [],
+      recommendedWixCollectionEventsId: null,
+      collectionListReason: "The Wix collection listing request threw before a response was returned.",
+      collectionListError: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
 export async function GET(_request: Request, { params }: DebugWixEventRouteContext) {
   const { slug } = await params;
   const apiKey = process.env.WIX_API_KEY;
@@ -90,6 +192,16 @@ export async function GET(_request: Request, { params }: DebugWixEventRouteConte
   if (!apiKey || !siteId) {
     return NextResponse.json({
       ...baseDebugPayload,
+      collectionListRequest: {
+        url: WIX_DATA_COLLECTIONS_API_URL,
+        method: "GET",
+      },
+      collectionListHttpStatus: null,
+      collectionListResponseBody: null,
+      collectionListCount: 0,
+      collectionSummaries: [],
+      eventCollectionCandidates: [],
+      recommendedWixCollectionEventsId: null,
       wixHttpStatus: null,
       wixResponseBody: null,
       normalizedItemCount: 0,
@@ -100,6 +212,7 @@ export async function GET(_request: Request, { params }: DebugWixEventRouteConte
   }
 
   try {
+    const collectionsDebug = await fetchCollectionsDebug(apiKey, siteId);
     const response = await fetch(`${WIX_DATA_API_BASE_URL}/query`, {
       method: "POST",
       headers: {
@@ -121,6 +234,7 @@ export async function GET(_request: Request, { params }: DebugWixEventRouteConte
 
     return NextResponse.json({
       ...baseDebugPayload,
+      ...collectionsDebug,
       wixHttpStatus: response.status,
       wixHttpStatusText: response.statusText,
       wixResponseBody: responseBody,
@@ -147,9 +261,12 @@ export async function GET(_request: Request, { params }: DebugWixEventRouteConte
         : "app/tours/[slug]/page.tsx would call notFound() unless local fallback exists.",
     });
   } catch (error) {
+    const collectionsDebug = await fetchCollectionsDebug(apiKey, siteId);
+
     return NextResponse.json(
       {
         ...baseDebugPayload,
+        ...collectionsDebug,
         wixHttpStatus: null,
         wixResponseBody: null,
         normalizedItemCount: 0,

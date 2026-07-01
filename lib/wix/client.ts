@@ -70,10 +70,6 @@ export function sortDesc(fieldName: string) {
   return [{ fieldName, order: "DESC" as const }];
 }
 
-function shouldDebugWixQuery(collectionName: WixCollectionName, options: WixQueryOptions) {
-  return collectionName === "Events" && options.filter?.slug === "mischa-maisky-recital";
-}
-
 export async function queryWixCollection<TFields extends WixRecordFields = WixRecordFields>(
   collectionName: WixCollectionName,
   options: WixQueryOptions = {},
@@ -91,18 +87,6 @@ export async function queryWixCollection<TFields extends WixRecordFields = WixRe
       },
     },
   };
-  const shouldDebug = shouldDebugWixQuery(collectionName, options);
-
-  if (shouldDebug) {
-    console.info("[Wix CMS debug] Events query request", {
-      url: `${config.baseUrl}/query`,
-      collectionName,
-      collectionId,
-      hasApiKey: Boolean(config.apiKey),
-      hasSiteId: Boolean(config.siteId),
-      body: requestBody,
-    });
-  }
 
   const response = await fetch(`${config.baseUrl}/query`, {
     method: "POST",
@@ -115,14 +99,6 @@ export async function queryWixCollection<TFields extends WixRecordFields = WixRe
     cache: "no-store",
   });
   const responseBody = await response.text();
-
-  if (shouldDebug) {
-    console.info("[Wix CMS debug] Events query response", {
-      status: response.status,
-      statusText: response.statusText,
-      body: responseBody,
-    });
-  }
 
   if (!response.ok) {
     throw new Error(

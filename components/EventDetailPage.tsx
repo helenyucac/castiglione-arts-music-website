@@ -63,9 +63,16 @@ function getTourDateTimestamp(date: string) {
   return new Date(Number(year), monthIndex, Number(day), hour, minute).getTime();
 }
 
+function getPrimaryCtaHref(event: EventDetailData) {
+  return event.primaryCtaLabel.toLowerCase().includes("ticket")
+    ? "#tour-dates"
+    : event.primaryCtaHref;
+}
+
 export function EventDetailPage({ event }: EventDetailPageProps) {
   const heroTitleOffsetClass = event.heroTitleOffset ? "lg:mt-14" : "";
   const galleryImages = event.galleryImages ?? [];
+  const primaryCtaHref = getPrimaryCtaHref(event);
   const sortedTourDates = [...event.tourDates].sort(
     (firstDate, secondDate) =>
       getTourDateTimestamp(firstDate.date) - getTourDateTimestamp(secondDate.date),
@@ -138,7 +145,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
 
                 <div className="mt-8 grid gap-3">
                   <a
-                    href={event.primaryCtaHref}
+                    href={primaryCtaHref}
                     className="inline-flex items-center justify-center bg-[#111111] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased transition-opacity hover:opacity-80"
                     style={eyebrowStyle}
                   >

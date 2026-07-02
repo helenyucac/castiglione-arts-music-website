@@ -338,14 +338,42 @@ function resolveProgramHref(program: TourProgram | undefined) {
   return "/#whats-on";
 }
 
+const activeRelatedStatuses = new Set(["on-sale", "upcoming"]);
+
+function getLocalDateTimestamp(date: string) {
+  const isoDate = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (isoDate) {
+    const [, year, month, day] = isoDate;
+    return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
+  }
+
+  const timestamp = Date.parse(date);
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function getTodayTimestamp() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today.getTime();
+}
+
+function getTourSlugFromHref(href?: string) {
+  return href?.split("/").filter(Boolean).at(-1);
+}
+
 function getRelatedEventsForProgram(program: TourProgram | undefined, slug: string) {
   if (!program) {
     return [];
   }
 
+  const todayTimestamp = getTodayTimestamp();
+
   return homepageWhatsOnEvents
     .filter((event) => getTourProgram(event.category) === program)
-    .filter((event) => event.href !== `/tours/${slug}`)
+    .filter((event) => event.id !== slug && getTourSlugFromHref(event.href) !== slug)
+    .filter((event) => activeRelatedStatuses.has(event.status))
+    .filter((event) => getLocalDateTimestamp(event.date) >= todayTimestamp)
     .slice(0, 3);
 }
 

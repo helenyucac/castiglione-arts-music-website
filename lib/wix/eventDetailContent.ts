@@ -247,16 +247,6 @@ function resolveDescription(fields: WixRecordFields, fallback: EventDetailData) 
   return fallback.description;
 }
 
-function resolveRelatedTitle(fields: WixRecordFields, fallback: EventDetailData) {
-  const program = resolveProgram(fields);
-
-  if (!program) {
-    return fallback.relatedTitle;
-  }
-
-  return `More from ${tourProgramLabels[program]}.`;
-}
-
 function mergeCmsEventDetail(
   fields: WixRecordFields,
   fallback: EventDetailData,
@@ -318,34 +308,45 @@ function mergeCmsEventDetail(
     secondaryCtaHref,
     aboutEyebrow: optionalString(fields.aboutTitle) ?? fallback.aboutEyebrow,
     description: resolveDescription(fields, fallback),
-    relatedTitle: resolveRelatedTitle(fields, fallback),
+    relatedTitle: "More Events",
   };
 }
 
-function resolveProgramHref(program: TourProgram | undefined) {
-  if (program === "anime-gaming-concerts" || program === "classical-concert-theatre") {
-    return "/programs/concerts";
+const activeRelatedStatuses = new Set(["on-sale", "upcoming"]);
+
+function getLocalDateTimestamp(date: string) {
+  const isoDate = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (isoDate) {
+    const [, year, month, day] = isoDate;
+    return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
   }
 
-  if (program === "live-music-festival") {
-    return "/programs/music-festival";
-  }
-
-  if (program === "touring-exhibition") {
-    return "/programs/exhibitions";
-  }
-
-  return "/#whats-on";
+  const timestamp = Date.parse(date);
+  return Number.isNaN(timestamp) ? 0 : timestamp;
 }
 
-function getRelatedEventsForProgram(program: TourProgram | undefined, slug: string) {
-  if (!program) {
-    return [];
-  }
+function getTodayTimestamp() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today.getTime();
+}
+
+function getTourSlugFromHref(href?: string) {
+  return href?.split("/").filter(Boolean).at(-1);
+}
+
+function getUpcomingRelatedEvents(slug: string) {
+  const todayTimestamp = getTodayTimestamp();
 
   return homepageWhatsOnEvents
-    .filter((event) => getTourProgram(event.category) === program)
-    .filter((event) => event.href !== `/tours/${slug}`)
+    .filter((event) => event.id !== slug && getTourSlugFromHref(event.href) !== slug)
+    .filter((event) => activeRelatedStatuses.has(event.status))
+    .filter((event) => getLocalDateTimestamp(event.date) >= todayTimestamp)
+    .sort(
+      (firstEvent, secondEvent) =>
+        getLocalDateTimestamp(firstEvent.date) - getLocalDateTimestamp(secondEvent.date),
+    )
     .slice(0, 3);
 }
 
@@ -385,10 +386,10 @@ function createCmsOnlyFallback(fields: WixRecordFields, requestedSlug: string) {
     trailerEyebrow: "TRAILER VIDEO",
     tourDates: [],
     relatedEyebrow: "ALSO PROGRAMMED",
-    relatedTitle: program ? `More from ${programLabel}.` : "More from What's On.",
-    relatedHref: resolveProgramHref(program),
+    relatedTitle: "More Events",
+    relatedHref: "/#whats-on",
     relatedLinkLabel: "SEE FULL SEASON",
-    relatedEvents: getRelatedEventsForProgram(program, slug),
+    relatedEvents: getUpcomingRelatedEvents(slug),
   };
 
   return mergeCmsEventDetail(fields, fallback);

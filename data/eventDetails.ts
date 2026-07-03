@@ -1,8 +1,6 @@
 import {
-  getTourProgram,
   homepageWhatsOnEvents,
   type TourCardData,
-  type TourProgram,
 } from "@/data/tours";
 
 export type EventTourDate = {
@@ -80,6 +78,7 @@ export type EventDetailData = {
 };
 
 const activeRelatedStatuses = new Set(["on-sale", "upcoming"]);
+const maxRelatedEvents = 3;
 
 function getLocalDateTimestamp(date: string) {
   const isoDate = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
@@ -99,13 +98,28 @@ function getTodayTimestamp() {
   return today.getTime();
 }
 
-const getRelatedProgramEvents = (program: TourProgram, excludedId: string) =>
-  homepageWhatsOnEvents
-    .filter((event) => event.id !== excludedId)
-    .filter((event) => getTourProgram(event.category) === program)
+function getTourSlugFromHref(href?: string) {
+  return href?.split("/").filter(Boolean).at(-1);
+}
+
+const getUpcomingRelatedEvents = (...excludedKeys: string[]) => {
+  const excludedKeySet = new Set(excludedKeys.filter(Boolean));
+  const todayTimestamp = getTodayTimestamp();
+
+  return homepageWhatsOnEvents
+    .filter(
+      (event) =>
+        !excludedKeySet.has(event.id) &&
+        !excludedKeySet.has(getTourSlugFromHref(event.href) ?? ""),
+    )
     .filter((event) => activeRelatedStatuses.has(event.status))
-    .filter((event) => getLocalDateTimestamp(event.date) >= getTodayTimestamp())
-    .slice(0, 3);
+    .filter((event) => getLocalDateTimestamp(event.date) >= todayTimestamp)
+    .sort(
+      (firstEvent, secondEvent) =>
+        getLocalDateTimestamp(firstEvent.date) - getLocalDateTimestamp(secondEvent.date),
+    )
+    .slice(0, maxRelatedEvents);
+};
 
 export const narutoEventDetail: EventDetailData = {
   slug: "naruto-the-symphonic-experience",
@@ -150,10 +164,13 @@ export const narutoEventDetail: EventDetailData = {
     },
   ],
   relatedEyebrow: "ALSO PROGRAMMED",
-  relatedTitle: "More from Anime & Gaming Concerts.",
-  relatedHref: "/programs/concerts",
+  relatedTitle: "More Events",
+  relatedHref: "/#whats-on",
   relatedLinkLabel: "SEE FULL SEASON",
-  relatedEvents: getRelatedProgramEvents("anime-gaming-concerts", "naruto-symphonic-experience"),
+  relatedEvents: getUpcomingRelatedEvents(
+    "naruto-symphonic-experience",
+    "naruto-the-symphonic-experience",
+  ),
 };
 
 export const attackOnTitanEventDetail: EventDetailData = {
@@ -206,10 +223,13 @@ export const attackOnTitanEventDetail: EventDetailData = {
     },
   ],
   relatedEyebrow: "ALSO PROGRAMMED",
-  relatedTitle: "More from Anime & Gaming Concerts.",
-  relatedHref: "/programs/concerts",
+  relatedTitle: "More Events",
+  relatedHref: "/#whats-on",
   relatedLinkLabel: "SEE FULL SEASON",
-  relatedEvents: getRelatedProgramEvents("anime-gaming-concerts", "attack-on-titan-world-tour"),
+  relatedEvents: getUpcomingRelatedEvents(
+    "attack-on-titan-world-tour",
+    "attack-on-titan-beyond-the-walls-world-tour",
+  ),
 };
 
 export const eventDetailsBySlug: Record<string, EventDetailData> = {

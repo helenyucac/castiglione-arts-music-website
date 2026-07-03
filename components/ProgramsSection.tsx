@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { cardTitleHoverClassName, cardTitleHoverStyle } from "@/components/cardHoverStyles";
 import { getHomepageProgramCards } from "@/lib/wix/listingData";
 
 export async function ProgramsSection() {
@@ -28,7 +29,12 @@ export async function ProgramsSection() {
 
         <div className="grid gap-12 lg:grid-cols-3 lg:gap-12">
           {programs.map((program) => (
-            <Link key={program.number} href={program.href} className="group block">
+            <Link
+              key={program.number}
+              href={program.href}
+              className="group block"
+              style={cardTitleHoverStyle}
+            >
               <article>
                 <div className="relative aspect-[4/5] overflow-hidden bg-[#f8f8f3]">
                   <Image
@@ -36,7 +42,7 @@ export async function ProgramsSection() {
                     alt={program.imageAlt}
                     fill
                     sizes="(min-width: 1024px) 31vw, (min-width: 640px) 80vw, 100vw"
-                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.025]"
+                    className="object-cover"
                   />
                   <span
                     className="absolute left-0 top-0 px-4 py-3 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased"
@@ -51,7 +57,7 @@ export async function ProgramsSection() {
 
                 <div className="pt-8">
                   <h3
-                    className="mb-3 cursor-pointer text-left text-[20px] font-medium leading-[27.5px] tracking-[-0.1px] text-[#111111] antialiased transition-colors duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:text-[rgba(17,17,17,0.65)]"
+                    className={`mb-3 cursor-pointer text-left text-[20px] font-medium leading-[27.5px] tracking-[-0.1px] text-[#111111] antialiased ${cardTitleHoverClassName}`}
                     style={{ fontFamily: "Inter, sans-serif" }}
                   >
                     {program.title}
@@ -63,7 +69,7 @@ export async function ProgramsSection() {
                     {program.description}
                   </p>
                   <p
-                    className="mt-8 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[#111111] antialiased transition-opacity duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:opacity-70"
+                    className="mt-8 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[#111111] antialiased"
                     style={{ fontFamily: "Inter, sans-serif" }}
                   >
                     EXPLORE →

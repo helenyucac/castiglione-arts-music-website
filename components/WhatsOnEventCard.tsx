@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties } from "react";
-import { BRAND_COLORS } from "@/data/siteSettings";
+import { cardTitleHoverClassName, cardTitleHoverStyle } from "@/components/cardHoverStyles";
 import { formatPublicDateDisplay } from "@/lib/dateDisplay";
 import {
   getTourProgram,
@@ -19,11 +18,6 @@ type WhatsOnEventCardProps = {
   displayCategory?: WhatsOnDisplayCategory;
 };
 
-const eventTitleStyle = {
-  fontFamily: "Inter, sans-serif",
-  "--event-title-hover-color": BRAND_COLORS.red,
-} as CSSProperties & Record<"--event-title-hover-color", string>;
-
 function getDisplayCategory(category: TourCategory): WhatsOnDisplayCategory | null {
   return getTourProgram(category);
 }
@@ -39,13 +33,13 @@ export function getWhatsOnDisplayCategory(category: TourCategory) {
 export function WhatsOnEventCard({ event, displayCategory }: WhatsOnEventCardProps) {
   const resolvedCategory = displayCategory ?? getDisplayCategory(event.category);
   const displayDate = formatPublicDateDisplay(event.dateLabel) ?? event.dateLabel;
+  const hasHref = Boolean(event.href && event.href !== "#");
 
   if (!resolvedCategory) {
     return null;
   }
 
-  return (
-    <Link href={event.href ?? "#"} className="group block">
+  const cardContent = (
       <article>
         <div className="relative overflow-hidden bg-[#e7e0d6]" style={{ aspectRatio: "4 / 5" }}>
           <Image
@@ -53,7 +47,7 @@ export function WhatsOnEventCard({ event, displayCategory }: WhatsOnEventCardPro
             alt=""
             fill
             sizes="(min-width: 1280px) 23vw, (min-width: 1024px) 31vw, (min-width: 640px) 46vw, 100vw"
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.025]"
+            className="object-cover"
           />
         </div>
 
@@ -73,8 +67,8 @@ export function WhatsOnEventCard({ event, displayCategory }: WhatsOnEventCardPro
           </div>
 
           <h3
-            className="text-[20px] font-medium leading-[27.5px] tracking-[-0.1px] text-[#111111] antialiased transition-colors duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:text-[var(--event-title-hover-color)]"
-            style={eventTitleStyle}
+            className={`text-[20px] font-medium leading-[27.5px] tracking-[-0.1px] text-[#111111] antialiased ${cardTitleHoverClassName}`}
+            style={{ fontFamily: "Inter, sans-serif", ...cardTitleHoverStyle }}
           >
             {event.title}
           </h3>
@@ -95,6 +89,15 @@ export function WhatsOnEventCard({ event, displayCategory }: WhatsOnEventCardPro
           </div>
         </div>
       </article>
+  );
+
+  if (!hasHref) {
+    return <div className="block">{cardContent}</div>;
+  }
+
+  return (
+    <Link href={event.href as string} className="group block">
+      {cardContent}
     </Link>
   );
 }

@@ -1,8 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties } from "react";
-import { BRAND_COLORS } from "@/data/siteSettings";
+import { cardTitleHoverClassName, cardTitleHoverStyle } from "@/components/cardHoverStyles";
 import { formatPublicDateDisplay } from "@/lib/dateDisplay";
 import {
   getTourProgram,
@@ -25,10 +24,6 @@ function hexToRgba(hex: string, alpha: number) {
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
 
-const eventTitleHoverStyle = {
-  "--event-title-hover-color": BRAND_COLORS.red,
-} as CSSProperties & Record<"--event-title-hover-color", string>;
-
 export function TourCard({ tour }: TourCardProps) {
   const accentColor = tourCategoryColors[tour.category];
   const program = getTourProgram(tour.category);
@@ -36,12 +31,15 @@ export function TourCard({ tour }: TourCardProps) {
   const softenedAccentColor = hexToRgba(accentColor, 0.7);
   const displayDate = formatPublicDateDisplay(tour.dateLabel) ?? tour.dateLabel;
   const details = `${displayDate} / ${tour.cities.join(", ")}`;
+  const hasHref = Boolean(tour.href && tour.href !== "#");
+  const articleClassName = `tour-card flex h-full flex-col overflow-hidden border border-black bg-white ${
+    hasHref ? "group" : ""
+  }`;
 
-  return (
-    <Link href={tour.href ?? "#"} className="block h-full" aria-label={tour.title}>
+  const cardContent = (
       <article
-        className="tour-card group flex h-full flex-col overflow-hidden border border-black bg-white transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(17,17,17,0.12)]"
-        style={eventTitleHoverStyle}
+        className={articleClassName}
+        style={cardTitleHoverStyle}
       >
         <div className="tour-card-media relative shrink-0 overflow-hidden bg-black">
           <Image
@@ -49,7 +47,7 @@ export function TourCard({ tour }: TourCardProps) {
             alt=""
             fill
             sizes="(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"
-            className="object-cover transition duration-500 group-hover:scale-105"
+            className="object-cover"
           />
         </div>
 
@@ -64,7 +62,7 @@ export function TourCard({ tour }: TourCardProps) {
             <p className="tour-card-category break-words font-black uppercase tracking-normal opacity-80">
               {categoryLabel}
             </p>
-            <h3 className="tour-card-title mt-3 break-words font-black uppercase leading-none tracking-normal transition-colors duration-300 group-hover:text-[var(--event-title-hover-color)] sm:mt-5">
+            <h3 className={`tour-card-title mt-3 break-words font-black uppercase leading-none tracking-normal sm:mt-5 ${cardTitleHoverClassName}`}>
               {tour.title}
             </h3>
           </div>
@@ -78,11 +76,20 @@ export function TourCard({ tour }: TourCardProps) {
             </p>
             <ArrowUpRight
               aria-hidden="true"
-              className="size-4 shrink-0 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 sm:size-6"
+              className="size-4 shrink-0 sm:size-6"
             />
           </div>
         </div>
       </article>
+  );
+
+  if (!hasHref) {
+    return <div className="block h-full">{cardContent}</div>;
+  }
+
+  return (
+    <Link href={tour.href as string} className="group block h-full" aria-label={tour.title}>
+      {cardContent}
     </Link>
   );
 }

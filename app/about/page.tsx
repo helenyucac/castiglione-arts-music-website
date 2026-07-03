@@ -134,7 +134,7 @@ export default function AboutPage() {
             <div className="flex flex-col items-start gap-12 lg:flex-row lg:justify-between lg:gap-16">
               <div className="m-0 self-start p-0 transform-none lg:basis-[48%]">
                 <h1
-                  className="m-0 max-w-5xl text-[77px] font-semibold leading-[78.54px] tracking-[-1.54px] text-[#111111] antialiased"
+                  className="m-0 max-w-5xl text-[58px] font-semibold leading-[59.16px] tracking-[-1.16px] text-[#111111] antialiased md:text-[77px] md:leading-[78.54px] md:tracking-[-1.54px]"
                   style={headlineFont}
                 >
                   <span className="block">An institution</span>

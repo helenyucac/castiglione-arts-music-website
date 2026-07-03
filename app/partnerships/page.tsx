@@ -43,7 +43,7 @@ export default function PartnershipsPage() {
                 Partnership
               </p>
               <h1
-                className="m-0 max-w-[738.914px] p-0 text-[81.9px] font-medium leading-[83.538px] tracking-[-1.638px] text-[rgb(17,17,17)] antialiased"
+                className="m-0 max-w-[738.914px] p-0 text-[62px] font-medium leading-[63.24px] tracking-[-1.24px] text-[rgb(17,17,17)] antialiased md:text-[81.9px] md:leading-[83.538px] md:tracking-[-1.638px]"
                 style={displayFont}
               >
                 <span className="block">Let&apos;s build</span>

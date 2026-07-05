@@ -402,16 +402,23 @@ export function normalizeTourDate(item: WixCollectionItem): NormalizedTourDate {
 
   return {
     id: idOf(fields),
-    event: stringValue(fields.event),
-    showLabel: stringValue(fields.showLabel),
-    date: stringValue(fields.displayDate ?? fields.date),
-    displayDate: stringValue(fields.displayDate ?? fields.date),
+    event: stringValue(fields.event ?? fields.eventSlug ?? fields.eventId),
+    showLabel: stringValue(fields.showLabel ?? fields.title),
+    date: stringValue(fields.displayDate ?? fields.date ?? fields.startDate ?? fields.eventDate),
+    displayDate: stringValue(fields.displayDate ?? fields.date ?? fields.startDate ?? fields.eventDate),
     time: optionalString(fields.time),
-    city: stringValue(fields.city),
-    venue: stringValue(fields.venue),
+    city: stringValue(fields.city ?? fields.cityName ?? fields.location ?? fields.eventCity),
+    venue: stringValue(fields.venue ?? fields.venueName ?? fields.locationName ?? fields.eventVenue),
     country: optionalString(fields.country),
-    ticketLabel: stringValue(fields.ticketLabel, "BUY TICKETS"),
-    ticketHref: stringValue(fields.ticketUrl, "#"),
+    ticketLabel: stringValue(fields.ticketLabel ?? fields.ticketPrimaryLabel, "BUY TICKETS"),
+    ticketHref: stringValue(
+      fields.ticketUrl ??
+        fields.ticketHref ??
+        fields.ticketPrimaryUrl ??
+        fields.bookingUrl ??
+        fields.ctaUrl,
+      "#",
+    ),
     ticketStatus: optionalString(fields.ticketStatus),
     order: numberValue(fields.order, Number.MAX_SAFE_INTEGER),
     isVisible: booleanValue(fields.isVisible, true),

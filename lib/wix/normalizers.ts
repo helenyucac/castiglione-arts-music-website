@@ -404,15 +404,37 @@ export function normalizeTourDate(item: WixCollectionItem): NormalizedTourDate {
     id: idOf(fields),
     event: stringValue(fields.event ?? fields.eventSlug ?? fields.eventId),
     showLabel: stringValue(fields.showLabel ?? fields.title),
-    date: stringValue(fields.displayDate ?? fields.date ?? fields.startDate ?? fields.eventDate),
-    displayDate: stringValue(fields.displayDate ?? fields.date ?? fields.startDate ?? fields.eventDate),
-    time: optionalString(fields.time),
-    city: stringValue(fields.city ?? fields.cityName ?? fields.location ?? fields.eventCity),
+    date: stringValue(
+      fields.displayDate ??
+        fields.date ??
+        fields.startDate ??
+        fields.eventDate ??
+        fields.showDate ??
+        fields.performanceDate,
+    ),
+    displayDate: stringValue(
+      fields.displayDate ??
+        fields.date ??
+        fields.startDate ??
+        fields.eventDate ??
+        fields.showDate ??
+        fields.performanceDate,
+    ),
+    time: optionalString(
+      fields.time ?? fields.eventTime ?? fields.showTime ?? fields.performanceTime,
+    ),
+    city: stringValue(
+      fields.city ?? fields.cityName ?? fields.locationCity ?? fields.location ?? fields.eventCity,
+    ),
     venue: stringValue(fields.venue ?? fields.venueName ?? fields.locationName ?? fields.eventVenue),
     country: optionalString(fields.country),
-    ticketLabel: stringValue(fields.ticketLabel ?? fields.ticketPrimaryLabel, "BUY TICKETS"),
+    ticketLabel: stringValue(
+      fields.ticketLabel ?? fields.buttonLabel ?? fields.ticketPrimaryLabel,
+      "BUY TICKETS",
+    ),
     ticketHref: stringValue(
       fields.ticketUrl ??
+        fields.ticketLink ??
         fields.ticketHref ??
         fields.ticketPrimaryUrl ??
         fields.bookingUrl ??

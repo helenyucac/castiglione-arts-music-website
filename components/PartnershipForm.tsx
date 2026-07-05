@@ -38,15 +38,42 @@ const enquiryTypes = [
   "Venues & Institutions",
 ];
 
+const partnershipEmail = "partnerships@castiglione.art";
+
+function getFormValue(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function createMailtoHref(subject: string, body: string) {
+  return `mailto:${partnershipEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 export function PartnershipForm() {
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [selectedType, setSelectedType] = useState(enquiryTypes[0]);
   const [fileName, setFileName] = useState<string>(formLabels.noFileChosen);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsSubmitted(true);
+
+    const formData = new FormData(event.currentTarget);
+    const body = [
+      `Full name: ${getFormValue(formData, "fullName")}`,
+      `Organisation: ${getFormValue(formData, "organisation")}`,
+      `Email: ${getFormValue(formData, "email")}`,
+      `Website: ${getFormValue(formData, "website") || "Not provided"}`,
+      `Country / Region: ${getFormValue(formData, "region") || "Not provided"}`,
+      `Enquiry type: ${selectedType}`,
+      "",
+      "Project:",
+      getFormValue(formData, "project") || "Not provided",
+      "",
+      `Supporting materials selected: ${fileName}`,
+      "Please attach supporting files directly in your email client before sending.",
+    ].join("\n");
+
+    window.location.href = createMailtoHref("Castiglione partnership enquiry", body);
   }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -235,15 +262,6 @@ export function PartnershipForm() {
             Start the conversation →
           </button>
 
-          {isSubmitted ? (
-            <p
-              className="mt-6 border-l border-[#111111] pl-4 text-[14px] font-normal leading-[22px] text-[rgba(17,17,17,0.75)]"
-              style={interFont}
-            >
-              Thank you. Your partnership enquiry has been received in this
-              front-end preview.
-            </p>
-          ) : null}
         </form>
       </div>
     </section>

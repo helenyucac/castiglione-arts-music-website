@@ -63,19 +63,26 @@ function getTourDateTimestamp(date: string) {
   return new Date(Number(year), monthIndex, Number(day), hour, minute).getTime();
 }
 
-function getPrimaryCtaHref(event: EventDetailData) {
-  return event.primaryCtaLabel.toLowerCase().includes("ticket")
-    ? "#tour-dates"
-    : event.primaryCtaHref;
+function getPrimaryCtaHref(event: EventDetailData, hasTourDates: boolean) {
+  if (event.primaryCtaLabel.toLowerCase().includes("ticket")) {
+    return hasTourDates ? "#tour-dates" : event.primaryCtaHref;
+  }
+
+  return event.primaryCtaHref;
 }
 
 export function EventDetailPage({ event }: EventDetailPageProps) {
   const heroTitleOffsetClass = event.heroTitleOffset ? "lg:mt-14" : "";
   const galleryImages = event.galleryImages ?? [];
-  const primaryCtaHref = getPrimaryCtaHref(event);
+  const hasDescription = event.description.length > 0;
   const sortedTourDates = [...event.tourDates].sort(
     (firstDate, secondDate) =>
       getTourDateTimestamp(firstDate.date) - getTourDateTimestamp(secondDate.date),
+  );
+  const hasTourDates = sortedTourDates.length > 0;
+  const primaryCtaHref = getPrimaryCtaHref(event, hasTourDates);
+  const shouldRenderPrimaryCta = Boolean(
+    event.primaryCtaLabel && primaryCtaHref && (hasTourDates || primaryCtaHref !== "#tour-dates"),
   );
 
   return (
@@ -144,13 +151,15 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                 </p>
 
                 <div className="mt-8 grid gap-3">
-                  <a
-                    href={primaryCtaHref}
-                    className="inline-flex items-center justify-center bg-[#111111] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased transition-opacity hover:opacity-80"
-                    style={eyebrowStyle}
-                  >
-                    {event.primaryCtaLabel} →
-                  </a>
+                  {shouldRenderPrimaryCta ? (
+                    <a
+                      href={primaryCtaHref}
+                      className="inline-flex items-center justify-center bg-[#111111] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased transition-opacity hover:opacity-80"
+                      style={eyebrowStyle}
+                    >
+                      {event.primaryCtaLabel} →
+                    </a>
+                  ) : null}
                   <Link
                     href={event.secondaryCtaHref}
                     className="inline-flex items-center justify-center border border-[rgba(17,17,17,0.48)] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[#111111] antialiased transition-colors hover:border-[#111111]"
@@ -179,24 +188,26 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
           </div>
         </section>
 
-        <section className="border-t border-[rgba(17,17,17,0.08)] bg-white py-16 sm:py-20 lg:py-24">
-          <div className="mx-auto grid w-full max-w-[1600px] gap-10 px-4 sm:px-6 lg:grid-cols-[0.22fr_1fr] lg:gap-20 lg:px-10">
-            <p className={sectionEyebrowClass} style={eyebrowStyle}>
-              {event.aboutEyebrow}
-            </p>
-            <div className="w-full max-w-[1200px]">
-              {event.description.map((paragraph) => (
-                <p
-                  key={paragraph}
-                  className="mb-6 w-full max-w-[1200px] p-0 text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.8)] antialiased last:mb-0"
-                  style={eyebrowStyle}
-                >
-                  {paragraph}
-                </p>
-              ))}
+        {hasDescription ? (
+          <section className="border-t border-[rgba(17,17,17,0.08)] bg-white py-16 sm:py-20 lg:py-24">
+            <div className="mx-auto grid w-full max-w-[1600px] gap-10 px-4 sm:px-6 lg:grid-cols-[0.22fr_1fr] lg:gap-20 lg:px-10">
+              <p className={sectionEyebrowClass} style={eyebrowStyle}>
+                {event.aboutEyebrow}
+              </p>
+              <div className="w-full max-w-[1200px]">
+                {event.description.map((paragraph) => (
+                  <p
+                    key={paragraph}
+                    className="mb-6 w-full max-w-[1200px] p-0 text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.8)] antialiased last:mb-0"
+                    style={eyebrowStyle}
+                  >
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : null}
 
         {event.trailerVideoSrc ? (
           <section className="border-t border-[rgba(17,17,17,0.08)] bg-white py-16 sm:py-20 lg:py-24">
@@ -219,66 +230,68 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
           </section>
         ) : null}
 
-        <section
-          id="tour-dates"
-          className="scroll-mt-24 border-t border-[rgba(17,17,17,0.08)] bg-white py-16 sm:py-20 lg:py-24"
-        >
-          <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-10">
-            <div className="grid gap-10 lg:grid-cols-[0.22fr_1fr] lg:gap-20">
-              <p className={sectionEyebrowClass} style={eyebrowStyle}>
-                Tour Dates
-              </p>
-              <div className="w-full max-w-[1200px]">
-                <div className="grid">
-                  {sortedTourDates.map((tourDate, index) => (
-                    <article
-                      key={`${tourDate.date}-${tourDate.city}`}
-                      className="grid gap-6 border-b border-[rgba(17,17,17,0.15)] py-8 last:border-b-0 lg:grid-cols-[120px_220px_minmax(0,1fr)_auto] lg:items-start lg:gap-8"
-                    >
-                      <p
-                        className="m-0 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased lg:pt-4"
-                        style={eyebrowStyle}
+        {hasTourDates ? (
+          <section
+            id="tour-dates"
+            className="scroll-mt-24 border-t border-[rgba(17,17,17,0.08)] bg-white py-16 sm:py-20 lg:py-24"
+          >
+            <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-10">
+              <div className="grid gap-10 lg:grid-cols-[0.22fr_1fr] lg:gap-20">
+                <p className={sectionEyebrowClass} style={eyebrowStyle}>
+                  Tour Dates
+                </p>
+                <div className="w-full max-w-[1200px]">
+                  <div className="grid">
+                    {sortedTourDates.map((tourDate, index) => (
+                      <article
+                        key={`${tourDate.date}-${tourDate.city}`}
+                        className="grid gap-6 border-b border-[rgba(17,17,17,0.15)] py-8 last:border-b-0 lg:grid-cols-[120px_220px_minmax(0,1fr)_auto] lg:items-start lg:gap-8"
                       >
-                        Show {index + 1}
-                      </p>
-                      <p
-                        className="mt-0 mb-0 pt-4 pb-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[#d94a28] antialiased"
-                        style={eyebrowStyle}
-                      >
-                        {formatPublicDateDisplay(tourDate.date) ?? tourDate.date}
-                      </p>
-                      <div className="lg:self-center">
-                        <h3
-                          className="m-0 text-[34px] font-medium leading-[38px] tracking-[-0.03em] text-[#111111] antialiased"
-                          style={displayStyle}
-                        >
-                          {tourDate.city}
-                        </h3>
                         <p
-                          className="mt-2 mb-0 p-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[rgba(17,17,17,0.6)] antialiased"
+                          className="m-0 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased lg:pt-4"
                           style={eyebrowStyle}
                         >
-                          {tourDate.venue}
+                          Show {index + 1}
                         </p>
-                      </div>
-                      <div className="lg:flex lg:justify-end lg:pt-4">
-                        <a
-                          href={tourDate.ticketHref}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center bg-[#111111] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased transition-opacity hover:opacity-80"
+                        <p
+                          className="mt-0 mb-0 pt-4 pb-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[#d94a28] antialiased"
                           style={eyebrowStyle}
                         >
-                          {tourDate.ticketLabel} →
-                        </a>
-                      </div>
-                    </article>
-                  ))}
+                          {formatPublicDateDisplay(tourDate.date) ?? tourDate.date}
+                        </p>
+                        <div className="lg:self-center">
+                          <h3
+                            className="m-0 text-[34px] font-medium leading-[38px] tracking-[-0.03em] text-[#111111] antialiased"
+                            style={displayStyle}
+                          >
+                            {tourDate.city}
+                          </h3>
+                          <p
+                            className="mt-2 mb-0 p-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[rgba(17,17,17,0.6)] antialiased"
+                            style={eyebrowStyle}
+                          >
+                            {tourDate.venue}
+                          </p>
+                        </div>
+                        <div className="lg:flex lg:justify-end lg:pt-4">
+                          <a
+                            href={tourDate.ticketHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center bg-[#111111] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased transition-opacity hover:opacity-80"
+                            style={eyebrowStyle}
+                          >
+                            {tourDate.ticketLabel} →
+                          </a>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : null}
 
         {galleryImages.length > 0 ? (
           <section className="border-t border-[rgba(17,17,17,0.08)] bg-white py-16 sm:py-20 lg:py-24">

@@ -86,7 +86,7 @@ export function PartnershipTabs() {
   return (
     <>
       <section className="border-y border-[rgba(17,17,17,0.08)] bg-white">
-        <div className="mx-auto grid w-full max-w-[1540px] md:grid-cols-3">
+        <div className="mx-auto flex w-full max-w-[1540px] overflow-x-auto md:grid md:grid-cols-3 md:overflow-visible">
           {partnershipTabs.map((tab) => {
             const isActive = tab.id === activeTab.id;
 
@@ -95,18 +95,18 @@ export function PartnershipTabs() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTabId(tab.id)}
-                className={`relative min-h-[128px] border-b border-[rgba(17,17,17,0.08)] px-8 py-8 text-left transition-colors duration-150 md:border-b-0 md:border-r md:last:border-r-0 lg:px-10 ${
+                className={`relative min-h-[96px] min-w-[260px] flex-none border-r border-[rgba(17,17,17,0.08)] px-5 py-5 text-left transition-colors duration-150 last:border-r-0 md:min-h-[128px] md:min-w-0 md:px-8 md:py-8 md:last:border-r-0 lg:px-10 ${
                   isActive ? "bg-white" : "bg-[#f5f1ea] hover:bg-white"
                 }`}
               >
                 <span
-                  className="block text-left text-[30px] font-normal leading-[36px] tracking-[-0.45px] text-[rgb(17,17,17)] antialiased"
+                  className="block text-left text-[22px] font-normal leading-[28px] tracking-[-0.33px] text-[rgb(17,17,17)] antialiased md:text-[30px] md:leading-[36px] md:tracking-[-0.45px]"
                   style={displayFont}
                 >
                   {tab.label}
                 </span>
                 <span
-                  className="mt-3 block text-[13px] font-normal leading-[20px] text-[rgba(17,17,17,0.58)] antialiased"
+                  className="mt-2 block text-[11px] font-normal leading-[17px] text-[rgba(17,17,17,0.58)] antialiased md:mt-3 md:text-[13px] md:leading-[20px]"
                   style={interFont}
                 >
                   {tab.subtitle}

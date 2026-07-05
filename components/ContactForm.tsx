@@ -5,12 +5,35 @@ import { FormEvent, useState } from "react";
 const inputClass =
   "mt-2 w-full border border-black bg-white px-4 py-4 text-base font-semibold outline-none transition-colors focus:bg-[#fdf9ee]";
 
+const contactEmail = "partnerships@castiglione.art";
+
+function getFormValue(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function createMailtoHref(subject: string, body: string) {
+  return `mailto:${contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 export function ContactForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const body = [
+      `Name: ${getFormValue(formData, "name")}`,
+      `Email: ${getFormValue(formData, "email")}`,
+      `Join mailing list: ${formData.get("mailingList") ? "Yes" : "No"}`,
+      "",
+      "Message:",
+      getFormValue(formData, "message") || "Not provided",
+    ].join("\n");
+
     setIsSubmitted(true);
+    window.location.href = createMailtoHref("Castiglione contact enquiry", body);
   }
 
   return (
@@ -64,7 +87,8 @@ export function ContactForm() {
 
       {isSubmitted ? (
         <p className="border-l-4 border-black bg-[#fdf9ee] px-4 py-3 text-sm font-bold">
-          Thank you. Your message has been received in this front-end preview.
+          Your email client should open with this message. Please send the draft
+          email to {contactEmail}.
         </p>
       ) : null}
     </form>

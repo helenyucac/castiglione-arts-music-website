@@ -18,7 +18,7 @@ import type {
   WixRecordFields,
 } from "@/lib/wix/types";
 
-const DEFAULT_EVENT_HERO_IMAGE = "/media/naruto-hero.jpg";
+const DEFAULT_EVENT_HERO_IMAGE = "/media/our-touring-footprints.jpg";
 const DEFAULT_SEASON_LABEL = "DATES TO BE ANNOUNCED";
 const DEFAULT_CITY_SUMMARY = "TO BE ANNOUNCED";
 

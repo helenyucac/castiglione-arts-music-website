@@ -4,6 +4,7 @@ import { isWixConfigured, queryWixCollection, visibleFilter } from "@/lib/wix/cl
 import { getTourProgram, homepageWhatsOnEvents, tourProgramLabels } from "@/data/tours";
 import { formatPublicDateRangeFromValues, formatPublicEventDate } from "@/lib/dateDisplay";
 import { getWixFields } from "@/lib/wix/normalizers";
+import { optionalMediaUrl, SAFE_EVENT_IMAGE_FALLBACK } from "@/lib/wix/media";
 import { getEventGallery, getEventVideos, getTourDates } from "@/lib/wix/eventDetails";
 import { getPartnersByEvent } from "@/lib/wix/partners";
 import { getTestimonialsByEvent } from "@/lib/wix/testimonials";
@@ -18,7 +19,7 @@ import type {
   WixRecordFields,
 } from "@/lib/wix/types";
 
-const DEFAULT_EVENT_HERO_IMAGE = "/media/our-touring-footprints.jpg";
+const DEFAULT_EVENT_HERO_IMAGE = SAFE_EVENT_IMAGE_FALLBACK;
 const DEFAULT_SEASON_LABEL = "DATES TO BE ANNOUNCED";
 const DEFAULT_CITY_SUMMARY = "TO BE ANNOUNCED";
 
@@ -42,51 +43,6 @@ function optionalString(value: unknown) {
   }
 
   return text;
-}
-
-function optionalMediaUrl(value: unknown): string | undefined {
-  const text = optionalString(value);
-
-  if (text) {
-    return text;
-  }
-
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      const mediaUrl = optionalMediaUrl(item);
-
-      if (mediaUrl) {
-        return mediaUrl;
-      }
-    }
-
-    return undefined;
-  }
-
-  if (!value || typeof value !== "object") {
-    return undefined;
-  }
-
-  const record = value as WixRecordFields;
-  const mediaSources = [
-    record.url,
-    record.src,
-    record.fileUrl,
-    record.videoUrl,
-    record.mediaUrl,
-    record.downloadUrl,
-    record.uri,
-  ];
-
-  for (const source of mediaSources) {
-    const mediaUrl = optionalMediaUrl(source);
-
-    if (mediaUrl) {
-      return mediaUrl;
-    }
-  }
-
-  return undefined;
 }
 
 function stringCandidates(value: unknown): string[] {
@@ -253,9 +209,11 @@ function mergeCmsEventDetail(
 ): EventDetailData {
   const categoryLabel = resolveCategoryLabel(fields, fallback);
   const heroImage =
+    optionalMediaUrl(fields.heroImageAsset) ??
+    optionalMediaUrl(fields.cardImageAsset) ??
+    optionalMediaUrl(fields.cardImage) ??
     optionalMediaUrl(fields.heroImage) ??
     optionalMediaUrl(fields.posterImage) ??
-    optionalMediaUrl(fields.cardImage) ??
     fallback.heroImage;
   const intro =
     optionalString(fields.shortDescription) ??

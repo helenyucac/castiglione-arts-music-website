@@ -1,5 +1,6 @@
 import type { TourCategory, TourProgram, TourStatus } from "@/data/tours";
 import { formatPublicEventDate } from "@/lib/dateDisplay";
+import { optionalMediaUrl, SAFE_EVENT_IMAGE_FALLBACK } from "@/lib/wix/media";
 import type {
   NavigationLocation,
   NormalizedDesignSettings,
@@ -96,39 +97,6 @@ function optionalString(value: unknown) {
   }
 
   return text;
-}
-
-function optionalMediaUrl(value: unknown): string | undefined {
-  const text = optionalString(value);
-
-  if (text) {
-    return text;
-  }
-
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return undefined;
-  }
-
-  const record = value as WixRecordFields;
-  const mediaSources = [
-    record.url,
-    record.src,
-    record.fileUrl,
-    record.videoUrl,
-    record.mediaUrl,
-    record.downloadUrl,
-    record.uri,
-  ];
-
-  for (const source of mediaSources) {
-    const sourceUrl = optionalMediaUrl(source);
-
-    if (sourceUrl) {
-      return sourceUrl;
-    }
-  }
-
-  return undefined;
 }
 
 function numberValue(value: unknown, fallback = 0) {
@@ -385,7 +353,10 @@ export function normalizeEvent(item: WixCollectionItem): NormalizedEvent {
   const category = normalizeCategory(program, categoryLabel);
   const slug = stringValue(fields.slug, "MANUAL");
   const ticketPrimaryUrl = optionalString(fields.ticketPrimaryUrl);
-  const image = optionalString(fields.cardImage) ?? optionalString(fields.heroImage) ?? "";
+  const image =
+    optionalMediaUrl(fields.cardImageAsset) ??
+    optionalMediaUrl(fields.cardImage) ??
+    SAFE_EVENT_IMAGE_FALLBACK;
   const dateLabel =
     formatPublicEventDate({
       startDate: optionalString(fields.startDate),

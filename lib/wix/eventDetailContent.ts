@@ -6,6 +6,7 @@ import { formatPublicDateRangeFromValues, formatPublicEventDate } from "@/lib/da
 import { getWixFields } from "@/lib/wix/normalizers";
 import { optionalMediaUrl, SAFE_EVENT_IMAGE_FALLBACK } from "@/lib/wix/media";
 import { getEventGallery, getEventVideos, getTourDates } from "@/lib/wix/eventDetails";
+import { getEvents } from "@/lib/wix/events";
 import { getPartnersByEvent } from "@/lib/wix/partners";
 import { getTestimonialsByEvent } from "@/lib/wix/testimonials";
 import type { TourProgram, TourStatus } from "@/data/tours";
@@ -80,6 +81,12 @@ function extractRichTextParagraphs(value: unknown, depth = 0): string[] {
   }
 
   if (typeof value === "string") {
+    const parsedValue = parsePossiblyJsonValue(value);
+
+    if (parsedValue !== value) {
+      return extractRichTextParagraphs(parsedValue, depth + 1);
+    }
+
     return splitParagraphs(value);
   }
 
@@ -110,6 +117,7 @@ function extractRichTextParagraphs(value: unknown, depth = 0): string[] {
     value.description,
     value.longDescription,
     value.aboutBody,
+    value.richTextContent,
     value.overview,
     value.synopsis,
     value.richContent,
@@ -168,14 +176,10 @@ function stringCandidates(value: unknown): string[] {
 }
 
 function hasRequiredTourDateFields(tourDate: NormalizedTourDate) {
-  const ticketHref = optionalString(tourDate.ticketHref);
-
   return Boolean(
     optionalString(tourDate.date) &&
       optionalString(tourDate.city) &&
-      optionalString(tourDate.venue) &&
-      ticketHref &&
-      ticketHref !== "#",
+      optionalString(tourDate.venue),
   );
 }
 
@@ -276,7 +280,7 @@ function arrayItems(value: unknown): unknown[] {
     return [];
   }
 
-  for (const key of ["items", "rows", "dates", "shows", "performances"]) {
+  for (const key of ["items", "rows", "dates", "shows", "performances", "eventDates", "schedule"]) {
     const nestedItems = arrayItems(parsedValue[key]);
 
     if (nestedItems.length > 0) {
@@ -378,6 +382,7 @@ function resolveDescription(fields: WixRecordFields, fallback: EventDetailData) 
     fields.showDescription,
     fields.overview,
     fields.synopsis,
+    fields.richTextContent,
     fields.richContent,
     fields.body,
     fields.content,
@@ -407,10 +412,13 @@ function normalizeInlineTourDate(
     textField(fields.date) ??
     textField(fields.startDate) ??
     textField(fields.eventDate) ??
+    textField(fields.showDate) ??
+    textField(fields.performanceDate) ??
     textField(value);
   const city =
     textField(fields.city) ??
     textField(fields.cityName) ??
+    textField(fields.locationCity) ??
     textField(fields.location) ??
     textField(fields.eventCity);
   const venue =
@@ -420,6 +428,7 @@ function normalizeInlineTourDate(
     textField(fields.eventVenue);
   const ticketHref =
     textField(fields.ticketUrl) ??
+    textField(fields.ticketLink) ??
     textField(fields.ticketHref) ??
     textField(fields.ticketPrimaryUrl) ??
     textField(fields.bookingUrl) ??
@@ -431,6 +440,7 @@ function normalizeInlineTourDate(
     "#";
   const ticketLabel =
     textField(fields.ticketLabel) ??
+    textField(fields.buttonLabel) ??
     textField(fields.ticketPrimaryLabel) ??
     textField(parentFields.ticketPrimaryLabel) ??
     "BUY TICKETS";
@@ -446,7 +456,11 @@ function normalizeInlineTourDate(
     showLabel: textField(fields.showLabel) ?? `SHOW ${index + 1}`,
     date,
     displayDate: date,
-    time: textField(fields.time),
+    time:
+      textField(fields.time) ??
+      textField(fields.eventTime) ??
+      textField(fields.showTime) ??
+      textField(fields.performanceTime),
     city,
     venue,
     country: textField(fields.country),
@@ -466,6 +480,8 @@ function resolveInlineTourDates(fields: WixRecordFields, fallback: EventTourDate
     fields.performances,
     fields.showDates,
     fields.dates,
+    fields.eventDates,
+    fields.schedule,
   ];
   const explicitTourDates = inlineSources
     .flatMap(arrayItems)
@@ -483,7 +499,8 @@ function resolveInlineTourDates(fields: WixRecordFields, fallback: EventTourDate
     textField(fields.displayDate) ??
     textField(fields.eventCardDate) ??
     textField(fields.seasonLabel) ??
-    textField(fields.startDate);
+    textField(fields.startDate) ??
+    textField(fields.eventDate);
 
   if (!date || cities.length === 0 || venues.length === 0) {
     return fallback;
@@ -496,8 +513,12 @@ function resolveInlineTourDates(fields: WixRecordFields, fallback: EventTourDate
           city,
           venue: venues[index] ?? venues[0],
           date,
-          ticketUrl: fields.ticketPrimaryUrl ?? fields.ticketUrl ?? fields.bookingUrl,
-          ticketLabel: fields.ticketPrimaryLabel,
+          ticketUrl:
+            fields.ticketPrimaryUrl ??
+            fields.ticketUrl ??
+            fields.ticketLink ??
+            fields.bookingUrl,
+          ticketLabel: fields.ticketPrimaryLabel ?? fields.ticketLabel ?? fields.buttonLabel,
           order: index,
         },
         fields,
@@ -533,11 +554,16 @@ function mergeCmsEventDetail(
     fallback.primaryCtaLabel;
   const primaryCtaHref =
     optionalString(fields.ticketPrimaryUrl) ??
+    optionalString(fields.ticketUrl) ??
+    optionalString(fields.ticketLink) ??
+    optionalString(fields.bookingUrl) ??
     optionalString(fields.ctaUrl) ??
     fallback.primaryCtaHref;
   const secondaryCtaLabel =
+    optionalString(fields.partnerCtaLabel) ??
     optionalString(fields.partnerButtonLabel) ?? fallback.secondaryCtaLabel;
   const secondaryCtaHref =
+    optionalString(fields.partnerCtaUrl) ??
     optionalString(fields.partnerButtonUrl) ?? fallback.secondaryCtaHref;
   const seasonLabel =
     formatPublicEventDate({
@@ -614,6 +640,22 @@ function getUpcomingRelatedEvents(slug: string) {
         getLocalDateTimestamp(firstEvent.date) - getLocalDateTimestamp(secondEvent.date),
     )
     .slice(0, 3);
+}
+
+async function getWixUpcomingRelatedEvents(slug: string) {
+  const todayTimestamp = getTodayTimestamp();
+  const events = await getEvents();
+  const relatedEvents = events
+    .filter((event) => event.id !== slug && event.slug !== slug && getTourSlugFromHref(event.href) !== slug)
+    .filter((event) => activeRelatedStatuses.has(event.status))
+    .filter((event) => getLocalDateTimestamp(event.date) >= todayTimestamp)
+    .sort(
+      (firstEvent, secondEvent) =>
+        getLocalDateTimestamp(firstEvent.date) - getLocalDateTimestamp(secondEvent.date),
+    )
+    .slice(0, 3);
+
+  return relatedEvents.length > 0 ? relatedEvents : null;
 }
 
 function createCmsOnlyFallback(fields: WixRecordFields, requestedSlug: string) {
@@ -794,6 +836,7 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
     const cmsTestimonials = await optionalCmsSection(() =>
       getWixTestimonialsForEvent(slug, cmsEvent?.id),
     );
+    const cmsRelatedEvents = await optionalCmsSection(() => getWixUpcomingRelatedEvents(slug));
 
     if (
       fallback &&
@@ -802,7 +845,8 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
       !cmsTrailerVideo &&
       !cmsGalleryImages &&
       !cmsPartners &&
-      !cmsTestimonials
+      !cmsTestimonials &&
+      !cmsRelatedEvents
     ) {
       return fallback;
     }
@@ -854,6 +898,7 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
       galleryImages: cmsGalleryImages ?? mergedEvent.galleryImages,
       partners: cmsPartners ?? mergedEvent.partners,
       testimonials: cmsTestimonials ?? mergedEvent.testimonials,
+      relatedEvents: cmsRelatedEvents ?? mergedEvent.relatedEvents,
     };
   } catch {
     return fallback ?? null;

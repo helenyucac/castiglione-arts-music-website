@@ -45,6 +45,98 @@ function optionalString(value: unknown) {
   return text;
 }
 
+function isRecord(value: unknown): value is WixRecordFields {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function stripHtml(value: string) {
+  return value
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+}
+
+function splitParagraphs(value: string) {
+  const text = stripHtml(value);
+
+  if (!text) {
+    return [];
+  }
+
+  return text
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.replace(/\s*\n\s*/g, " ").trim())
+    .filter(Boolean);
+}
+
+function extractRichTextParagraphs(value: unknown, depth = 0): string[] {
+  if (depth > 8) {
+    return [];
+  }
+
+  if (typeof value === "string") {
+    return splitParagraphs(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => extractRichTextParagraphs(item, depth + 1));
+  }
+
+  if (!isRecord(value)) {
+    return [];
+  }
+
+  const textDataText = optionalString((value.textData as WixRecordFields | undefined)?.text);
+  if (textDataText) {
+    return splitParagraphs(textDataText);
+  }
+
+  const directText = optionalString(value.text ?? value.html ?? value.value);
+  if (directText) {
+    return splitParagraphs(directText);
+  }
+
+  const nestedSources = [
+    value.nodes,
+    value.content,
+    value.children,
+    value.blocks,
+    value.body,
+    value.description,
+    value.longDescription,
+    value.aboutBody,
+    value.overview,
+    value.synopsis,
+    value.richContent,
+    value.data,
+    value.fieldData,
+  ];
+  const nestedParagraphs = nestedSources.flatMap((source) =>
+    extractRichTextParagraphs(source, depth + 1),
+  );
+
+  if (nestedParagraphs.length === 0) {
+    return [];
+  }
+
+  const nodeType = optionalString(value.type)?.toLowerCase() ?? "";
+  const shouldCollapseNode =
+    nodeType.includes("paragraph") ||
+    nodeType.includes("heading") ||
+    nodeType.includes("list-item");
+
+  if (!shouldCollapseNode) {
+    return nestedParagraphs;
+  }
+
+  return [nestedParagraphs.join(" ").replace(/\s+/g, " ").trim()].filter(Boolean);
+}
+
 function stringCandidates(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value.flatMap(stringCandidates);
@@ -87,6 +179,114 @@ function hasRequiredTourDateFields(tourDate: NormalizedTourDate) {
   );
 }
 
+function numberValue(value: unknown, fallback = 0) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number(value);
+
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return fallback;
+}
+
+function booleanValue(value: unknown, fallback = true) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    if (value.toLowerCase() === "true") {
+      return true;
+    }
+
+    if (value.toLowerCase() === "false") {
+      return false;
+    }
+  }
+
+  return fallback;
+}
+
+function textField(
+  value: unknown,
+  keys: string[] = ["title", "name", "label", "text"],
+): string | undefined {
+  const directText = optionalString(value);
+
+  if (directText) {
+    return directText;
+  }
+
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  for (const key of keys) {
+    const nestedText = optionalString(value[key]);
+
+    if (nestedText) {
+      return nestedText;
+    }
+  }
+
+  return textField(value.data, keys) ?? textField(value.fieldData, keys);
+}
+
+function splitList(value: unknown): string[] {
+  const text = textField(value);
+
+  if (!text) {
+    return [];
+  }
+
+  return text
+    .split(/·|,|\|/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function parsePossiblyJsonValue(value: unknown): unknown {
+  const text = optionalString(value);
+
+  if (!text || (!text.startsWith("[") && !text.startsWith("{"))) {
+    return value;
+  }
+
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return value;
+  }
+}
+
+function arrayItems(value: unknown): unknown[] {
+  const parsedValue = parsePossiblyJsonValue(value);
+
+  if (Array.isArray(parsedValue)) {
+    return parsedValue;
+  }
+
+  if (!isRecord(parsedValue)) {
+    return [];
+  }
+
+  for (const key of ["items", "rows", "dates", "shows", "performances"]) {
+    const nestedItems = arrayItems(parsedValue[key]);
+
+    if (nestedItems.length > 0) {
+      return nestedItems;
+    }
+  }
+
+  return [];
+}
+
 function getEventVideoSource(video: NormalizedEventVideo) {
   return optionalString(video.src) ?? optionalString(video.videoUrl);
 }
@@ -108,22 +308,7 @@ function hasRequiredTestimonialFields(testimonial: NormalizedTestimonial) {
 }
 
 function splitRichText(value: unknown) {
-  if (Array.isArray(value)) {
-    return value
-      .map((item) => optionalString(item))
-      .filter((item): item is string => Boolean(item));
-  }
-
-  const text = optionalString(value);
-
-  if (!text) {
-    return [];
-  }
-
-  return text
-    .split(/\n{2,}/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
+  return extractRichTextParagraphs(value);
 }
 
 function normalizeProgram(value: unknown): TourProgram | undefined {
@@ -187,8 +372,16 @@ function resolveDescription(fields: WixRecordFields, fallback: EventDetailData) 
   const richTextSources = [
     fields.longDescription,
     fields.aboutBody,
+    fields.aboutDescription,
+    fields.aboutText,
+    fields.eventDescription,
+    fields.showDescription,
     fields.overview,
     fields.synopsis,
+    fields.richContent,
+    fields.body,
+    fields.content,
+    fields.sections,
     fields.description,
   ];
 
@@ -201,6 +394,120 @@ function resolveDescription(fields: WixRecordFields, fallback: EventDetailData) 
   }
 
   return fallback.description;
+}
+
+function normalizeInlineTourDate(
+  value: unknown,
+  parentFields: WixRecordFields,
+  index: number,
+): NormalizedTourDate | null {
+  const fields = isRecord(value) ? value : {};
+  const date =
+    textField(fields.displayDate) ??
+    textField(fields.date) ??
+    textField(fields.startDate) ??
+    textField(fields.eventDate) ??
+    textField(value);
+  const city =
+    textField(fields.city) ??
+    textField(fields.cityName) ??
+    textField(fields.location) ??
+    textField(fields.eventCity);
+  const venue =
+    textField(fields.venue, ["venueName", "name", "title", "label", "text"]) ??
+    textField(fields.venueName) ??
+    textField(fields.locationName) ??
+    textField(fields.eventVenue);
+  const ticketHref =
+    textField(fields.ticketUrl) ??
+    textField(fields.ticketHref) ??
+    textField(fields.ticketPrimaryUrl) ??
+    textField(fields.bookingUrl) ??
+    textField(fields.ctaUrl) ??
+    textField(parentFields.ticketPrimaryUrl) ??
+    textField(parentFields.ticketUrl) ??
+    textField(parentFields.bookingUrl) ??
+    textField(parentFields.ctaUrl) ??
+    "#";
+  const ticketLabel =
+    textField(fields.ticketLabel) ??
+    textField(fields.ticketPrimaryLabel) ??
+    textField(parentFields.ticketPrimaryLabel) ??
+    "BUY TICKETS";
+  const isVisible = booleanValue(fields.isVisible, true);
+
+  if (!isVisible || !date || !city || !venue) {
+    return null;
+  }
+
+  return {
+    id: textField(fields._id) ?? textField(fields.id) ?? `${city}-${date}-${index}`,
+    event: textField(fields.event) ?? textField(parentFields.slug) ?? "",
+    showLabel: textField(fields.showLabel) ?? `SHOW ${index + 1}`,
+    date,
+    displayDate: date,
+    time: textField(fields.time),
+    city,
+    venue,
+    country: textField(fields.country),
+    ticketLabel,
+    ticketHref,
+    ticketStatus: textField(fields.ticketStatus),
+    order: numberValue(fields.order, index),
+    isVisible,
+  };
+}
+
+function resolveInlineTourDates(fields: WixRecordFields, fallback: EventTourDate[]) {
+  const inlineSources = [
+    fields.tourDates,
+    fields.tourDateRows,
+    fields.shows,
+    fields.performances,
+    fields.showDates,
+    fields.dates,
+  ];
+  const explicitTourDates = inlineSources
+    .flatMap(arrayItems)
+    .map((item, index) => normalizeInlineTourDate(item, fields, index))
+    .filter((tourDate): tourDate is NormalizedTourDate => Boolean(tourDate))
+    .filter(hasRequiredTourDateFields);
+
+  if (explicitTourDates.length > 0) {
+    return explicitTourDates;
+  }
+
+  const cities = splitList(fields.eventCardCities ?? fields.citySummary ?? fields.city);
+  const venues = splitList(fields.venues ?? fields.venueList ?? fields.venue ?? fields.venueName);
+  const date =
+    textField(fields.displayDate) ??
+    textField(fields.eventCardDate) ??
+    textField(fields.seasonLabel) ??
+    textField(fields.startDate);
+
+  if (!date || cities.length === 0 || venues.length === 0) {
+    return fallback;
+  }
+
+  const summaryTourDates = cities
+    .map((city, index) =>
+      normalizeInlineTourDate(
+        {
+          city,
+          venue: venues[index] ?? venues[0],
+          date,
+          ticketUrl: fields.ticketPrimaryUrl ?? fields.ticketUrl ?? fields.bookingUrl,
+          ticketLabel: fields.ticketPrimaryLabel,
+          order: index,
+        },
+        fields,
+        index,
+      ),
+    )
+    .filter((tourDate): tourDate is NormalizedTourDate => Boolean(tourDate))
+    .filter(hasRequiredTourDateFields);
+
+  return summaryTourDates.length > 0 ? summaryTourDates : fallback;
 }
 
 function mergeCmsEventDetail(
@@ -266,6 +573,7 @@ function mergeCmsEventDetail(
     secondaryCtaHref,
     aboutEyebrow: optionalString(fields.aboutTitle) ?? fallback.aboutEyebrow,
     description: resolveDescription(fields, fallback),
+    tourDates: resolveInlineTourDates(fields, fallback.tourDates),
     relatedTitle: "More Events",
   };
 }
@@ -407,11 +715,13 @@ async function getWixEventBySlug(slug: string) {
 async function getWixTourDatesForEvent(slug: string, eventId?: string) {
   const tourDates = await getTourDates(slug, eventId ? [eventId] : []);
 
-  if (tourDates.length === 0 || !tourDates.every(hasRequiredTourDateFields)) {
+  const validTourDates = tourDates.filter(hasRequiredTourDateFields);
+
+  if (validTourDates.length === 0) {
     return null;
   }
 
-  return tourDates;
+  return validTourDates;
 }
 
 async function getWixTrailerVideoForEvent(slug: string, eventId?: string) {
@@ -504,15 +814,6 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
       return null;
     }
 
-    const resolvedTourDates = cmsTourDates ?? baseEvent.tourDates;
-    const cmsOnlySeasonLabel =
-      baseEvent.seasonLabel === DEFAULT_SEASON_LABEL
-        ? summarizeTourDateSeason(resolvedTourDates)
-        : undefined;
-    const cmsOnlyCitySummary =
-      baseEvent.citySummary === DEFAULT_CITY_SUMMARY
-        ? summarizeTourDateCities(resolvedTourDates)
-        : undefined;
     const status = normalizeStatus(fields.status);
     const mergedEvent = cmsEvent
       ? mergeCmsEventDetail(
@@ -528,6 +829,15 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
           baseEvent,
         )
       : baseEvent;
+    const resolvedTourDates = cmsTourDates ?? mergedEvent.tourDates;
+    const cmsOnlySeasonLabel =
+      mergedEvent.seasonLabel === DEFAULT_SEASON_LABEL
+        ? summarizeTourDateSeason(resolvedTourDates)
+        : undefined;
+    const cmsOnlyCitySummary =
+      mergedEvent.citySummary === DEFAULT_CITY_SUMMARY
+        ? summarizeTourDateCities(resolvedTourDates)
+        : undefined;
 
     return {
       ...mergedEvent,

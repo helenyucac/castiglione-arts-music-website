@@ -99,6 +99,50 @@ function optionalString(value: unknown) {
   return text;
 }
 
+function dateStringValue(value: unknown, fallback = ""): string {
+  const text = optionalString(value);
+
+  if (text) {
+    return text;
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    const timestamp = value > 10_000_000_000 ? value : value * 1000;
+    return new Date(timestamp).toISOString();
+  }
+
+  if (!isRecord(value)) {
+    return fallback;
+  }
+
+  const nestedDate =
+    dateStringValue(value.displayDate) ||
+    dateStringValue(value.formatted) ||
+    dateStringValue(value.label) ||
+    dateStringValue(value.text) ||
+    dateStringValue(value.date) ||
+    dateStringValue(value.startDate) ||
+    dateStringValue(value.eventDate) ||
+    dateStringValue(value.showDate) ||
+    dateStringValue(value.performanceDate) ||
+    dateStringValue(value.value) ||
+    dateStringValue(value.iso) ||
+    dateStringValue(value.isoDate) ||
+    dateStringValue(value.dateTime) ||
+    dateStringValue(value.localDate) ||
+    dateStringValue(value.$date) ||
+    dateStringValue(value._date) ||
+    dateStringValue(value.timestamp) ||
+    dateStringValue(value.seconds) ||
+    dateStringValue(value._seconds);
+
+  return nestedDate || fallback;
+}
+
 function numberValue(value: unknown, fallback = 0) {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
@@ -399,27 +443,31 @@ export function normalizeEvent(item: WixCollectionItem): NormalizedEvent {
 
 export function normalizeTourDate(item: WixCollectionItem): NormalizedTourDate {
   const fields = getWixFields(item);
+  const displayDate = dateStringValue(fields.displayDate);
+  const date =
+    displayDate ||
+    dateStringValue(
+      fields.date ??
+        fields.startDate ??
+        fields.eventDate ??
+        fields.showDate ??
+        fields.performanceDate,
+    );
+  const ticketHref =
+    optionalString(fields.ticketUrl) ??
+    optionalString(fields.ticketLink) ??
+    optionalString(fields.ticketHref) ??
+    optionalString(fields.ticketPrimaryUrl) ??
+    optionalString(fields.bookingUrl) ??
+    optionalString(fields.ctaUrl) ??
+    "#";
 
   return {
     id: idOf(fields),
     event: stringValue(fields.event ?? fields.eventSlug ?? fields.eventId),
     showLabel: stringValue(fields.showLabel ?? fields.title),
-    date: stringValue(
-      fields.displayDate ??
-        fields.date ??
-        fields.startDate ??
-        fields.eventDate ??
-        fields.showDate ??
-        fields.performanceDate,
-    ),
-    displayDate: stringValue(
-      fields.displayDate ??
-        fields.date ??
-        fields.startDate ??
-        fields.eventDate ??
-        fields.showDate ??
-        fields.performanceDate,
-    ),
+    date,
+    displayDate: displayDate || date,
     time: optionalString(
       fields.time ?? fields.eventTime ?? fields.showTime ?? fields.performanceTime,
     ),
@@ -432,15 +480,7 @@ export function normalizeTourDate(item: WixCollectionItem): NormalizedTourDate {
       fields.ticketLabel ?? fields.buttonLabel ?? fields.ticketPrimaryLabel,
       "BUY TICKETS",
     ),
-    ticketHref: stringValue(
-      fields.ticketUrl ??
-        fields.ticketLink ??
-        fields.ticketHref ??
-        fields.ticketPrimaryUrl ??
-        fields.bookingUrl ??
-        fields.ctaUrl,
-      "#",
-    ),
+    ticketHref,
     ticketStatus: optionalString(fields.ticketStatus),
     order: numberValue(fields.order, Number.MAX_SAFE_INTEGER),
     isVisible: booleanValue(fields.isVisible, true),

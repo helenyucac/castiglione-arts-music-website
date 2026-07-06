@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { cardTitleHoverClassName, cardTitleHoverStyle } from "@/components/cardHoverStyles";
 import { formatPublicDateDisplay } from "@/lib/dateDisplay";
+import { getEventCardHref } from "@/lib/eventCardHref";
 import {
   getTourProgram,
   tourCategoryColors,
@@ -31,7 +32,8 @@ export function TourCard({ tour }: TourCardProps) {
   const softenedAccentColor = hexToRgba(accentColor, 0.7);
   const displayDate = formatPublicDateDisplay(tour.dateLabel) ?? tour.dateLabel;
   const details = `${displayDate} / ${tour.cities.join(", ")}`;
-  const hasHref = Boolean(tour.href && tour.href !== "#");
+  const cardHref = getEventCardHref(tour);
+  const hasHref = Boolean(cardHref);
   const articleClassName = `tour-card flex h-full flex-col overflow-hidden border border-black bg-white ${
     hasHref ? "group" : ""
   }`;
@@ -88,7 +90,7 @@ export function TourCard({ tour }: TourCardProps) {
   }
 
   return (
-    <Link href={tour.href as string} className="group block h-full" aria-label={tour.title}>
+    <Link href={cardHref as string} className="group block h-full" aria-label={tour.title}>
       {cardContent}
     </Link>
   );

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { cardTitleHoverClassName, cardTitleHoverStyle } from "@/components/cardHoverStyles";
 import { formatPublicDateDisplay } from "@/lib/dateDisplay";
+import { getEventCardHref } from "@/lib/eventCardHref";
 import {
   getTourProgram,
   tourProgramColors,
@@ -33,7 +34,7 @@ export function getWhatsOnDisplayCategory(category: TourCategory) {
 export function WhatsOnEventCard({ event, displayCategory }: WhatsOnEventCardProps) {
   const resolvedCategory = displayCategory ?? getDisplayCategory(event.category);
   const displayDate = formatPublicDateDisplay(event.dateLabel) ?? event.dateLabel;
-  const hasHref = Boolean(event.href && event.href !== "#");
+  const cardHref = getEventCardHref(event);
 
   if (!resolvedCategory) {
     return null;
@@ -91,12 +92,12 @@ export function WhatsOnEventCard({ event, displayCategory }: WhatsOnEventCardPro
       </article>
   );
 
-  if (!hasHref) {
+  if (!cardHref) {
     return <div className="block">{cardContent}</div>;
   }
 
   return (
-    <Link href={event.href as string} className="group block">
+    <Link href={cardHref} className="group block">
       {cardContent}
     </Link>
   );

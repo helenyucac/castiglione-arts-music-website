@@ -32,6 +32,7 @@ export type TourCardData = {
   status: TourStatus;
   image: string;
   href?: string;
+  slug?: string;
 };
 
 export type TourFilter = "whats-on" | TourCategory | "past";

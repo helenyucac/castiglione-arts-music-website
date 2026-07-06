@@ -177,7 +177,7 @@ function stringCandidates(value: unknown): string[] {
 
 function hasRequiredTourDateFields(tourDate: NormalizedTourDate) {
   return Boolean(
-    optionalString(tourDate.date) &&
+    (optionalString(tourDate.displayDate) || optionalString(tourDate.date)) &&
       optionalString(tourDate.city) &&
       optionalString(tourDate.venue),
   );

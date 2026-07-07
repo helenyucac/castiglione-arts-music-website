@@ -55,15 +55,36 @@ function wixVideoUriToStaticUrl(value: string) {
     return undefined;
   }
 
-  if (mediaSegments.length > 1) {
+  if (mediaSegments.some((segment) => segment.toLowerCase() === "mp4")) {
     return `https://video.wixstatic.com/video/${mediaSegments.join("/")}`;
   }
 
-  return `https://video.wixstatic.com/video/${mediaId}`;
+  return `https://video.wixstatic.com/video/${mediaId}/1080p/mp4/file.mp4`;
+}
+
+function wixVideoStaticUrlToMp4Url(value: string) {
+  if (!value.startsWith("https://video.wixstatic.com/video/")) {
+    return undefined;
+  }
+
+  const [, videoPath] = value.split("https://video.wixstatic.com/video/");
+  const mediaSource = videoPath?.split(/[?#]/)[0] ?? "";
+  const mediaSegments = mediaSource.split("/").filter(Boolean);
+  const mediaId = mediaSegments[0];
+
+  if (!mediaId) {
+    return undefined;
+  }
+
+  if (mediaSegments.some((segment) => segment.toLowerCase() === "mp4")) {
+    return value;
+  }
+
+  return `https://video.wixstatic.com/video/${mediaId}/1080p/mp4/file.mp4`;
 }
 
 function normalizeMediaString(value: string) {
-  return wixImageUriToStaticUrl(value) ?? wixVideoUriToStaticUrl(value) ?? value;
+  return wixImageUriToStaticUrl(value) ?? wixVideoUriToStaticUrl(value) ?? wixVideoStaticUrlToMp4Url(value) ?? value;
 }
 
 function uniqueUrls(urls: string[]) {

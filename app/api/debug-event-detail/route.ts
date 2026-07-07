@@ -4,6 +4,7 @@ import {
   normalizeEventGalleryImages,
   normalizeEventVideo,
 } from "@/lib/wix/normalizers";
+import { getResolvedEventDetailBySlug } from "@/lib/wix/eventDetailContent";
 import type {
   WixCollectionItem,
   WixCollectionName,
@@ -323,6 +324,28 @@ function summarizeGalleryRow(item: WixCollectionItem) {
   };
 }
 
+function summarizeFinalEventDetail(event: Awaited<ReturnType<typeof getResolvedEventDetailBySlug>>) {
+  if (!event) {
+    return null;
+  }
+
+  const galleryImages = event.galleryImages ?? [];
+
+  return {
+    slug: event.slug,
+    title: event.title,
+    trailerEyebrow: event.trailerEyebrow ?? null,
+    trailerVideoSrc: event.trailerVideoSrc ?? null,
+    trailerPosterSrc: event.trailerPosterSrc ?? null,
+    galleryImages,
+    galleryImagesLength: galleryImages.length,
+    wouldRenderTrailer: Boolean(event.trailerVideoSrc),
+    wouldRenderGallery: galleryImages.length > 0,
+    hasTourDates: event.tourDates.length > 0,
+    tourDatesLength: event.tourDates.length,
+  };
+}
+
 export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get("slug")?.trim();
   const apiKey = process.env.WIX_API_KEY;
@@ -373,6 +396,7 @@ export async function GET(request: NextRequest) {
   const matchedGallery = rawGallery.filter((item) =>
     hasMatchingEventReference(getWixFields(item), eventIds),
   );
+  const finalEventDetailData = await getResolvedEventDetailBySlug(slug);
 
   return NextResponse.json({
     eventResolved: event
@@ -391,5 +415,6 @@ export async function GET(request: NextRequest) {
       EventVideos: matchedVideos.map(summarizeVideoRow),
       EventGallery: matchedGallery.map(summarizeGalleryRow),
     },
+    finalEventDetailData: summarizeFinalEventDetail(finalEventDetailData),
   });
 }

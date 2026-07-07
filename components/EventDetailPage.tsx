@@ -71,6 +71,10 @@ function getPrimaryCtaHref(event: EventDetailData, hasTourDates: boolean) {
   return event.primaryCtaHref;
 }
 
+function getVideoSourceType(src: string) {
+  return /\.mp4(?:[?#]|$)/i.test(src) ? "video/mp4" : undefined;
+}
+
 export function EventDetailPage({ event }: EventDetailPageProps) {
   const heroTitleOffsetClass = event.heroTitleOffset ? "lg:mt-14" : "";
   const galleryImages = event.galleryImages ?? [];
@@ -224,7 +228,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                   className="aspect-video w-full bg-black"
                   aria-label={`${event.title} trailer video`}
                 >
-                  <source src={event.trailerVideoSrc} type="video/mp4" />
+                  <source src={event.trailerVideoSrc} type={getVideoSourceType(event.trailerVideoSrc)} />
                 </video>
               </div>
             </div>

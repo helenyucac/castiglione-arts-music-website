@@ -300,7 +300,7 @@ function hasRequiredEventVideoFields(video: NormalizedEventVideo) {
 }
 
 function hasRequiredGalleryImageFields(image: NormalizedEventGalleryImage) {
-  return Boolean(optionalString(image.src) && optionalString(image.alt));
+  return Boolean(optionalString(image.src));
 }
 
 function hasRequiredPartnerFields(partner: NormalizedPartner) {

@@ -875,6 +875,13 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
         )
       : baseEvent;
     const resolvedTourDates = cmsTourDates ?? mergedEvent.tourDates;
+    const resolvedGalleryImages = cmsGalleryImages
+      ? cmsGalleryImages.map((image) => ({
+          src: image.src,
+          alt: image.alt,
+          caption: image.caption,
+        }))
+      : mergedEvent.galleryImages;
     const cmsOnlySeasonLabel =
       mergedEvent.seasonLabel === DEFAULT_SEASON_LABEL
         ? summarizeTourDateSeason(resolvedTourDates)
@@ -896,7 +903,8 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
       trailerVideoSrc: cmsTrailerVideo
         ? getEventVideoSource(cmsTrailerVideo)
         : mergedEvent.trailerVideoSrc,
-      galleryImages: cmsGalleryImages ?? mergedEvent.galleryImages,
+      trailerPosterSrc: cmsTrailerVideo?.posterImage ?? mergedEvent.trailerPosterSrc,
+      galleryImages: resolvedGalleryImages,
       partners: cmsPartners ?? mergedEvent.partners,
       testimonials: cmsTestimonials ?? mergedEvent.testimonials,
       relatedEvents: cmsRelatedEvents ?? mergedEvent.relatedEvents,

@@ -779,12 +779,13 @@ async function getWixTrailerVideoForEvent(slug: string, eventId?: string) {
 
 async function getWixGalleryImagesForEvent(slug: string, eventId?: string) {
   const galleryImages = await getEventGallery(slug, eventId ? [eventId] : []);
+  const validGalleryImages = galleryImages.filter(hasRequiredGalleryImageFields);
 
-  if (galleryImages.length === 0 || !galleryImages.every(hasRequiredGalleryImageFields)) {
+  if (validGalleryImages.length === 0) {
     return null;
   }
 
-  return galleryImages;
+  return validGalleryImages;
 }
 
 async function getWixPartnersForEvent(slug: string, eventId?: string) {

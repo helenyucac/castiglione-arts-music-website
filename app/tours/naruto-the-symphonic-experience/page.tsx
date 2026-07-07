@@ -3,6 +3,8 @@ import { EventDetailPage } from "@/components/EventDetailPage";
 import { narutoEventDetail } from "@/data/eventDetails";
 import { getResolvedEventDetailBySlug } from "@/lib/wix/eventDetailContent";
 
+export const dynamic = "force-dynamic";
+
 const narutoDescription =
   "Naruto: The Symphonic Experience brings the iconic music and emotional world of the beloved anime series into the concert hall.";
 

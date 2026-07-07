@@ -1,7 +1,7 @@
 import { isWixConfigured, queryWixCollection, sortAsc } from "@/lib/wix/client";
 import {
   getWixFields,
-  normalizeEventGalleryImage,
+  normalizeEventGalleryImages,
   normalizeEventVideo,
   normalizeTourDate,
   sortByOrder,
@@ -289,7 +289,7 @@ export async function getEventGallery(eventIdOrSlug: string, alternateEventIds: 
       const fields = getWixFields(item);
       return hasMatchingEventReference(fields, eventIds);
     })
-    .map(normalizeEventGalleryImage)
+    .flatMap(normalizeEventGalleryImages)
     .filter((image) => image.isVisible);
 
   return sortByOrderThenUploadOrder(matchingImages);

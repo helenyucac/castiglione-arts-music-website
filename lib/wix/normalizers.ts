@@ -1,6 +1,6 @@
 import type { TourCategory, TourProgram, TourStatus } from "@/data/tours";
 import { formatPublicEventDate } from "@/lib/dateDisplay";
-import { optionalMediaUrl, SAFE_EVENT_IMAGE_FALLBACK } from "@/lib/wix/media";
+import { mediaUrlsFromValue, optionalMediaUrl, SAFE_EVENT_IMAGE_FALLBACK } from "@/lib/wix/media";
 import type {
   NavigationLocation,
   NormalizedDesignSettings,
@@ -175,6 +175,18 @@ function booleanValue(value: unknown, fallback = false) {
   }
 
   return fallback;
+}
+
+function firstMediaUrlGroup(...values: unknown[]) {
+  for (const value of values) {
+    const mediaUrls = mediaUrlsFromValue(value);
+
+    if (mediaUrls.length > 0) {
+      return mediaUrls;
+    }
+  }
+
+  return [];
 }
 
 function splitList(value: unknown) {
@@ -489,10 +501,7 @@ export function normalizeTourDate(item: WixCollectionItem): NormalizedTourDate {
 
 export function normalizeEventVideo(item: WixCollectionItem): NormalizedEventVideo {
   const fields = getWixFields(item);
-  const videoSrc =
-    optionalMediaUrl(fields.videoAsset) ??
-    optionalMediaUrl(fields.videoUrl) ??
-    optionalMediaUrl(fields.videoFile);
+  const [videoSrc] = firstMediaUrlGroup(fields.videoAsset, fields.videoUrl, fields.videoFile);
 
   return {
     id: idOf(fields),
@@ -511,26 +520,45 @@ export function normalizeEventVideo(item: WixCollectionItem): NormalizedEventVid
 export function normalizeEventGalleryImage(
   item: WixCollectionItem,
 ): NormalizedEventGalleryImage {
-  const fields = getWixFields(item);
-  const imageSrc =
-    optionalMediaUrl(fields.galleryAsset) ??
-    optionalMediaUrl(fields.image) ??
-    optionalMediaUrl(fields.imageUrl) ??
-    optionalMediaUrl(fields.imageAsset) ??
-    optionalMediaUrl(fields.media) ??
-    optionalMediaUrl(fields.asset) ??
-    optionalMediaUrl(fields.src);
+  return normalizeEventGalleryImages(item)[0] ?? {
+    id: idOf(getWixFields(item)),
+    event: stringValue(getWixFields(item).event),
+    src: "",
+    alt: "Event gallery image",
+    order: Number.MAX_SAFE_INTEGER,
+    isVisible: true,
+  };
+}
 
-  return {
-    id: idOf(fields),
+export function normalizeEventGalleryImages(
+  item: WixCollectionItem,
+): NormalizedEventGalleryImage[] {
+  const fields = getWixFields(item);
+  const imageUrls = firstMediaUrlGroup(
+    fields.galleryAsset,
+    fields.image,
+    fields.imageUrl,
+    fields.imageAsset,
+    fields.media,
+    fields.asset,
+    fields.src,
+  );
+  const baseId = idOf(fields);
+  const altText = stringValue(
+    fields.altText ?? fields.alt ?? fields.title ?? fields.caption,
+    "Event gallery image",
+  );
+
+  return imageUrls.map((src, index) => ({
+    id: imageUrls.length > 1 ? `${baseId}-${index + 1}` : baseId,
     event: stringValue(fields.event),
-    src: imageSrc ?? "",
-    alt: stringValue(fields.altText ?? fields.alt ?? fields.title ?? fields.caption, "Event gallery image"),
+    src,
+    alt: altText,
     caption: optionalString(fields.caption),
     credit: optionalString(fields.credit),
     order: numberValue(fields.order, Number.MAX_SAFE_INTEGER),
     isVisible: booleanValue(fields.isVisible, true),
-  };
+  }));
 }
 
 export function normalizePartner(item: WixCollectionItem): NormalizedPartner {

@@ -41,35 +41,52 @@ function wixImageUriToStaticUrl(value: string) {
   return `https://static.wixstatic.com/media/${mediaId}`;
 }
 
-function normalizeMediaString(value: string) {
-  return wixImageUriToStaticUrl(value) ?? value;
+function wixVideoUriToStaticUrl(value: string) {
+  if (!value.startsWith("wix:video://v1/")) {
+    return undefined;
+  }
+
+  const mediaPath = value.replace("wix:video://v1/", "");
+  const mediaSource = mediaPath.split(/[?#]/)[0];
+  const mediaSegments = mediaSource.split("/").filter(Boolean);
+  const mediaId = mediaSegments[0];
+
+  if (!mediaId) {
+    return undefined;
+  }
+
+  if (mediaSegments.length > 1) {
+    return `https://video.wixstatic.com/video/${mediaSegments.join("/")}`;
+  }
+
+  return `https://video.wixstatic.com/video/${mediaId}`;
 }
 
-export function optionalMediaUrl(value: unknown, depth = 0): string | undefined {
+function normalizeMediaString(value: string) {
+  return wixImageUriToStaticUrl(value) ?? wixVideoUriToStaticUrl(value) ?? value;
+}
+
+function uniqueUrls(urls: string[]) {
+  return Array.from(new Set(urls));
+}
+
+export function mediaUrlsFromValue(value: unknown, depth = 0): string[] {
   if (depth > 6) {
-    return undefined;
+    return [];
   }
 
   const text = optionalString(value);
 
   if (text) {
-    return normalizeMediaString(text);
+    return [normalizeMediaString(text)];
   }
 
   if (Array.isArray(value)) {
-    for (const item of value) {
-      const mediaUrl = optionalMediaUrl(item, depth + 1);
-
-      if (mediaUrl) {
-        return mediaUrl;
-      }
-    }
-
-    return undefined;
+    return uniqueUrls(value.flatMap((item) => mediaUrlsFromValue(item, depth + 1)));
   }
 
   if (!value || typeof value !== "object") {
-    return undefined;
+    return [];
   }
 
   const record = value as WixRecordFields;
@@ -85,6 +102,10 @@ export function optionalMediaUrl(value: unknown, depth = 0): string | undefined 
     record.media,
     record.file,
     record.asset,
+    record.items,
+    record.images,
+    record.gallery,
+    record.galleryItems,
     record.value,
     record.originalUrl,
     record.thumbnail,
@@ -94,13 +115,9 @@ export function optionalMediaUrl(value: unknown, depth = 0): string | undefined 
     record.fieldData,
   ];
 
-  for (const source of mediaSources) {
-    const mediaUrl = optionalMediaUrl(source, depth + 1);
+  return uniqueUrls(mediaSources.flatMap((source) => mediaUrlsFromValue(source, depth + 1)));
+}
 
-    if (mediaUrl) {
-      return mediaUrl;
-    }
-  }
-
-  return undefined;
+export function optionalMediaUrl(value: unknown, depth = 0): string | undefined {
+  return mediaUrlsFromValue(value, depth)[0];
 }

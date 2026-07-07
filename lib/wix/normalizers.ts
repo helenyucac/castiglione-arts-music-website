@@ -489,14 +489,18 @@ export function normalizeTourDate(item: WixCollectionItem): NormalizedTourDate {
 
 export function normalizeEventVideo(item: WixCollectionItem): NormalizedEventVideo {
   const fields = getWixFields(item);
+  const videoSrc =
+    optionalMediaUrl(fields.videoAsset) ??
+    optionalMediaUrl(fields.videoUrl) ??
+    optionalMediaUrl(fields.videoFile);
 
   return {
     id: idOf(fields),
     event: stringValue(fields.event),
     title: stringValue(fields.title, "TRAILER VIDEO"),
-    src: optionalMediaUrl(fields.videoFile),
+    src: videoSrc,
     videoUrl: optionalMediaUrl(fields.videoUrl),
-    posterImage: optionalMediaUrl(fields.posterImage),
+    posterImage: optionalMediaUrl(fields.posterAsset) ?? optionalMediaUrl(fields.posterImage),
     videoType: optionalString(fields.videoType),
     caption: optionalString(fields.caption),
     order: numberValue(fields.order),
@@ -508,12 +512,20 @@ export function normalizeEventGalleryImage(
   item: WixCollectionItem,
 ): NormalizedEventGalleryImage {
   const fields = getWixFields(item);
+  const imageSrc =
+    optionalMediaUrl(fields.galleryAsset) ??
+    optionalMediaUrl(fields.image) ??
+    optionalMediaUrl(fields.imageUrl) ??
+    optionalMediaUrl(fields.imageAsset) ??
+    optionalMediaUrl(fields.media) ??
+    optionalMediaUrl(fields.asset) ??
+    optionalMediaUrl(fields.src);
 
   return {
     id: idOf(fields),
     event: stringValue(fields.event),
-    src: optionalMediaUrl(fields.image) ?? "",
-    alt: stringValue(fields.altText),
+    src: imageSrc ?? "",
+    alt: stringValue(fields.altText ?? fields.alt ?? fields.title ?? fields.caption, "Event gallery image"),
     caption: optionalString(fields.caption),
     credit: optionalString(fields.credit),
     order: numberValue(fields.order, Number.MAX_SAFE_INTEGER),

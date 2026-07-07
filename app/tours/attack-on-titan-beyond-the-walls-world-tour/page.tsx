@@ -3,6 +3,8 @@ import { EventDetailPage } from "@/components/EventDetailPage";
 import { attackOnTitanEventDetail } from "@/data/eventDetails";
 import { getResolvedEventDetailBySlug } from "@/lib/wix/eventDetailContent";
 
+export const dynamic = "force-dynamic";
+
 const attackOnTitanDescription =
   "An epic anime concert experience bringing the iconic Attack on Titan soundtrack and immersive visuals to the concert hall.";
 

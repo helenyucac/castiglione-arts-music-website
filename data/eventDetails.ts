@@ -66,6 +66,7 @@ export type EventDetailData = {
   description: string[];
   trailerEyebrow?: string;
   trailerVideoSrc?: string;
+  trailerPosterSrc?: string;
   galleryImages?: EventGalleryImage[];
   partners?: EventPartner[];
   testimonials?: EventTestimonial[];

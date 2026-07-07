@@ -220,6 +220,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                   controls
                   playsInline
                   preload="metadata"
+                  poster={event.trailerPosterSrc}
                   className="aspect-video w-full bg-black"
                   aria-label={`${event.title} trailer video`}
                 >

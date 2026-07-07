@@ -8,6 +8,7 @@ import type {
 
 const WIX_DATA_API_BASE_URL =
   process.env.WIX_DATA_API_BASE_URL ?? "https://www.wixapis.com/wix-data/v2/items";
+const WIX_DATA_COLLECTIONS_API_URL = WIX_DATA_API_BASE_URL.replace(/\/items\/?$/, "/collections");
 
 const collectionEnvKeys: Record<WixCollectionName, string> = {
   SiteSettings: "WIX_COLLECTION_SITE_SETTINGS_ID",
@@ -55,6 +56,121 @@ export function getCollectionId(collectionName: WixCollectionName) {
   return process.env[collectionEnvKeys[collectionName]] ?? collectionName;
 }
 
+function isRecord(value: unknown): value is WixRecordFields {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function normalizeCollectionLookupKey(value: unknown) {
+  return typeof value === "string" ? value.toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+}
+
+function getCollectionArray(value: unknown): unknown[] {
+  if (!isRecord(value)) {
+    return [];
+  }
+
+  for (const key of ["dataCollections", "collections", "items"]) {
+    const collectionItems = value[key];
+
+    if (Array.isArray(collectionItems)) {
+      return collectionItems;
+    }
+  }
+
+  return [];
+}
+
+function getCollectionFields(value: unknown) {
+  if (!isRecord(value)) {
+    return {};
+  }
+
+  return {
+    ...value,
+    ...(isRecord(value.data) ? value.data : {}),
+    ...(isRecord(value.fieldData) ? value.fieldData : {}),
+  };
+}
+
+function getDiscoveredCollectionId(value: unknown) {
+  const fields = getCollectionFields(value);
+
+  return (
+    (typeof fields._id === "string" && fields._id) ||
+    (typeof fields.id === "string" && fields.id) ||
+    (typeof fields.collectionId === "string" && fields.collectionId) ||
+    (typeof fields.dataCollectionId === "string" && fields.dataCollectionId) ||
+    undefined
+  );
+}
+
+let collectionIdLookupPromise: Promise<Map<string, string>> | null = null;
+
+async function getCollectionIdLookup(config: WixClientConfig) {
+  if (!collectionIdLookupPromise) {
+    collectionIdLookupPromise = fetch(WIX_DATA_COLLECTIONS_API_URL, {
+      method: "GET",
+      headers: {
+        Authorization: config.apiKey,
+        "Content-Type": "application/json",
+        "wix-site-id": config.siteId,
+      },
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          return new Map<string, string>();
+        }
+
+        const responseText = await response.text();
+        const payload = responseText ? (JSON.parse(responseText) as unknown) : {};
+        const lookup = new Map<string, string>();
+
+        for (const collection of getCollectionArray(payload)) {
+          const fields = getCollectionFields(collection);
+          const collectionId = getDiscoveredCollectionId(collection);
+
+          if (!collectionId) {
+            continue;
+          }
+
+          for (const key of [
+            fields._id,
+            fields.id,
+            fields.collectionId,
+            fields.dataCollectionId,
+            fields.displayName,
+            fields.name,
+            fields.title,
+            fields.key,
+          ]) {
+            const lookupKey = normalizeCollectionLookupKey(key);
+
+            if (lookupKey) {
+              lookup.set(lookupKey, collectionId);
+            }
+          }
+        }
+
+        return lookup;
+      })
+      .catch(() => new Map<string, string>());
+  }
+
+  return collectionIdLookupPromise;
+}
+
+async function resolveCollectionId(collectionName: WixCollectionName, config: WixClientConfig) {
+  const configuredCollectionId = process.env[collectionEnvKeys[collectionName]];
+
+  if (configuredCollectionId) {
+    return configuredCollectionId;
+  }
+
+  const lookup = await getCollectionIdLookup(config);
+  return lookup.get(normalizeCollectionLookupKey(collectionName)) ?? collectionName;
+}
+
 export function visibleFilter(extraFilter: WixRecordFields = {}) {
   return {
     ...extraFilter,
@@ -75,7 +191,7 @@ export async function queryWixCollection<TFields extends WixRecordFields = WixRe
   options: WixQueryOptions = {},
 ) {
   const config = getWixClientConfig();
-  const collectionId = getCollectionId(collectionName);
+  const collectionId = await resolveCollectionId(collectionName, config);
   const requestBody = {
     dataCollectionId: collectionId,
     query: {

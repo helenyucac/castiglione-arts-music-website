@@ -212,7 +212,13 @@ export async function getTourDates(eventIdOrSlug: string, alternateEventIds: str
     sort: sortAsc("order"),
     limit: 1000,
   });
-  const venueIndex = buildVenueIndex(await getVenues());
+  let venueIndex = new Map<string, NormalizedVenue>();
+
+  try {
+    venueIndex = buildVenueIndex(await getVenues());
+  } catch {
+    venueIndex = new Map<string, NormalizedVenue>();
+  }
 
   const matchingTourDates = items
     .filter((item) => {

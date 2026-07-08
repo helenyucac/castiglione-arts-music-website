@@ -430,10 +430,8 @@ function normalizeInlineTourDate(
     textField(fields.ticketUrl) ??
     textField(fields.ticketLink) ??
     textField(fields.ticketHref) ??
-    textField(fields.ticketPrimaryUrl) ??
     textField(fields.bookingUrl) ??
     textField(fields.ctaUrl) ??
-    textField(parentFields.ticketPrimaryUrl) ??
     textField(parentFields.ticketUrl) ??
     textField(parentFields.bookingUrl) ??
     textField(parentFields.ctaUrl) ??
@@ -514,7 +512,6 @@ function resolveInlineTourDates(fields: WixRecordFields, fallback: EventTourDate
           venue: venues[index] ?? venues[0],
           date,
           ticketUrl:
-            fields.ticketPrimaryUrl ??
             fields.ticketUrl ??
             fields.ticketLink ??
             fields.bookingUrl,
@@ -553,10 +550,6 @@ function mergeCmsEventDetail(
     optionalString(fields.ticketPrimaryLabel) ??
     fallback.primaryCtaLabel;
   const primaryCtaHref =
-    optionalString(fields.ticketPrimaryUrl) ??
-    optionalString(fields.ticketUrl) ??
-    optionalString(fields.ticketLink) ??
-    optionalString(fields.bookingUrl) ??
     optionalString(fields.ctaUrl) ??
     fallback.primaryCtaHref;
   const secondaryCtaLabel =

@@ -408,7 +408,6 @@ export function normalizeEvent(item: WixCollectionItem): NormalizedEvent {
   );
   const category = normalizeCategory(program, categoryLabel);
   const slug = stringValue(fields.slug, "MANUAL");
-  const ticketPrimaryUrl = optionalString(fields.ticketPrimaryUrl);
   const image =
     optionalMediaUrl(fields.cardImageAsset) ??
     optionalMediaUrl(fields.cardImage) ??
@@ -430,16 +429,6 @@ export function normalizeEvent(item: WixCollectionItem): NormalizedEvent {
     status: normalizeStatus(fields.status),
     image,
     href: slug && slug !== "MANUAL" ? `/tours/${slug}` : undefined,
-    ticketLinks: ticketPrimaryUrl
-      ? [
-          {
-            label: stringValue(fields.ticketPrimaryLabel, "BUY TICKETS"),
-            href: ticketPrimaryUrl,
-            status: "book-now",
-          },
-        ]
-      : undefined,
-    sourceUrl: optionalString(fields.sourceUrl),
     slug,
     program,
     programLabel: stringValue(fields.programLabel ?? fields.program, program ? programToLabel[program] : ""),
@@ -469,7 +458,6 @@ export function normalizeTourDate(item: WixCollectionItem): NormalizedTourDate {
     optionalString(fields.ticketUrl) ??
     optionalString(fields.ticketLink) ??
     optionalString(fields.ticketHref) ??
-    optionalString(fields.ticketPrimaryUrl) ??
     optionalString(fields.bookingUrl) ??
     optionalString(fields.ctaUrl) ??
     "#";

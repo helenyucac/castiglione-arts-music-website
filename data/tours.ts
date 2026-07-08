@@ -28,7 +28,6 @@ export type TourCardData = {
   cities: string[];
   venues?: string[];
   ticketLinks?: TourTicketLink[];
-  sourceUrl?: string;
   status: TourStatus;
   image: string;
   href?: string;
@@ -455,7 +454,6 @@ export const tourHighlights: TourCardData[] = [
         status: "book-now",
       },
     ],
-    sourceUrl: "https://www.castiglione.com.au/narutothesymphonicexperience",
     status: "on-sale",
     image: "/media/naruto-square-poster.png",
     href: "/tours/naruto-the-symphonic-experience",
@@ -476,7 +474,6 @@ export const tourHighlights: TourCardData[] = [
         status: "book-now",
       },
     ],
-    sourceUrl: "https://www.castiglione.com.au/attackontitan",
     status: "on-sale",
     image: "/media/aot-poster.jpg",
     href: "/tours/attack-on-titan-beyond-the-walls-world-tour",
@@ -503,7 +500,6 @@ export const tourHighlights: TourCardData[] = [
         status: "past",
       },
     ],
-    sourceUrl: "https://www.castiglione.com.au/onepiecepianosymphony",
     status: "past",
     image:
       "https://images.unsplash.com/photo-1526142684086-7ebd69df27a5?auto=format&fit=crop&w=1200&q=80",
@@ -599,7 +595,6 @@ export const tourHighlights: TourCardData[] = [
     dateLabel: "05-10 AUG 2024",
     cities: ["Brisbane", "Melbourne", "Sydney"],
     venues: ["QPAC", "Art Centre Melbourne", "Sydney Opera House"],
-    sourceUrl: "https://www.castiglione.com.au/maximvengerov",
     status: "past",
     image:
       "https://images.unsplash.com/photo-1465821185615-20b3c2fbf41b?auto=format&fit=crop&w=1200&q=80",
@@ -626,7 +621,6 @@ export const tourHighlights: TourCardData[] = [
         status: "past",
       },
     ],
-    sourceUrl: "https://www.castiglione.com.au/onepiecemusicsymphony",
     status: "past",
     image:
       "https://images.unsplash.com/photo-1526142684086-7ebd69df27a5?auto=format&fit=crop&w=1200&q=80",
@@ -639,7 +633,6 @@ export const tourHighlights: TourCardData[] = [
     dateLabel: "23-25 JUL 2024",
     cities: ["Perth", "Adelaide"],
     venues: ["Perth Concert Hall", "Adelaide Town Hall"],
-    sourceUrl: "https://www.castiglione.com.au/onepiecepianosymphony",
     status: "past",
     image:
       "https://images.unsplash.com/photo-1526142684086-7ebd69df27a5?auto=format&fit=crop&w=1200&q=80",

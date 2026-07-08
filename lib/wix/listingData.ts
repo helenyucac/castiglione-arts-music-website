@@ -133,7 +133,6 @@ function hydrateEventsWithLocalFallback(cmsEvents: TourCardData[], localEvents: 
       dateLabel: formatPublicDateDisplay(dateLabel) ?? dateLabel,
       date: event.date || localEvent?.date || "",
       ticketLinks: event.ticketLinks ?? localEvent?.ticketLinks,
-      sourceUrl: event.sourceUrl ?? localEvent?.sourceUrl,
     };
   });
 }

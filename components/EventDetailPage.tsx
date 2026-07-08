@@ -85,6 +85,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
       getTourDateTimestamp(firstDate.date) - getTourDateTimestamp(secondDate.date),
   );
   const hasTourDates = sortedTourDates.length > 0;
+  const hasRelatedEvents = event.relatedEvents.length > 0;
   const primaryCtaHref = getPrimaryCtaHref(event, hasTourDates);
   const shouldRenderPrimaryCta = Boolean(
     event.primaryCtaLabel && primaryCtaHref && (hasTourDates || primaryCtaHref !== "#tour-dates"),
@@ -312,36 +313,38 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
           </section>
         ) : null}
 
-        <section className="border-t border-[rgba(17,17,17,0.08)] bg-[#f5f1ea] py-16 sm:py-20 lg:py-24">
-          <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-10">
-            <div className="mb-12 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-              <div className="flex flex-col gap-5">
-                <p className={sectionEyebrowClass} style={eyebrowStyle}>
-                  {event.relatedEyebrow}
-                </p>
-                <h2
-                  className="m-0 text-[clamp(2.25rem,5vw,4rem)] font-semibold leading-[1.02] tracking-[-0.035em] text-[#111111] antialiased"
-                  style={displayStyle}
+        {hasRelatedEvents ? (
+          <section className="border-t border-[rgba(17,17,17,0.08)] bg-[#f5f1ea] py-16 sm:py-20 lg:py-24">
+            <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-10">
+              <div className="mb-12 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+                <div className="flex flex-col gap-5">
+                  <p className={sectionEyebrowClass} style={eyebrowStyle}>
+                    {event.relatedEyebrow}
+                  </p>
+                  <h2
+                    className="m-0 text-[clamp(2.25rem,5vw,4rem)] font-semibold leading-[1.02] tracking-[-0.035em] text-[#111111] antialiased"
+                    style={displayStyle}
+                  >
+                    {event.relatedTitle}
+                  </h2>
+                </div>
+                <Link
+                  href={event.relatedHref}
+                  className="text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[#111111] underline underline-offset-8 antialiased transition-opacity hover:opacity-70"
+                  style={eyebrowStyle}
                 >
-                  {event.relatedTitle}
-                </h2>
+                  {event.relatedLinkLabel} →
+                </Link>
               </div>
-              <Link
-                href={event.relatedHref}
-                className="text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[#111111] underline underline-offset-8 antialiased transition-opacity hover:opacity-70"
-                style={eyebrowStyle}
-              >
-                {event.relatedLinkLabel} →
-              </Link>
-            </div>
 
-            <div className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-              {event.relatedEvents.map((relatedEvent) => (
-                <WhatsOnEventCard key={relatedEvent.id} event={relatedEvent} />
-              ))}
+              <div className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+                {event.relatedEvents.map((relatedEvent) => (
+                  <WhatsOnEventCard key={relatedEvent.id} event={relatedEvent} />
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : null}
       </main>
       <Footer />
     </>

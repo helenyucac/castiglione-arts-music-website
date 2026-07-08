@@ -29,12 +29,21 @@ function FooterHeadline({ headline }: { headline: string }) {
   );
 }
 
+function normalizeFooterText(value?: string) {
+  return value?.replace(/\\n/g, "\n");
+}
+
 export async function Footer() {
   const [siteSettings, footerNav, footerSocialLinks] = await Promise.all([
     getResolvedSiteSettings(),
     getResolvedFooterNavigationLinks(),
     getResolvedFooterSocialLinks(),
   ]);
+  const footerHeadline =
+    normalizeFooterText(siteSettings.footerHeadline) ?? "Let's create something meaningful together.";
+  const footerSubtext = normalizeFooterText(siteSettings.footerSubtext);
+  const footerEmailPlaceholder = normalizeFooterText(siteSettings.footerEmailPlaceholder);
+  const footerCopyright = normalizeFooterText(siteSettings.footerCopyright);
 
   return (
     <footer id="contact" className="bg-[#111111] text-white">
@@ -53,14 +62,14 @@ export async function Footer() {
               fontFamily: 'Fraunces, "Cormorant Garamond", serif',
             }}
           >
-            <FooterHeadline headline={siteSettings.footerHeadline ?? "Let's create something meaningful together."} />
+            <FooterHeadline headline={footerHeadline} />
           </h2>
 
           <p
             className="mt-8 max-w-xl text-[17px] font-normal leading-[1.65] text-white/60 antialiased"
             style={{ fontFamily: "Inter, sans-serif" }}
           >
-            {siteSettings.footerSubtext}
+            {footerSubtext}
           </p>
 
           <form className="mt-12 flex w-full max-w-2xl flex-col gap-4 border-b border-white/25 pb-4 sm:flex-row sm:items-end sm:gap-8">
@@ -71,7 +80,7 @@ export async function Footer() {
               id="footer-email"
               name="email"
               type="email"
-              placeholder={siteSettings.footerEmailPlaceholder ?? "Email address"}
+              placeholder={footerEmailPlaceholder ?? "Email address"}
               className="min-h-10 flex-1 bg-transparent text-left text-[17px] leading-none text-white outline-none placeholder:text-white/40"
               style={{ fontFamily: "Inter, sans-serif" }}
             />
@@ -93,7 +102,7 @@ export async function Footer() {
             className="text-[11px] font-medium uppercase leading-none tracking-[0.28em] text-white/60 antialiased"
             style={{ fontFamily: "Inter, sans-serif" }}
           >
-            {siteSettings.footerCopyright}
+            {footerCopyright}
           </p>
 
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between lg:justify-end">

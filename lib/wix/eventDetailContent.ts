@@ -3,13 +3,14 @@ import { eventDetailsBySlug, type EventDetailData, type EventTourDate } from "@/
 import { isWixConfigured, queryWixCollection, visibleFilter } from "@/lib/wix/client";
 import { getTourProgram, homepageWhatsOnEvents, tourProgramLabels } from "@/data/tours";
 import { formatPublicDateRangeFromValues, formatPublicEventDate } from "@/lib/dateDisplay";
+import { getEventCardHref } from "@/lib/eventCardHref";
 import { getWixFields } from "@/lib/wix/normalizers";
 import { optionalMediaUrl, SAFE_EVENT_IMAGE_FALLBACK } from "@/lib/wix/media";
 import { getEventGallery, getEventVideos, getTourDates } from "@/lib/wix/eventDetails";
 import { getEvents } from "@/lib/wix/events";
 import { getPartnersByEvent } from "@/lib/wix/partners";
 import { getTestimonialsByEvent } from "@/lib/wix/testimonials";
-import type { TourProgram, TourStatus } from "@/data/tours";
+import type { TourCardData, TourProgram, TourStatus } from "@/data/tours";
 import type {
   NormalizedEventGalleryImage,
   NormalizedEventVideo,
@@ -464,7 +465,6 @@ function normalizeInlineTourDate(
     country: textField(fields.country),
     ticketLabel,
     ticketHref,
-    ticketStatus: textField(fields.ticketStatus),
     order: numberValue(fields.order, index),
     isVisible,
   };
@@ -621,11 +621,53 @@ function getTourSlugFromHref(href?: string) {
   return href?.split("/").filter(Boolean).at(-1);
 }
 
-function getUpcomingRelatedEvents(slug: string) {
+function normalizeRelatedEventKey(value?: string) {
+  return optionalString(value)?.toLowerCase();
+}
+
+function getRelatedEventKeys(event: Pick<TourCardData, "id" | "href" | "slug" | "title">) {
+  return [
+    event.id,
+    event.slug,
+    getTourSlugFromHref(event.href),
+    getTourSlugFromHref(getEventCardHref(event)),
+    event.title,
+  ]
+    .map(normalizeRelatedEventKey)
+    .filter((key): key is string => Boolean(key));
+}
+
+function getCurrentRelatedEventKeys(
+  slug: string,
+  wixEventId?: string,
+  fields: WixRecordFields = {},
+  fallback?: EventDetailData,
+) {
+  return [
+    slug,
+    wixEventId,
+    optionalString(fields.slug),
+    optionalString(fields._id),
+    optionalString(fields.id),
+    fallback?.slug,
+    optionalString(fields.title),
+    fallback?.title,
+  ]
+    .map(normalizeRelatedEventKey)
+    .filter((key): key is string => Boolean(key));
+}
+
+function isCurrentRelatedEvent(event: TourCardData, currentEventKeys: Set<string>) {
+  return getRelatedEventKeys(event).some((key) => currentEventKeys.has(key));
+}
+
+function getUpcomingRelatedEvents(currentEventKeys: string[]) {
   const todayTimestamp = getTodayTimestamp();
+  const currentEventKeySet = new Set(currentEventKeys);
 
   return homepageWhatsOnEvents
-    .filter((event) => event.id !== slug && getTourSlugFromHref(event.href) !== slug)
+    .filter((event) => !isCurrentRelatedEvent(event, currentEventKeySet))
+    .filter((event) => Boolean(getEventCardHref(event)))
     .filter((event) => activeRelatedStatuses.has(event.status))
     .filter((event) => getLocalDateTimestamp(event.date) >= todayTimestamp)
     .sort(
@@ -635,11 +677,13 @@ function getUpcomingRelatedEvents(slug: string) {
     .slice(0, 3);
 }
 
-async function getWixUpcomingRelatedEvents(slug: string) {
+async function getWixUpcomingRelatedEvents(currentEventKeys: string[]) {
   const todayTimestamp = getTodayTimestamp();
+  const currentEventKeySet = new Set(currentEventKeys);
   const events = await getEvents();
   const relatedEvents = events
-    .filter((event) => event.id !== slug && event.slug !== slug && getTourSlugFromHref(event.href) !== slug)
+    .filter((event) => !isCurrentRelatedEvent(event, currentEventKeySet))
+    .filter((event) => Boolean(getEventCardHref(event)))
     .filter((event) => activeRelatedStatuses.has(event.status))
     .filter((event) => getLocalDateTimestamp(event.date) >= todayTimestamp)
     .sort(
@@ -648,7 +692,7 @@ async function getWixUpcomingRelatedEvents(slug: string) {
     )
     .slice(0, 3);
 
-  return relatedEvents.length > 0 ? relatedEvents : null;
+  return relatedEvents;
 }
 
 function createCmsOnlyFallback(fields: WixRecordFields, requestedSlug: string) {
@@ -690,7 +734,7 @@ function createCmsOnlyFallback(fields: WixRecordFields, requestedSlug: string) {
     relatedTitle: "More Events",
     relatedHref: "/#whats-on",
     relatedLinkLabel: "SEE FULL SEASON",
-    relatedEvents: getUpcomingRelatedEvents(slug),
+    relatedEvents: getUpcomingRelatedEvents(getCurrentRelatedEventKeys(slug, undefined, fields)),
   };
 
   return mergeCmsEventDetail(fields, fallback);
@@ -830,7 +874,6 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
     const cmsTestimonials = await optionalCmsSection(() =>
       getWixTestimonialsForEvent(slug, cmsEvent?.id),
     );
-    const cmsRelatedEvents = await optionalCmsSection(() => getWixUpcomingRelatedEvents(slug));
 
     if (
       fallback &&
@@ -839,8 +882,7 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
       !cmsTrailerVideo &&
       !cmsGalleryImages &&
       !cmsPartners &&
-      !cmsTestimonials &&
-      !cmsRelatedEvents
+      !cmsTestimonials
     ) {
       return fallback;
     }
@@ -852,6 +894,15 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
       return null;
     }
 
+    const currentRelatedEventKeys = getCurrentRelatedEventKeys(
+      slug,
+      cmsEvent?.id,
+      fields,
+      baseEvent,
+    );
+    const cmsRelatedEvents = await optionalCmsSection(() =>
+      getWixUpcomingRelatedEvents(currentRelatedEventKeys),
+    );
     const status = normalizeStatus(fields.status);
     const mergedEvent = cmsEvent
       ? mergeCmsEventDetail(
@@ -900,7 +951,9 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
       galleryImages: resolvedGalleryImages,
       partners: cmsPartners ?? mergedEvent.partners,
       testimonials: cmsTestimonials ?? mergedEvent.testimonials,
-      relatedEvents: cmsRelatedEvents ?? mergedEvent.relatedEvents,
+      relatedEvents:
+        cmsRelatedEvents ??
+        getUpcomingRelatedEvents(currentRelatedEventKeys),
     };
   } catch {
     return fallback ?? null;

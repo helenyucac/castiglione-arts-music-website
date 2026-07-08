@@ -481,7 +481,6 @@ export function normalizeTourDate(item: WixCollectionItem): NormalizedTourDate {
       "BUY TICKETS",
     ),
     ticketHref,
-    ticketStatus: optionalString(fields.ticketStatus),
     order: numberValue(fields.order, Number.MAX_SAFE_INTEGER),
     isVisible: booleanValue(fields.isVisible, true),
   };
@@ -498,7 +497,6 @@ export function normalizeEventVideo(item: WixCollectionItem): NormalizedEventVid
     src: videoSrc,
     videoUrl: optionalMediaUrl(fields.videoUrl),
     posterImage: optionalMediaUrl(fields.posterAsset) ?? optionalMediaUrl(fields.posterImage),
-    videoType: optionalString(fields.videoType),
     caption: optionalString(fields.caption),
     order: numberValue(fields.order),
     isVisible: booleanValue(fields.isVisible, true),

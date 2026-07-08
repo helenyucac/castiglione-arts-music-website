@@ -600,6 +600,10 @@ function mergeCmsEventDetail(
 const activeRelatedStatuses = new Set(["on-sale", "upcoming"]);
 
 function getLocalDateTimestamp(date: string) {
+  if (!date.trim()) {
+    return 0;
+  }
+
   const isoDate = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
 
   if (isoDate) {
@@ -677,22 +681,52 @@ function getUpcomingRelatedEvents(currentEventKeys: string[]) {
     .slice(0, 3);
 }
 
+async function getRelatedEventTimestamp(event: TourCardData, todayTimestamp: number) {
+  const sortDateTimestamp = getLocalDateTimestamp(event.date);
+
+  if (sortDateTimestamp > 0) {
+    return sortDateTimestamp >= todayTimestamp ? sortDateTimestamp : null;
+  }
+
+  const slug = getTourSlugFromHref(getEventCardHref(event));
+
+  if (!slug) {
+    return null;
+  }
+
+  const tourDates = await getTourDates(slug, event.id ? [event.id] : []);
+  const upcomingTourDateTimestamps = tourDates
+    .map((tourDate) => getLocalDateTimestamp(tourDate.displayDate || tourDate.date))
+    .filter((timestamp) => timestamp >= todayTimestamp)
+    .sort((first, second) => first - second);
+
+  return upcomingTourDateTimestamps[0] ?? null;
+}
+
 async function getWixUpcomingRelatedEvents(currentEventKeys: string[]) {
   const todayTimestamp = getTodayTimestamp();
   const currentEventKeySet = new Set(currentEventKeys);
   const events = await getEvents();
-  const relatedEvents = events
+  const candidateEvents = events
     .filter((event) => !isCurrentRelatedEvent(event, currentEventKeySet))
     .filter((event) => Boolean(getEventCardHref(event)))
     .filter((event) => activeRelatedStatuses.has(event.status))
-    .filter((event) => getLocalDateTimestamp(event.date) >= todayTimestamp)
-    .sort(
-      (firstEvent, secondEvent) =>
-        getLocalDateTimestamp(firstEvent.date) - getLocalDateTimestamp(secondEvent.date),
-    )
-    .slice(0, 3);
+    .filter((event) => Boolean(optionalString(event.image)));
+  const relatedEventsWithTimestamp = await Promise.all(
+    candidateEvents.map(async (event) => ({
+      event,
+      timestamp: await getRelatedEventTimestamp(event, todayTimestamp),
+    })),
+  );
 
-  return relatedEvents;
+  const eligibleRelatedEvents = relatedEventsWithTimestamp.flatMap(({ event, timestamp }) =>
+    typeof timestamp === "number" ? [{ event, timestamp }] : [],
+  );
+
+  return eligibleRelatedEvents
+    .sort((firstEvent, secondEvent) => firstEvent.timestamp - secondEvent.timestamp)
+    .map((item) => item.event)
+    .slice(0, 3);
 }
 
 function createCmsOnlyFallback(fields: WixRecordFields, requestedSlug: string) {
@@ -874,18 +908,6 @@ export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
     const cmsTestimonials = await optionalCmsSection(() =>
       getWixTestimonialsForEvent(slug, cmsEvent?.id),
     );
-
-    if (
-      fallback &&
-      !cmsEvent &&
-      !cmsTourDates &&
-      !cmsTrailerVideo &&
-      !cmsGalleryImages &&
-      !cmsPartners &&
-      !cmsTestimonials
-    ) {
-      return fallback;
-    }
 
     const fields = cmsEvent?.fields ?? {};
     const baseEvent = fallback ?? createCmsOnlyFallback(fields, slug);

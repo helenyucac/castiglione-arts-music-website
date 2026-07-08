@@ -144,7 +144,6 @@ export type NormalizedTourDate = EventTourDate & {
   displayDate: string;
   time?: string;
   country?: string;
-  ticketStatus?: string;
   order: number;
   isVisible: boolean;
 };
@@ -156,7 +155,6 @@ export type NormalizedEventVideo = {
   src?: string;
   videoUrl?: string;
   posterImage?: string;
-  videoType?: string;
   caption?: string;
   order: number;
   isVisible: boolean;

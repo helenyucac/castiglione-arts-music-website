@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
+import { EventGallery } from "@/components/EventGallery";
 import { Navigation } from "@/components/Navigation";
 import { WhatsOnEventCard } from "@/components/WhatsOnEventCard";
 import type { EventDetailData } from "@/data/eventDetails";
@@ -221,7 +222,9 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
               </p>
               <div className="w-full max-w-[1200px]">
                 <video
+                  autoPlay
                   controls
+                  muted
                   playsInline
                   preload="metadata"
                   poster={event.trailerPosterSrc}
@@ -304,36 +307,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
               <p className={sectionEyebrowClass} style={eyebrowStyle}>
                 Photo Gallery
               </p>
-              <div className="grid w-full max-w-[1200px] gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-                {galleryImages.map((image, index) => (
-                  <figure
-                    key={`${image.src}-${index}`}
-                    className={index === 0 ? "sm:col-span-2 lg:col-span-2" : undefined}
-                  >
-                    <div className="relative aspect-[4/5] overflow-hidden bg-[#e7e0d6]">
-                      <Image
-                        src={image.src}
-                        alt={image.alt}
-                        fill
-                        sizes={
-                          index === 0
-                            ? "(min-width: 1024px) 760px, (min-width: 640px) 92vw, 100vw"
-                            : "(min-width: 1024px) 380px, (min-width: 640px) 46vw, 100vw"
-                        }
-                        className="object-cover"
-                      />
-                    </div>
-                    {image.caption ? (
-                      <figcaption
-                        className="mt-3 text-[12px] font-normal leading-[18px] text-[rgba(17,17,17,0.62)] antialiased"
-                        style={eyebrowStyle}
-                      >
-                        {image.caption}
-                      </figcaption>
-                    ) : null}
-                  </figure>
-                ))}
-              </div>
+              <EventGallery images={galleryImages} />
             </div>
           </section>
         ) : null}

@@ -10,6 +10,7 @@ export type EventTourDate = {
   venueDetails?: EventVenue;
   ticketLabel: string;
   ticketHref: string;
+  ticketStatus?: string;
 };
 
 export type EventVenue = {

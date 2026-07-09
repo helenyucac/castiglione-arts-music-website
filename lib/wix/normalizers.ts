@@ -315,7 +315,9 @@ export function normalizeSiteSettings(item: WixCollectionItem): NormalizedSiteSe
     siteName: stringValue(fields.siteName, "Castiglione Arts & Culture"),
     headerLogo: optionalString(fields.headerLogo),
     footerLogo: optionalString(fields.footerLogo),
-    homepageHeroVideo: optionalString(fields.homepageHeroVideo),
+    homepageHeroVideo:
+      optionalMediaUrl(fields.homepageVideoBanner) ??
+      optionalMediaUrl(fields.homepageHeroVideo),
     homepageHeroFallbackImage: optionalString(fields.homepageHeroFallbackImage),
     homepageHeroEyebrow: optionalString(fields.homepageHeroEyebrow),
     homepageHeroHeadline: optionalString(fields.homepageHeroHeadline),

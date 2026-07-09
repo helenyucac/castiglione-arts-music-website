@@ -91,8 +91,15 @@ function stringValue(value: unknown, fallback = "") {
 
 function optionalString(value: unknown) {
   const text = stringValue(value).trim();
+  const normalizedText = text.toUpperCase();
 
-  if (!text || text === "OPTIONAL" || text === "MANUAL" || text === "UPLOAD TO WIX") {
+  if (
+    !text ||
+    text === "#" ||
+    normalizedText === "OPTIONAL" ||
+    normalizedText === "MANUAL" ||
+    normalizedText === "UPLOAD TO WIX"
+  ) {
     return undefined;
   }
 
@@ -463,7 +470,7 @@ export function normalizeTourDate(item: WixCollectionItem): NormalizedTourDate {
     optionalString(fields.ticketHref) ??
     optionalString(fields.bookingUrl) ??
     optionalString(fields.ctaUrl) ??
-    "#";
+    "";
 
   return {
     id: idOf(fields),
@@ -484,6 +491,7 @@ export function normalizeTourDate(item: WixCollectionItem): NormalizedTourDate {
       "BUY TICKETS",
     ),
     ticketHref,
+    ticketStatus: optionalString(fields.ticketStatus ?? fields.status),
     order: numberValue(fields.order, Number.MAX_SAFE_INTEGER),
     isVisible: booleanValue(fields.isVisible, true),
   };

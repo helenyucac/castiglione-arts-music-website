@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer";
 import { EventGallery } from "@/components/EventGallery";
 import { Navigation } from "@/components/Navigation";
 import { WhatsOnEventCard } from "@/components/WhatsOnEventCard";
-import type { EventDetailData } from "@/data/eventDetails";
+import type { EventDetailData, EventTourDate } from "@/data/eventDetails";
 import { formatPublicDateDisplay } from "@/lib/dateDisplay";
 
 type EventDetailPageProps = {
@@ -23,6 +23,9 @@ const sectionEyebrowClass =
   "m-0 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased";
 const richDescriptionClass =
   "w-full max-w-[1200px] text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.8)] antialiased [&_a]:underline [&_a]:underline-offset-4 [&_em]:italic [&_h2]:mb-4 [&_h2]:font-semibold [&_h3]:mb-4 [&_h3]:font-semibold [&_h4]:mb-4 [&_h4]:font-semibold [&_li]:mb-2 [&_ol]:mb-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-6 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_ul]:mb-6 [&_ul]:list-disc [&_ul]:pl-6";
+const ticketCtaClass =
+  "inline-flex items-center justify-center bg-[#111111] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased";
+const invalidTicketHrefValues = new Set(["", "#", "OPTIONAL", "MANUAL", "UPLOAD TO WIX"]);
 
 const tourDateMonthIndexes: Record<string, number> = {
   JAN: 0,
@@ -66,12 +69,110 @@ function getTourDateTimestamp(date: string) {
   return new Date(Number(year), monthIndex, Number(day), hour, minute).getTime();
 }
 
-function getPrimaryCtaHref(event: EventDetailData, hasTourDates: boolean) {
-  if (event.primaryCtaLabel.toLowerCase().includes("ticket")) {
-    return hasTourDates ? "#tour-dates" : event.primaryCtaHref;
+function normalizeTicketText(value?: string) {
+  return value?.trim() ?? "";
+}
+
+function normalizeTicketStatus(value?: string) {
+  return normalizeTicketText(value).toLowerCase().replace(/[\s_]+/g, "-");
+}
+
+function isEndedTicketStatus(status?: string) {
+  const normalizedStatus = normalizeTicketStatus(status);
+  return (
+    normalizedStatus === "event-ended" ||
+    normalizedStatus === "ended" ||
+    normalizedStatus === "past"
+  );
+}
+
+function getValidTicketHref(href?: string) {
+  const normalizedHref = normalizeTicketText(href);
+
+  if (invalidTicketHrefValues.has(normalizedHref) || invalidTicketHrefValues.has(normalizedHref.toUpperCase())) {
+    return undefined;
   }
 
-  return event.primaryCtaHref;
+  return /^https?:\/\//i.test(normalizedHref) ? normalizedHref : undefined;
+}
+
+function getTicketLabel(tourDate: EventTourDate) {
+  if (isEndedTicketStatus(tourDate.ticketStatus)) {
+    return "EVENT ENDED";
+  }
+
+  const ticketLabel = normalizeTicketText(tourDate.ticketLabel);
+  return invalidTicketHrefValues.has(ticketLabel) || invalidTicketHrefValues.has(ticketLabel.toUpperCase())
+    ? "BUY TICKETS"
+    : ticketLabel;
+}
+
+function getTourDateCta(tourDate: EventTourDate) {
+  if (isEndedTicketStatus(tourDate.ticketStatus)) {
+    return {
+      label: "EVENT ENDED",
+      href: undefined,
+      isDisabled: true,
+    };
+  }
+
+  const href = getValidTicketHref(tourDate.ticketHref);
+
+  if (!href) {
+    return null;
+  }
+
+  return {
+    label: getTicketLabel(tourDate),
+    href,
+    isDisabled: false,
+  };
+}
+
+function getValidPrimaryCtaHref(href?: string) {
+  const normalizedHref = normalizeTicketText(href);
+
+  if (invalidTicketHrefValues.has(normalizedHref) || invalidTicketHrefValues.has(normalizedHref.toUpperCase())) {
+    return undefined;
+  }
+
+  return /^(https?:\/\/|\/|#)/i.test(normalizedHref) ? normalizedHref : undefined;
+}
+
+function getPrimaryCta(event: EventDetailData, tourDates: EventTourDate[]) {
+  if (!event.primaryCtaLabel) {
+    return null;
+  }
+
+  if (event.primaryCtaLabel.toLowerCase().includes("ticket") && tourDates.length > 0) {
+    if (tourDates.every((tourDate) => isEndedTicketStatus(tourDate.ticketStatus))) {
+      return {
+        label: "EVENT ENDED",
+        href: undefined,
+        isDisabled: true,
+      };
+    }
+
+    if (tourDates.some((tourDate) => Boolean(getTourDateCta(tourDate)?.href))) {
+      return {
+        label: event.primaryCtaLabel,
+        href: "#tour-dates",
+        isDisabled: false,
+      };
+    }
+
+    return null;
+  }
+
+  const href = getValidPrimaryCtaHref(event.primaryCtaHref);
+
+  return href
+    ? {
+        label: event.primaryCtaLabel,
+        href,
+        isDisabled: false,
+      }
+    : null;
 }
 
 function getVideoSourceType(src: string) {
@@ -88,10 +189,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
   );
   const hasTourDates = sortedTourDates.length > 0;
   const hasRelatedEvents = event.relatedEvents.length > 0;
-  const primaryCtaHref = getPrimaryCtaHref(event, hasTourDates);
-  const shouldRenderPrimaryCta = Boolean(
-    event.primaryCtaLabel && primaryCtaHref && (hasTourDates || primaryCtaHref !== "#tour-dates"),
-  );
+  const primaryCta = getPrimaryCta(event, sortedTourDates);
 
   return (
     <>
@@ -159,14 +257,22 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                 </p>
 
                 <div className="mt-8 grid gap-3">
-                  {shouldRenderPrimaryCta ? (
+                  {primaryCta?.href ? (
                     <a
-                      href={primaryCtaHref}
-                      className="inline-flex items-center justify-center bg-[#111111] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased transition-opacity hover:opacity-80"
+                      href={primaryCta.href}
+                      className={`${ticketCtaClass} transition-opacity hover:opacity-80`}
                       style={eyebrowStyle}
                     >
-                      {event.primaryCtaLabel} →
+                      {primaryCta.label} →
                     </a>
+                  ) : primaryCta?.isDisabled ? (
+                    <span
+                      aria-disabled="true"
+                      className={`${ticketCtaClass} cursor-default opacity-60`}
+                      style={eyebrowStyle}
+                    >
+                      {primaryCta.label}
+                    </span>
                   ) : null}
                   <Link
                     href={event.secondaryCtaHref}
@@ -261,50 +367,64 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                 </p>
                 <div className="w-full max-w-[1200px]">
                   <div className="grid">
-                    {sortedTourDates.map((tourDate, index) => (
-                      <article
-                        key={`${tourDate.date}-${tourDate.city}`}
-                        className="grid gap-6 border-b border-[rgba(17,17,17,0.15)] py-8 last:border-b-0 lg:grid-cols-[120px_220px_minmax(0,1fr)_auto] lg:items-start lg:gap-8"
-                      >
-                        <p
-                          className="m-0 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased lg:pt-4"
-                          style={eyebrowStyle}
+                    {sortedTourDates.map((tourDate, index) => {
+                      const tourDateCta = getTourDateCta(tourDate);
+
+                      return (
+                        <article
+                          key={`${tourDate.date}-${tourDate.city}`}
+                          className="grid gap-6 border-b border-[rgba(17,17,17,0.15)] py-8 last:border-b-0 lg:grid-cols-[120px_220px_minmax(0,1fr)_auto] lg:items-start lg:gap-8"
                         >
-                          Show {index + 1}
-                        </p>
-                        <p
-                          className="mt-0 mb-0 pt-4 pb-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[#d94a28] antialiased"
-                          style={eyebrowStyle}
-                        >
-                          {formatPublicDateDisplay(tourDate.date) ?? tourDate.date}
-                        </p>
-                        <div className="lg:self-center">
-                          <h3
-                            className="m-0 text-[34px] font-medium leading-[38px] tracking-[-0.03em] text-[#111111] antialiased"
-                            style={displayStyle}
-                          >
-                            {tourDate.city}
-                          </h3>
                           <p
-                            className="mt-2 mb-0 p-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[rgba(17,17,17,0.6)] antialiased"
+                            className="m-0 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased lg:pt-4"
                             style={eyebrowStyle}
                           >
-                            {tourDate.venue}
+                            Show {index + 1}
                           </p>
-                        </div>
-                        <div className="lg:flex lg:justify-end lg:pt-4">
-                          <a
-                            href={tourDate.ticketHref}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center bg-[#111111] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased transition-opacity hover:opacity-80"
+                          <p
+                            className="mt-0 mb-0 pt-4 pb-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[#d94a28] antialiased"
                             style={eyebrowStyle}
                           >
-                            {tourDate.ticketLabel} →
-                          </a>
-                        </div>
-                      </article>
-                    ))}
+                            {formatPublicDateDisplay(tourDate.date) ?? tourDate.date}
+                          </p>
+                          <div className="lg:self-center">
+                            <h3
+                              className="m-0 text-[34px] font-medium leading-[38px] tracking-[-0.03em] text-[#111111] antialiased"
+                              style={displayStyle}
+                            >
+                              {tourDate.city}
+                            </h3>
+                            <p
+                              className="mt-2 mb-0 p-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[rgba(17,17,17,0.6)] antialiased"
+                              style={eyebrowStyle}
+                            >
+                              {tourDate.venue}
+                            </p>
+                          </div>
+                          <div className="lg:flex lg:justify-end lg:pt-4">
+                            {tourDateCta?.href ? (
+                              <a
+                                href={tourDateCta.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`${ticketCtaClass} transition-opacity hover:opacity-80`}
+                                style={eyebrowStyle}
+                              >
+                                {tourDateCta.label} →
+                              </a>
+                            ) : tourDateCta?.isDisabled ? (
+                              <span
+                                aria-disabled="true"
+                                className={`${ticketCtaClass} cursor-default opacity-60`}
+                                style={eyebrowStyle}
+                              >
+                                {tourDateCta.label}
+                              </span>
+                            ) : null}
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

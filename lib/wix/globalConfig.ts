@@ -81,6 +81,7 @@ function mergeSiteSettings(cmsSettings: NormalizedSiteSettings | null) {
   return {
     ...localSiteSettings,
     ...cmsSettings,
+    homepageHeroVideo: cmsSettings.homepageHeroVideo ?? localSiteSettings.homepageHeroVideo,
     heroStats: cmsSettings.heroStats.length > 0 ? cmsSettings.heroStats : localSiteSettings.heroStats,
   };
 }

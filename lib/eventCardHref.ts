@@ -6,14 +6,24 @@ function normalizeText(value?: string) {
   return value?.trim() ?? "";
 }
 
-function isValidHref(href?: string) {
+function isValidExternalHref(href?: string) {
   const normalizedHref = normalizeText(href);
 
   if (invalidLinkValues.has(normalizedHref)) {
     return false;
   }
 
-  return normalizedHref.startsWith("/") || normalizedHref.startsWith("http://") || normalizedHref.startsWith("https://");
+  return normalizedHref.startsWith("http://") || normalizedHref.startsWith("https://");
+}
+
+function isValidLocalHref(href?: string) {
+  const normalizedHref = normalizeText(href);
+
+  if (invalidLinkValues.has(normalizedHref)) {
+    return false;
+  }
+
+  return normalizedHref.startsWith("/");
 }
 
 function getValidSlug(slug?: string) {
@@ -26,11 +36,11 @@ function getValidSlug(slug?: string) {
   return normalizedSlug.split("/").filter(Boolean).at(-1);
 }
 
-export function getEventCardHref(event: Pick<TourCardData, "href" | "slug">) {
-  if (isValidHref(event.href)) {
-    return normalizeText(event.href);
+export function getEventCardHref(event: Pick<TourCardData, "externalEventUrl" | "href" | "slug">) {
+  if (isValidExternalHref(event.externalEventUrl)) {
+    return normalizeText(event.externalEventUrl);
   }
 
-  const slug = getValidSlug(event.slug);
+  const slug = getValidSlug(event.slug) ?? (isValidLocalHref(event.href) ? getValidSlug(event.href) : undefined);
   return slug ? `/tours/${slug}` : undefined;
 }

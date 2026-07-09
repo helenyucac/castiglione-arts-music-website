@@ -432,6 +432,7 @@ export function normalizeEvent(item: WixCollectionItem): NormalizedEvent {
     image,
     href: slug && slug !== "MANUAL" ? `/tours/${slug}` : undefined,
     slug,
+    externalEventUrl: optionalString(fields.externalEventUrl),
     program,
     programLabel: stringValue(fields.programLabel ?? fields.program, program ? programToLabel[program] : ""),
     categoryLabel,

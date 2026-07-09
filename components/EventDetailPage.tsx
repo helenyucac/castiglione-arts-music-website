@@ -21,6 +21,8 @@ const displayStyle = {
 
 const sectionEyebrowClass =
   "m-0 p-0 text-[11px] font-semibold uppercase leading-[16.5px] tracking-[2.75px] text-[#d94a28] antialiased";
+const richDescriptionClass =
+  "w-full max-w-[1200px] text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.8)] antialiased [&_a]:underline [&_a]:underline-offset-4 [&_em]:italic [&_h2]:mb-4 [&_h2]:font-semibold [&_h3]:mb-4 [&_h3]:font-semibold [&_h4]:mb-4 [&_h4]:font-semibold [&_li]:mb-2 [&_ol]:mb-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-6 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_ul]:mb-6 [&_ul]:list-disc [&_ul]:pl-6";
 
 const tourDateMonthIndexes: Record<string, number> = {
   JAN: 0,
@@ -79,7 +81,7 @@ function getVideoSourceType(src: string) {
 export function EventDetailPage({ event }: EventDetailPageProps) {
   const heroTitleOffsetClass = event.heroTitleOffset ? "lg:mt-14" : "";
   const galleryImages = event.galleryImages ?? [];
-  const hasDescription = event.description.length > 0;
+  const hasDescription = Boolean(event.descriptionHtml) || event.description.length > 0;
   const sortedTourDates = [...event.tourDates].sort(
     (firstDate, secondDate) =>
       getTourDateTimestamp(firstDate.date) - getTourDateTimestamp(secondDate.date),
@@ -201,15 +203,23 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                 {event.aboutEyebrow}
               </p>
               <div className="w-full max-w-[1200px]">
-                {event.description.map((paragraph) => (
-                  <p
-                    key={paragraph}
-                    className="mb-6 w-full max-w-[1200px] p-0 text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.8)] antialiased last:mb-0"
+                {event.descriptionHtml ? (
+                  <div
+                    className={richDescriptionClass}
                     style={eyebrowStyle}
-                  >
-                    {paragraph}
-                  </p>
-                ))}
+                    dangerouslySetInnerHTML={{ __html: event.descriptionHtml }}
+                  />
+                ) : (
+                  event.description.map((paragraph) => (
+                    <p
+                      key={paragraph}
+                      className="mb-6 w-full max-w-[1200px] p-0 text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.8)] antialiased last:mb-0"
+                      style={eyebrowStyle}
+                    >
+                      {paragraph}
+                    </p>
+                  ))
+                )}
               </div>
             </div>
           </section>

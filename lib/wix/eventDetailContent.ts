@@ -76,6 +76,189 @@ function splitParagraphs(value: string) {
     .filter(Boolean);
 }
 
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function isHtmlString(value: string) {
+  return /<\/?[a-z][\s\S]*>/i.test(value);
+}
+
+function sanitizeHref(value: unknown) {
+  const href = optionalString(value);
+
+  if (!href) {
+    return undefined;
+  }
+
+  return /^(https?:\/\/|mailto:|tel:|\/)/i.test(href) ? href : undefined;
+}
+
+function richTextChildren(value: WixRecordFields) {
+  return [
+    value.nodes,
+    value.content,
+    value.children,
+    value.blocks,
+    value.items,
+    value.data,
+    value.fieldData,
+  ];
+}
+
+function renderRichTextChildren(value: WixRecordFields, depth: number) {
+  return richTextChildren(value)
+    .flatMap((source) => renderRichTextHtml(source, depth + 1))
+    .join("");
+}
+
+function getRichTextNodeType(value: WixRecordFields) {
+  return optionalString(value.type ?? value.nodeType)?.toLowerCase().replace(/[_-]/g, "_") ?? "";
+}
+
+function getRichTextNodeText(value: WixRecordFields) {
+  return optionalString(
+    (value.textData as WixRecordFields | undefined)?.text ??
+      value.text ??
+      value.value,
+  );
+}
+
+function getDecorationLinkHref(decoration: WixRecordFields) {
+  const linkData = decoration.linkData as WixRecordFields | undefined;
+  const nestedLink = linkData?.link as WixRecordFields | undefined;
+
+  return sanitizeHref(
+    decoration.url ??
+      decoration.href ??
+      linkData?.url ??
+      linkData?.href ??
+      nestedLink?.url ??
+      nestedLink?.href,
+  );
+}
+
+function renderDecoratedText(text: string, decorations: unknown) {
+  const decorationItems = Array.isArray(decorations) ? decorations : [];
+  const normalizedDecorations = decorationItems
+    .filter(isRecord)
+    .map((decoration) => ({
+      type: optionalString(decoration.type)?.toLowerCase() ?? "",
+      href: getDecorationLinkHref(decoration),
+    }));
+
+  return normalizedDecorations.reduce((html, decoration) => {
+    if (decoration.type.includes("bold")) {
+      return `<strong>${html}</strong>`;
+    }
+
+    if (decoration.type.includes("italic")) {
+      return `<em>${html}</em>`;
+    }
+
+    if (decoration.type.includes("link") && decoration.href) {
+      return `<a href="${escapeHtml(decoration.href)}" target="_blank" rel="noopener noreferrer">${html}</a>`;
+    }
+
+    return html;
+  }, escapeHtml(text).replace(/\n/g, "<br />"));
+}
+
+function sanitizeRichHtml(value: string) {
+  return value
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/\son\w+="[^"]*"/gi, "")
+    .replace(/\son\w+='[^']*'/gi, "")
+    .replace(/\s(href|src)=["']javascript:[^"']*["']/gi, "")
+    .trim();
+}
+
+function renderRichTextHtml(value: unknown, depth = 0): string[] {
+  if (depth > 10) {
+    return [];
+  }
+
+  if (typeof value === "string") {
+    const parsedValue = parsePossiblyJsonValue(value);
+
+    if (parsedValue !== value) {
+      return renderRichTextHtml(parsedValue, depth + 1);
+    }
+
+    return isHtmlString(value) ? [sanitizeRichHtml(value)] : [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => renderRichTextHtml(item, depth + 1));
+  }
+
+  if (!isRecord(value)) {
+    return [];
+  }
+
+  const directHtml = optionalString(value.html);
+  if (directHtml && isHtmlString(directHtml)) {
+    return [sanitizeRichHtml(directHtml)];
+  }
+
+  const nodeType = getRichTextNodeType(value);
+  const text = getRichTextNodeText(value);
+
+  if (text && (nodeType.includes("text") || !renderRichTextChildren(value, depth))) {
+    const textData = value.textData as WixRecordFields | undefined;
+    return [renderDecoratedText(text, textData?.decorations ?? value.decorations)];
+  }
+
+  if (nodeType.includes("line_break") || nodeType === "break") {
+    return ["<br />"];
+  }
+
+  const childrenHtml = renderRichTextChildren(value, depth);
+
+  if (!childrenHtml) {
+    return [];
+  }
+
+  if (nodeType.includes("heading")) {
+    const headingData = value.headingData as WixRecordFields | undefined;
+    const level = Math.min(Math.max(Number(headingData?.level ?? value.level ?? 2), 2), 4);
+    return [`<h${level}>${childrenHtml}</h${level}>`];
+  }
+
+  if (nodeType.includes("paragraph")) {
+    return [`<p>${childrenHtml}</p>`];
+  }
+
+  if (nodeType.includes("ordered_list")) {
+    return [`<ol>${childrenHtml}</ol>`];
+  }
+
+  if (
+    nodeType.includes("bulleted_list") ||
+    nodeType.includes("unordered_list") ||
+    nodeType === "list"
+  ) {
+    return [`<ul>${childrenHtml}</ul>`];
+  }
+
+  if (nodeType.includes("list_item")) {
+    return [`<li>${childrenHtml}</li>`];
+  }
+
+  return [childrenHtml];
+}
+
+function resolveRichTextHtml(value: unknown) {
+  const html = renderRichTextHtml(value).join("").trim();
+  return html || undefined;
+}
+
 function extractRichTextParagraphs(value: unknown, depth = 0): string[] {
   if (depth > 8) {
     return [];
@@ -402,6 +585,35 @@ function resolveDescription(fields: WixRecordFields, fallback: EventDetailData) 
   return fallback.description;
 }
 
+function resolveDescriptionHtml(fields: WixRecordFields, fallback: EventDetailData) {
+  const richTextSources = [
+    fields.longDescription,
+    fields.aboutBody,
+    fields.aboutDescription,
+    fields.aboutText,
+    fields.eventDescription,
+    fields.showDescription,
+    fields.overview,
+    fields.synopsis,
+    fields.richTextContent,
+    fields.richContent,
+    fields.body,
+    fields.content,
+    fields.sections,
+    fields.description,
+  ];
+
+  for (const source of richTextSources) {
+    const html = resolveRichTextHtml(source);
+
+    if (html) {
+      return html;
+    }
+  }
+
+  return fallback.descriptionHtml;
+}
+
 function normalizeInlineTourDate(
   value: unknown,
   parentFields: WixRecordFields,
@@ -592,6 +804,7 @@ function mergeCmsEventDetail(
     secondaryCtaHref,
     aboutEyebrow: optionalString(fields.aboutTitle) ?? fallback.aboutEyebrow,
     description: resolveDescription(fields, fallback),
+    descriptionHtml: resolveDescriptionHtml(fields, fallback),
     tourDates: resolveInlineTourDates(fields, fallback.tourDates),
     relatedTitle: "More Events",
   };

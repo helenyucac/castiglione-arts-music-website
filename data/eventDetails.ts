@@ -64,6 +64,7 @@ export type EventDetailData = {
   secondaryCtaHref: string;
   aboutEyebrow: string;
   description: string[];
+  descriptionHtml?: string;
   trailerEyebrow?: string;
   trailerVideoSrc?: string;
   trailerPosterSrc?: string;

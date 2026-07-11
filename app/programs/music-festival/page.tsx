@@ -2,17 +2,10 @@ import type { Metadata } from "next";
 import { EventShowcase } from "@/components/EventShowcase";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
-import { type TourFilter } from "@/data/tours";
-import { getLiveMusicFestivalProgramEvents } from "@/lib/wix/listingData";
+import { getLiveMusicFestivalProgramEvents, getProgramLandingPageText } from "@/lib/wix/listingData";
 
 const musicFestivalDescription =
   "Explore Castiglione music festival programs across live music, Asian pop, and contemporary cultural experiences.";
-
-const liveMusicFilters: { label: string; value: "all" | TourFilter }[] = [
-  { label: "View All", value: "all" },
-  { label: "Lucid Live", value: "lucid" },
-  { label: "Music Festivals", value: "music-festival" },
-];
 
 export const metadata: Metadata = {
   title: "Program - Live Music & Festival | Castiglione",
@@ -28,7 +21,22 @@ export const metadata: Metadata = {
 };
 
 export default async function ProgramMusicFestivalPage() {
-  const events = await getLiveMusicFestivalProgramEvents();
+  const [events, pageText] = await Promise.all([
+    getLiveMusicFestivalProgramEvents(),
+    getProgramLandingPageText(["music-festival", "live-music-festival"], {
+      eyebrow: "PROGRAM / LIVE MUSIC & FESTIVAL",
+      heading:
+        "Explore music festival programs across live music, Asian pop, and contemporary cultural experiences.",
+      viewAllLabel: "VIEW ALL",
+      primaryFilterLabel: "LUCID LIVE",
+      secondaryFilterLabel: "MUSIC FESTIVALS",
+    }),
+  ]);
+  const liveMusicFilters = [
+    { label: pageText.viewAllLabel, value: "all" },
+    { label: pageText.primaryFilterLabel, value: "lucid-live" },
+    { label: pageText.secondaryFilterLabel, value: "music-festivals" },
+  ] as const;
 
   return (
     <>
@@ -41,11 +49,10 @@ export default async function ProgramMusicFestivalPage() {
                 className="mb-5 text-[11px] font-black uppercase leading-none tracking-[2.2px] text-[rgba(17,17,17,0.55)] antialiased"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                PROGRAM / LIVE MUSIC & FESTIVAL
+                {pageText.eyebrow}
               </p>
               <p className="max-w-none text-lg font-black leading-8 tracking-normal sm:text-xl lg:max-w-7xl lg:text-xl lg:leading-8 xl:text-2xl xl:leading-9">
-                Explore music festival programs across live music, Asian pop, and
-                contemporary cultural experiences.
+                {pageText.heading}
               </p>
             </div>
 

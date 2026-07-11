@@ -99,6 +99,11 @@ export type NormalizedProgram = {
   slug: string;
   description?: string;
   heroImage?: string;
+  pageEyebrow?: string;
+  pageHeading?: string;
+  viewAllLabel?: string;
+  primaryFilterLabel?: string;
+  secondaryFilterLabel?: string;
   order: number;
   isVisible: boolean;
 };

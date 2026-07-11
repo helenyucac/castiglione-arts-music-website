@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { EventShowcase } from "@/components/EventShowcase";
 import { Footer } from "@/components/Footer";
 import { Navigation } from "@/components/Navigation";
-import { concertProgramFilters } from "@/data/tours";
-import { getConcertProgramEvents } from "@/lib/wix/listingData";
+import { getConcertProgramEvents, getProgramLandingPageText } from "@/lib/wix/listingData";
 
 const concertsDescription =
   "Explore Castiglione concert programs across anime concerts, gaming concerts, and classical concerts.";
@@ -22,7 +21,22 @@ export const metadata: Metadata = {
 };
 
 export default async function ProgramConcertsPage() {
-  const concertEvents = await getConcertProgramEvents();
+  const [concertEvents, pageText] = await Promise.all([
+    getConcertProgramEvents(),
+    getProgramLandingPageText(["concerts", "anime-gaming-concerts", "classical-concert-theatre"], {
+      eyebrow: "PROGRAM / CONCERT",
+      heading:
+        "Explore concert programs across anime concerts, gaming concerts, and classical concerts.",
+      viewAllLabel: "VIEW ALL",
+      primaryFilterLabel: "ANIME & GAMING CONCERTS",
+      secondaryFilterLabel: "CLASSICAL CONCERTS & THEATRE",
+    }),
+  ]);
+  const concertProgramFilters = [
+    { label: pageText.viewAllLabel, value: "all" },
+    { label: pageText.primaryFilterLabel, value: "anime-gaming-concerts" },
+    { label: pageText.secondaryFilterLabel, value: "classical-concerts-theatre" },
+  ] as const;
 
   return (
     <>
@@ -35,11 +49,10 @@ export default async function ProgramConcertsPage() {
                 className="mb-5 text-[11px] font-black uppercase leading-none tracking-[2.2px] text-[rgba(17,17,17,0.55)] antialiased"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                PROGRAM / CONCERT
+                {pageText.eyebrow}
               </p>
               <p className="max-w-none text-lg font-black leading-8 tracking-normal sm:text-xl lg:max-w-7xl lg:text-xl lg:leading-8 xl:text-2xl xl:leading-9">
-                Explore concert programs across anime concerts, gaming concerts,
-                and classical concerts.
+                {pageText.heading}
               </p>
             </div>
 

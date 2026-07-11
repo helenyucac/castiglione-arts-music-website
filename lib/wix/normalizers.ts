@@ -1,5 +1,6 @@
 import type { TourCategory, TourProgram, TourStatus } from "@/data/tours";
 import { formatPublicEventDate } from "@/lib/dateDisplay";
+import { getTourHrefFromSlug, normalizeTourSlug } from "@/lib/tourSlug";
 import { mediaUrlsFromValue, optionalMediaUrl, SAFE_EVENT_IMAGE_FALLBACK } from "@/lib/wix/media";
 import type {
   NavigationLocation,
@@ -196,6 +197,10 @@ function firstMediaUrlGroup(...values: unknown[]) {
   return [];
 }
 
+function optionalProgramMediaUrl(value: unknown) {
+  return optionalString(optionalMediaUrl(value));
+}
+
 function splitList(value: unknown) {
   const text = stringValue(value);
 
@@ -373,7 +378,12 @@ export function normalizeProgramItem(item: WixCollectionItem): NormalizedProgram
     title: stringValue(fields.title),
     slug: stringValue(fields.slug),
     description: optionalString(fields.description),
-    heroImage: optionalString(fields.heroImage),
+    heroImage:
+      optionalProgramMediaUrl(fields.programImage) ??
+      optionalProgramMediaUrl(fields.image) ??
+      optionalProgramMediaUrl(fields.imageUrl) ??
+      optionalProgramMediaUrl(fields.cardImage) ??
+      optionalProgramMediaUrl(fields.heroImage),
     order: numberValue(fields.order),
     isVisible: booleanValue(fields.isVisible, true),
   };
@@ -416,7 +426,7 @@ export function normalizeEvent(item: WixCollectionItem): NormalizedEvent {
     program ? programToLabel[program] : "",
   );
   const category = normalizeCategory(program, categoryLabel);
-  const slug = stringValue(fields.slug, "MANUAL");
+  const slug = normalizeTourSlug(stringValue(fields.slug));
   const image =
     optionalMediaUrl(fields.cardImageAsset) ??
     optionalMediaUrl(fields.cardImage) ??
@@ -437,8 +447,8 @@ export function normalizeEvent(item: WixCollectionItem): NormalizedEvent {
     cities: splitList(fields.eventCardCities),
     status: normalizeStatus(fields.status),
     image,
-    href: slug && slug !== "MANUAL" ? `/tours/${slug}` : undefined,
-    slug,
+    href: getTourHrefFromSlug(slug),
+    slug: slug ?? "MANUAL",
     externalEventUrl: optionalString(fields.externalEventUrl),
     program,
     programLabel: stringValue(fields.programLabel ?? fields.program, program ? programToLabel[program] : ""),

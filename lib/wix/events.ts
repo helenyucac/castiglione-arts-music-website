@@ -1,5 +1,6 @@
 import type { TourProgram } from "@/data/tours";
 import { formatPublicDateRangeFromValues } from "@/lib/dateDisplay";
+import { normalizeTourSlug } from "@/lib/tourSlug";
 import { queryWixCollection, sortDesc } from "@/lib/wix/client";
 import { getTourDates } from "@/lib/wix/eventDetails";
 import { normalizeEvent, sortEventsByDateDesc } from "@/lib/wix/normalizers";
@@ -75,11 +76,30 @@ export async function getEventsByProgram(program: TourProgram | string) {
 }
 
 export async function getEventBySlug(slug: string) {
+  const normalizedSlug = normalizeTourSlug(slug);
+
+  if (!normalizedSlug) {
+    return null;
+  }
+
   const items = await queryWixCollection("Events", {
-    filter: { slug },
+    filter: { slug: normalizedSlug },
     limit: 1,
   });
 
-  const event = items[0] ? normalizeEvent(items[0]) : null;
-  return event?.isVisible ? event : null;
+  const exactEvent = items[0] ? normalizeEvent(items[0]) : null;
+
+  if (exactEvent?.isVisible) {
+    return exactEvent;
+  }
+
+  const fallbackItems = await queryWixCollection("Events", {
+    sort: sortDesc("sortDate"),
+    limit: 1000,
+  });
+  const matchedEvent = fallbackItems
+    .map(normalizeEvent)
+    .find((event) => event.isVisible && normalizeTourSlug(event.slug) === normalizedSlug);
+
+  return matchedEvent ?? null;
 }

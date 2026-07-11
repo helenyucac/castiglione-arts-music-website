@@ -7,6 +7,7 @@ import {
   whatsOnConcertEvents,
 } from "@/data/tours";
 import { formatPublicDateDisplay } from "@/lib/dateDisplay";
+import { getTourSlugFromHref } from "@/lib/tourSlug";
 import { isWixConfigured } from "@/lib/wix/client";
 import { getEvents, getEventsByProgram, getFeaturedHomeEvents } from "@/lib/wix/events";
 import { getPrograms } from "@/lib/wix/programs";
@@ -70,10 +71,6 @@ function isUsableAsset(value?: string) {
   return !["MANUAL", "OPTIONAL", "UPLOAD TO WIX"].includes(value);
 }
 
-function slugFromHref(href?: string) {
-  return href?.split("/").filter(Boolean).at(-1);
-}
-
 function buildLocalEventIndex(localEvents: TourCardData[]) {
   const byId = new Map<string, TourCardData>();
   const bySlug = new Map<string, TourCardData>();
@@ -83,7 +80,7 @@ function buildLocalEventIndex(localEvents: TourCardData[]) {
     byId.set(event.id, event);
     byTitle.set(event.title.toLowerCase(), event);
 
-    const slug = slugFromHref(event.href);
+    const slug = getTourSlugFromHref(event.href);
     if (slug) {
       bySlug.set(slug, event);
     }
@@ -94,7 +91,7 @@ function buildLocalEventIndex(localEvents: TourCardData[]) {
 
 function findLocalEvent(event: TourCardData, localEvents: TourCardData[]) {
   const index = buildLocalEventIndex(localEvents);
-  const slug = slugFromHref(event.href);
+  const slug = getTourSlugFromHref(event.href);
 
   return (
     index.byId.get(event.id) ??

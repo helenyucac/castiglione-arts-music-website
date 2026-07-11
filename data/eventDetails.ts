@@ -2,6 +2,7 @@ import {
   homepageWhatsOnEvents,
   type TourCardData,
 } from "@/data/tours";
+import { getTourSlugFromHref } from "@/lib/tourSlug";
 
 export type EventTourDate = {
   date: string;
@@ -99,10 +100,6 @@ function getTodayTimestamp() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   return today.getTime();
-}
-
-function getTourSlugFromHref(href?: string) {
-  return href?.split("/").filter(Boolean).at(-1);
 }
 
 const getUpcomingRelatedEvents = (...excludedKeys: string[]) => {

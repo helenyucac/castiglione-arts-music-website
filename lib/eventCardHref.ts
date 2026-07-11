@@ -1,4 +1,5 @@
 import type { TourCardData } from "@/data/tours";
+import { getTourHrefFromSlug, normalizeTourSlug } from "@/lib/tourSlug";
 
 const invalidLinkValues = new Set(["", "#", "MANUAL", "OPTIONAL", "UPLOAD TO WIX"]);
 
@@ -26,21 +27,11 @@ function isValidLocalHref(href?: string) {
   return normalizedHref.startsWith("/");
 }
 
-function getValidSlug(slug?: string) {
-  const normalizedSlug = normalizeText(slug);
-
-  if (invalidLinkValues.has(normalizedSlug)) {
-    return undefined;
-  }
-
-  return normalizedSlug.split("/").filter(Boolean).at(-1);
-}
-
 export function getEventCardHref(event: Pick<TourCardData, "externalEventUrl" | "href" | "slug">) {
   if (isValidExternalHref(event.externalEventUrl)) {
     return normalizeText(event.externalEventUrl);
   }
 
-  const slug = getValidSlug(event.slug) ?? (isValidLocalHref(event.href) ? getValidSlug(event.href) : undefined);
-  return slug ? `/tours/${slug}` : undefined;
+  const slug = normalizeTourSlug(event.slug) ?? (isValidLocalHref(event.href) ? normalizeTourSlug(event.href) : undefined);
+  return getTourHrefFromSlug(slug);
 }

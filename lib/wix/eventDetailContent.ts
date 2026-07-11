@@ -4,6 +4,7 @@ import { isWixConfigured, queryWixCollection, visibleFilter } from "@/lib/wix/cl
 import { getTourProgram, homepageWhatsOnEvents, tourProgramLabels } from "@/data/tours";
 import { formatPublicDateRangeFromValues, formatPublicEventDate } from "@/lib/dateDisplay";
 import { getEventCardHref } from "@/lib/eventCardHref";
+import { getTourSlugFromHref, normalizeTourSlug } from "@/lib/tourSlug";
 import { getWixFields } from "@/lib/wix/normalizers";
 import { optionalMediaUrl, SAFE_EVENT_IMAGE_FALLBACK } from "@/lib/wix/media";
 import { getEventGallery, getEventVideos, getTourDates } from "@/lib/wix/eventDetails";
@@ -790,7 +791,7 @@ function mergeCmsEventDetail(
 
   return {
     ...fallback,
-    slug: optionalString(fields.slug) ?? fallback.slug,
+    slug: normalizeTourSlug(optionalString(fields.slug)) ?? fallback.slug,
     seoTitle: optionalString(fields.seoTitle) ?? fallback.seoTitle,
     seoDescription: optionalString(fields.seoDescription) ?? fallback.seoDescription,
     categoryLabel,
@@ -842,12 +843,8 @@ function getTodayTimestamp() {
   return today.getTime();
 }
 
-function getTourSlugFromHref(href?: string) {
-  return href?.split("/").filter(Boolean).at(-1);
-}
-
 function normalizeRelatedEventKey(value?: string) {
-  return optionalString(value)?.toLowerCase();
+  return normalizeTourSlug(value) ?? optionalString(value)?.toLowerCase();
 }
 
 function getRelatedEventKeys(event: Pick<TourCardData, "id" | "href" | "slug" | "title">) {
@@ -952,7 +949,7 @@ async function getWixUpcomingRelatedEvents(currentEventKeys: string[]) {
 
 function createCmsOnlyFallback(fields: WixRecordFields, requestedSlug: string) {
   const title = optionalString(fields.title);
-  const slug = optionalString(fields.slug) ?? requestedSlug;
+  const slug = normalizeTourSlug(optionalString(fields.slug)) ?? requestedSlug;
 
   if (!title || !slug) {
     return null;
@@ -1031,18 +1028,39 @@ function getWixItemId(item: WixCollectionItem) {
 }
 
 async function getWixEventBySlug(slug: string) {
+  const normalizedSlug = normalizeTourSlug(slug);
+
+  if (!normalizedSlug) {
+    return null;
+  }
+
   const items = await queryWixCollection("Events", {
-    filter: visibleFilter({ slug }),
+    filter: visibleFilter({ slug: normalizedSlug }),
     limit: 1,
   });
 
-  if (!items[0]) {
+  if (items[0]) {
+    return {
+      id: getWixItemId(items[0]),
+      fields: getWixFields(items[0]),
+    };
+  }
+
+  const fallbackItems = await queryWixCollection("Events", {
+    filter: visibleFilter(),
+    limit: 1000,
+  });
+  const fallbackItem = fallbackItems.find(
+    (item) => normalizeTourSlug(optionalString(getWixFields(item).slug)) === normalizedSlug,
+  );
+
+  if (!fallbackItem) {
     return null;
   }
 
   return {
-    id: getWixItemId(items[0]),
-    fields: getWixFields(items[0]),
+    id: getWixItemId(fallbackItem),
+    fields: getWixFields(fallbackItem),
   };
 }
 
@@ -1101,44 +1119,45 @@ async function getWixTestimonialsForEvent(slug: string, eventId?: string) {
 }
 
 export const getResolvedEventDetailBySlug = cache(async (slug: string) => {
-  const fallback = eventDetailsBySlug[slug];
+  const normalizedSlug = normalizeTourSlug(slug) ?? slug;
+  const fallback = eventDetailsBySlug[normalizedSlug];
 
   if (!isWixConfigured()) {
     return fallback ?? null;
   }
 
   try {
-    const cmsEvent = await getWixEventBySlug(slug);
+    const cmsEvent = await getWixEventBySlug(normalizedSlug);
 
     if (!fallback && !cmsEvent) {
       return null;
     }
 
     const cmsTourDates = await optionalCmsSection(() =>
-      getWixTourDatesForEvent(slug, cmsEvent?.id),
+      getWixTourDatesForEvent(normalizedSlug, cmsEvent?.id),
     );
     const cmsTrailerVideo = await optionalCmsSection(() =>
-      getWixTrailerVideoForEvent(slug, cmsEvent?.id),
+      getWixTrailerVideoForEvent(normalizedSlug, cmsEvent?.id),
     );
     const cmsGalleryImages = await optionalCmsSection(() =>
-      getWixGalleryImagesForEvent(slug, cmsEvent?.id),
+      getWixGalleryImagesForEvent(normalizedSlug, cmsEvent?.id),
     );
     const cmsPartners = await optionalCmsSection(() =>
-      getWixPartnersForEvent(slug, cmsEvent?.id),
+      getWixPartnersForEvent(normalizedSlug, cmsEvent?.id),
     );
     const cmsTestimonials = await optionalCmsSection(() =>
-      getWixTestimonialsForEvent(slug, cmsEvent?.id),
+      getWixTestimonialsForEvent(normalizedSlug, cmsEvent?.id),
     );
 
     const fields = cmsEvent?.fields ?? {};
-    const baseEvent = fallback ?? createCmsOnlyFallback(fields, slug);
+    const baseEvent = fallback ?? createCmsOnlyFallback(fields, normalizedSlug);
 
     if (!baseEvent) {
       return null;
     }
 
     const currentRelatedEventKeys = getCurrentRelatedEventKeys(
-      slug,
+      normalizedSlug,
       cmsEvent?.id,
       fields,
       baseEvent,

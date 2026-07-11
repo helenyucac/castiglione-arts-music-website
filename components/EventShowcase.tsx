@@ -14,10 +14,15 @@ import { TourCard } from "@/components/TourCard";
 import { WhatsOnEventCard } from "@/components/WhatsOnEventCard";
 
 type EventShowcaseFilterValue = TourFilter | TourProgram | "all";
+type ProgramCanonicalFilterValue =
+  | "classical-concerts-theatre"
+  | "lucid-live"
+  | "music-festivals";
+type EventShowcaseActiveFilterValue = EventShowcaseFilterValue | ProgramCanonicalFilterValue;
 
 type EventShowcaseProps = {
   events: TourCardData[];
-  filters?: { label: string; value: EventShowcaseFilterValue }[];
+  filters?: readonly { label: string; value: EventShowcaseActiveFilterValue }[];
   limit?: number;
   showViewMore?: boolean;
   cardVariant?: "tour" | "whats-on";
@@ -29,7 +34,7 @@ function sortEventsByDateDesc(events: TourCardData[]) {
   );
 }
 
-function filterEvents(events: TourCardData[], filter: EventShowcaseFilterValue) {
+function filterEvents(events: TourCardData[], filter: EventShowcaseActiveFilterValue) {
   if (filter === "all") {
     return events;
   }
@@ -56,10 +61,23 @@ function filterEvents(events: TourCardData[], filter: EventShowcaseFilterValue) 
   if (
     filter === "anime-gaming-concerts" ||
     filter === "classical-concert-theatre" ||
+    filter === "classical-concerts-theatre" ||
     filter === "live-music-festival" ||
     filter === "touring-exhibition"
   ) {
+    if (filter === "classical-concerts-theatre") {
+      return events.filter((event) => getTourProgram(event.category) === "classical-concert-theatre");
+    }
+
     return events.filter((event) => getTourProgram(event.category) === filter);
+  }
+
+  if (filter === "lucid-live") {
+    return events.filter((event) => event.category === "lucid");
+  }
+
+  if (filter === "music-festivals") {
+    return events.filter((event) => event.category === "music-festival");
   }
 
   return events;
@@ -72,7 +90,7 @@ export function EventShowcase({
   showViewMore = false,
   cardVariant = "tour",
 }: EventShowcaseProps) {
-  const [activeFilter, setActiveFilter] = useState<EventShowcaseFilterValue | null>(
+  const [activeFilter, setActiveFilter] = useState<EventShowcaseActiveFilterValue | null>(
     filters[0]?.value === "all" ? "all" : null,
   );
 

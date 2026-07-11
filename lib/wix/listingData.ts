@@ -24,6 +24,14 @@ export type ProgramCardData = {
   cmsSlugs: string[];
 };
 
+export type ProgramLandingPageText = {
+  eyebrow: string;
+  heading: string;
+  viewAllLabel: string;
+  primaryFilterLabel: string;
+  secondaryFilterLabel: string;
+};
+
 export const localProgramCards: ProgramCardData[] = [
   {
     number: "01",
@@ -202,6 +210,34 @@ export async function getHomepageProgramCards() {
     return localProgramCards.map((program) => mergeProgramCardWithCms(program, cmsPrograms));
   } catch {
     return localProgramCards;
+  }
+}
+
+export async function getProgramLandingPageText(
+  cmsSlugs: string[],
+  fallback: ProgramLandingPageText,
+) {
+  if (!isWixConfigured()) {
+    return fallback;
+  }
+
+  try {
+    const cmsPrograms = await getPrograms();
+    const cmsProgram = cmsPrograms.find((program) => cmsSlugs.includes(program.slug));
+
+    if (!cmsProgram) {
+      return fallback;
+    }
+
+    return {
+      eyebrow: cmsProgram.pageEyebrow ?? fallback.eyebrow,
+      heading: cmsProgram.pageHeading ?? fallback.heading,
+      viewAllLabel: cmsProgram.viewAllLabel ?? fallback.viewAllLabel,
+      primaryFilterLabel: cmsProgram.primaryFilterLabel ?? fallback.primaryFilterLabel,
+      secondaryFilterLabel: cmsProgram.secondaryFilterLabel ?? fallback.secondaryFilterLabel,
+    };
+  } catch {
+    return fallback;
   }
 }
 

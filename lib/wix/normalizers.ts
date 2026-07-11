@@ -1,5 +1,17 @@
 import type { TourCategory, TourProgram, TourStatus } from "@/data/tours";
 import { formatPublicEventDate } from "@/lib/dateDisplay";
+import {
+  firstProgramCategoryForProgram,
+  programCategoryToTourCategory,
+  resolveLiveMusicFestivalSubcategory,
+} from "@/lib/liveMusicFestivalSubcategory";
+import {
+  resolveProgramPageEyebrow,
+  resolveProgramPageHeading,
+  resolveProgramPrimaryFilterLabel,
+  resolveProgramSecondaryFilterLabel,
+  resolveProgramViewAllLabel,
+} from "@/lib/programPageText";
 import { getTourHrefFromSlug, normalizeTourSlug } from "@/lib/tourSlug";
 import { mediaUrlsFromValue, optionalMediaUrl, SAFE_EVENT_IMAGE_FALLBACK } from "@/lib/wix/media";
 import type {
@@ -279,7 +291,36 @@ function normalizeProgram(value: unknown): TourProgram | null {
   return null;
 }
 
-function normalizeCategory(program: TourProgram | null, categoryLabel: string): TourCategory {
+function normalizeCategory(
+  program: TourProgram | null,
+  categoryLabel: string,
+  fields: WixRecordFields = {},
+): TourCategory {
+  const programCategory = firstProgramCategoryForProgram(program, [fields.programCategory]);
+
+  if (programCategory) {
+    return programCategoryToTourCategory(programCategory);
+  }
+
+  const legacyProgramCategory = firstProgramCategoryForProgram(program, [
+    fields.subcategory,
+    fields.subCategory,
+    fields.subcategoryLabel,
+    fields.subCategoryLabel,
+    fields.category,
+    fields.categoryLabel,
+    fields.type,
+    fields.eventType,
+  ]);
+
+  if (legacyProgramCategory) {
+    return programCategoryToTourCategory(legacyProgramCategory);
+  }
+
+  if (program === "live-music-festival") {
+    return programCategoryToTourCategory(resolveLiveMusicFestivalSubcategory(fields.title));
+  }
+
   const label = categoryLabel.toLowerCase();
 
   if (label.includes("gaming") || label.includes("game")) {
@@ -378,6 +419,11 @@ export function normalizeProgramItem(item: WixCollectionItem): NormalizedProgram
     title: stringValue(fields.title),
     slug: stringValue(fields.slug),
     description: optionalString(fields.description),
+    pageEyebrow: resolveProgramPageEyebrow(fields),
+    pageHeading: resolveProgramPageHeading(fields),
+    viewAllLabel: resolveProgramViewAllLabel(fields),
+    primaryFilterLabel: resolveProgramPrimaryFilterLabel(fields),
+    secondaryFilterLabel: resolveProgramSecondaryFilterLabel(fields),
     heroImage:
       optionalProgramMediaUrl(fields.programImage) ??
       optionalProgramMediaUrl(fields.image) ??
@@ -425,7 +471,7 @@ export function normalizeEvent(item: WixCollectionItem): NormalizedEvent {
     fields.categoryLabel ?? fields.programLabel ?? fields.program,
     program ? programToLabel[program] : "",
   );
-  const category = normalizeCategory(program, categoryLabel);
+  const category = normalizeCategory(program, categoryLabel, fields);
   const slug = normalizeTourSlug(stringValue(fields.slug));
   const image =
     optionalMediaUrl(fields.cardImageAsset) ??

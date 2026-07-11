@@ -19,7 +19,8 @@ export type WixCollectionName =
   | "NavigationLinks"
   | "Partners"
   | "Venues"
-  | "Testimonials";
+  | "Testimonials"
+  | "Subscribe";
 
 export type WixRecordFields = Record<string, unknown>;
 

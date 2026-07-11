@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FooterNewsletterForm } from "@/components/FooterNewsletterForm";
 import { SocialLinks } from "@/components/SocialLinks";
 import {
   getResolvedFooterNavigationLinks,
@@ -72,27 +73,7 @@ export async function Footer() {
             {footerSubtext}
           </p>
 
-          <form className="mt-12 flex w-full max-w-2xl flex-col gap-4 border-b border-white/25 pb-4 sm:flex-row sm:items-end sm:gap-8">
-            <label className="sr-only" htmlFor="footer-email">
-              Email address
-            </label>
-            <input
-              id="footer-email"
-              name="email"
-              type="email"
-              placeholder={footerEmailPlaceholder ?? "Email address"}
-              className="min-h-10 flex-1 bg-transparent text-left text-[17px] leading-none text-white outline-none placeholder:text-white/40"
-              style={{ fontFamily: "Inter, sans-serif" }}
-            />
-            <button
-              type="button"
-              className="flex min-h-10 flex-col items-start justify-center text-left text-[11px] font-semibold uppercase leading-none tracking-[0.28em] text-white transition-opacity duration-150 hover:opacity-70 sm:items-center sm:text-center"
-              style={{ fontFamily: "Inter, sans-serif" }}
-            >
-              <span>SUBSCRIBE</span>
-              <span className="mt-2 text-base leading-none">→</span>
-            </button>
-          </form>
+          <FooterNewsletterForm placeholder={footerEmailPlaceholder ?? "Email address"} />
         </div>
       </div>
 

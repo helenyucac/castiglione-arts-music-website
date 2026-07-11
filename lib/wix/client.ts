@@ -23,6 +23,7 @@ const collectionEnvKeys: Record<WixCollectionName, string> = {
   Partners: "WIX_COLLECTION_PARTNERS_ID",
   Venues: "WIX_COLLECTION_VENUES_ID",
   Testimonials: "WIX_COLLECTION_TESTIMONIALS_ID",
+  Subscribe: "WIX_COLLECTION_SUBSCRIBE_ID",
 };
 
 export type WixClientConfig = {
@@ -53,6 +54,14 @@ export function isWixConfigured() {
 }
 
 export function getCollectionId(collectionName: WixCollectionName) {
+  if (collectionName === "Subscribe") {
+    return (
+      process.env.WIX_SUBSCRIBE_COLLECTION_ID ??
+      process.env.WIX_COLLECTION_SUBSCRIBE_ID ??
+      collectionName
+    );
+  }
+
   return process.env[collectionEnvKeys[collectionName]] ?? collectionName;
 }
 
@@ -161,6 +170,34 @@ async function getCollectionIdLookup(config: WixClientConfig) {
 }
 
 async function resolveCollectionId(collectionName: WixCollectionName, config: WixClientConfig) {
+  if (collectionName === "Subscribe") {
+    const configuredSubscribeCollectionId =
+      process.env.WIX_SUBSCRIBE_COLLECTION_ID ?? process.env.WIX_COLLECTION_SUBSCRIBE_ID;
+
+    if (configuredSubscribeCollectionId) {
+      return configuredSubscribeCollectionId;
+    }
+
+    const lookup = await getCollectionIdLookup(config);
+    const discoveredSubscribeCollectionId = [
+      "Subscribe",
+      "Subscribers",
+      "NewsletterSubscribers",
+      "Newsletter",
+      "MailingList",
+    ]
+      .map((candidate) => lookup.get(normalizeCollectionLookupKey(candidate)))
+      .find(Boolean);
+
+    if (discoveredSubscribeCollectionId) {
+      return discoveredSubscribeCollectionId;
+    }
+
+    throw new Error(
+      "Wix Subscribe collection ID is not configured and could not be discovered.",
+    );
+  }
+
   const configuredCollectionId = process.env[collectionEnvKeys[collectionName]];
 
   if (configuredCollectionId) {
@@ -169,6 +206,11 @@ async function resolveCollectionId(collectionName: WixCollectionName, config: Wi
 
   const lookup = await getCollectionIdLookup(config);
   return lookup.get(normalizeCollectionLookupKey(collectionName)) ?? collectionName;
+}
+
+export async function getResolvedCollectionId(collectionName: WixCollectionName) {
+  const config = getWixClientConfig();
+  return resolveCollectionId(collectionName, config);
 }
 
 export function visibleFilter(extraFilter: WixRecordFields = {}) {
@@ -224,6 +266,45 @@ export async function queryWixCollection<TFields extends WixRecordFields = WixRe
 
   const payload = (responseBody ? JSON.parse(responseBody) : {}) as WixQueryResponse<TFields>;
   return (payload.items ?? payload.dataItems ?? []) as WixCollectionItem<TFields>[];
+}
+
+export async function insertWixCollectionItem<TFields extends WixRecordFields = WixRecordFields>(
+  collectionName: WixCollectionName,
+  data: TFields,
+) {
+  const config = getWixClientConfig();
+  const collectionId = await resolveCollectionId(collectionName, config);
+  const requestBody = {
+    dataCollectionId: collectionId,
+    dataItem: {
+      data,
+    },
+  };
+
+  const response = await fetch(config.baseUrl, {
+    method: "POST",
+    headers: {
+      Authorization: config.apiKey,
+      "Content-Type": "application/json",
+      "wix-site-id": config.siteId,
+    },
+    body: JSON.stringify(requestBody),
+    cache: "no-store",
+  });
+  const responseBody = await response.text();
+
+  if (!response.ok) {
+    throw new Error(
+      `Wix insert failed for ${collectionName}: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  const payload = (responseBody ? JSON.parse(responseBody) : {}) as {
+    item?: WixCollectionItem<TFields>;
+    dataItem?: WixCollectionItem<TFields>;
+  };
+
+  return (payload.item ?? payload.dataItem ?? null) as WixCollectionItem<TFields> | null;
 }
 
 export async function getFirstWixItem<TFields extends WixRecordFields = WixRecordFields>(

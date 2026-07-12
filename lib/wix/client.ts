@@ -295,7 +295,9 @@ export async function insertWixCollectionItem<TFields extends WixRecordFields = 
 
   if (!response.ok) {
     throw new Error(
-      `Wix insert failed for ${collectionName}: ${response.status} ${response.statusText}`,
+      `Wix insert failed for ${collectionName}: ${response.status} ${response.statusText}${
+        responseBody ? ` ${responseBody.slice(0, 1000)}` : ""
+      }`,
     );
   }
 

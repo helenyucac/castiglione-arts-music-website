@@ -12,10 +12,11 @@ export type SubscribeResult =
 
 export const SUBSCRIBE_COLLECTION_NAME = "Subscribe";
 export const DEFAULT_SUBSCRIBE_EMAIL_FIELD = "email";
+export const DEFAULT_SUBSCRIBE_DATE_FIELD = "subscribedAt";
 export const SUBSCRIBE_SOURCE = "website-footer";
 const MAX_EMAIL_LENGTH = 254;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const optionalSubscribeFieldKeys = ["subscribedAt", "status", "source", "isActive", "consent"];
+const optionalSubscribeFieldKeys = ["status", "source", "isActive", "consent"];
 
 function isRecord(value: unknown): value is WixRecordFields {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -37,20 +38,8 @@ export function getSubscribeEmailFieldKey() {
   return process.env.WIX_SUBSCRIBE_EMAIL_FIELD_KEY ?? DEFAULT_SUBSCRIBE_EMAIL_FIELD;
 }
 
-function getResolvedSubscribeEmailFieldKey(supportedFieldKeys: Set<string>) {
-  const configuredEmailFieldKey = process.env.WIX_SUBSCRIBE_EMAIL_FIELD_KEY;
-
-  if (configuredEmailFieldKey) {
-    return configuredEmailFieldKey;
-  }
-
-  for (const candidate of ["email", "emailAddress", "subscriberEmail"]) {
-    if (supportedFieldKeys.has(candidate)) {
-      return candidate;
-    }
-  }
-
-  return DEFAULT_SUBSCRIBE_EMAIL_FIELD;
+export function getSubscribeDateFieldKey() {
+  return process.env.WIX_SUBSCRIBE_DATE_FIELD_KEY ?? DEFAULT_SUBSCRIBE_DATE_FIELD;
 }
 
 function flattenCollectionFields(value: unknown): WixRecordFields {
@@ -176,10 +165,13 @@ async function getSubscribeCollectionFieldKeys() {
 function buildSubscribeRecord(
   email: string,
   emailFieldKey: string,
+  dateFieldKey: string,
   supportedFieldKeys: Set<string>,
+  subscribedAt = new Date(),
 ): WixRecordFields {
   const data: WixRecordFields = {
     [emailFieldKey]: email,
+    [dateFieldKey]: subscribedAt.toISOString(),
   };
 
   if (supportedFieldKeys.size === 0) {
@@ -187,7 +179,6 @@ function buildSubscribeRecord(
   }
 
   const optionalValues: WixRecordFields = {
-    subscribedAt: new Date().toISOString(),
     status: "subscribed",
     source: SUBSCRIBE_SOURCE,
     isActive: true,
@@ -216,11 +207,11 @@ export async function subscribeEmailToWix(emailValue: unknown, honeypotValue?: u
     return { success: false, reason: "invalid-email" } satisfies SubscribeResult;
   }
 
-  let emailFieldKey = getSubscribeEmailFieldKey();
+  const emailFieldKey = getSubscribeEmailFieldKey();
+  const dateFieldKey = getSubscribeDateFieldKey();
 
   try {
     const supportedFieldKeys = await getSubscribeCollectionFieldKeys();
-    emailFieldKey = getResolvedSubscribeEmailFieldKey(supportedFieldKeys);
     const existingItems = await queryWixCollection(SUBSCRIBE_COLLECTION_NAME, {
       filter: {
         [emailFieldKey]: email,
@@ -232,7 +223,7 @@ export async function subscribeEmailToWix(emailValue: unknown, honeypotValue?: u
       return { success: true, alreadySubscribed: true } satisfies SubscribeResult;
     }
 
-    const data = buildSubscribeRecord(email, emailFieldKey, supportedFieldKeys);
+    const data = buildSubscribeRecord(email, emailFieldKey, dateFieldKey, supportedFieldKeys);
 
     await insertWixCollectionItem(SUBSCRIBE_COLLECTION_NAME, data);
 
@@ -249,6 +240,7 @@ export async function subscribeEmailToWix(emailValue: unknown, honeypotValue?: u
     console.error("Footer newsletter subscription failed", {
       collectionId,
       emailFieldKey,
+      dateFieldKey,
       message: error instanceof Error ? error.message : "Unknown Wix error",
     });
 

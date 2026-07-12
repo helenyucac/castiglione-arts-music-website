@@ -6,6 +6,8 @@ import vm from "node:vm";
 process.env.WIX_API_KEY = "test-api-key";
 process.env.WIX_SITE_ID = "test-site-id";
 process.env.WIX_SUBSCRIBE_COLLECTION_ID = "SubscribeCollection";
+process.env.WIX_SUBSCRIBE_EMAIL_FIELD_KEY = "email";
+process.env.WIX_SUBSCRIBE_DATE_FIELD_KEY = "subscribedAt";
 
 const newsletterSource = await readFile(
   new URL("../lib/newsletterSubscription.ts", import.meta.url),
@@ -21,12 +23,23 @@ const executableNewsletterSource = stripTypeScriptTypes(
 
 let existingItems = [];
 let failInsert = false;
+let fixedNow = "2026-07-11T10:00:00.000Z";
 const calls = [];
+
+class FixedDate extends Date {
+  constructor(...args) {
+    super(...(args.length > 0 ? args : [fixedNow]));
+  }
+
+  static now() {
+    return new Date(fixedNow).getTime();
+  }
+}
 
 const sandbox = {
   process,
   console,
-  Date,
+  Date: FixedDate,
   Set,
   String,
   Boolean,
@@ -128,10 +141,21 @@ const insertCall = calls.find((call) => call.type === "insert");
 assert.ok(insertCall);
 assert.equal(insertCall.collectionName, "Subscribe");
 assert.equal(insertCall.data.email, "new@example.com");
+assert.equal(insertCall.data.subscribedAt, fixedNow);
+assert.ok(!Number.isNaN(Date.parse(insertCall.data.subscribedAt)));
 assert.equal(insertCall.data.status, "subscribed");
 assert.equal(insertCall.data.source, "website-footer");
 assert.equal(insertCall.data.isActive, true);
 assert.equal(insertCall.data.consent, true);
+
+existingItems = [{ id: "existing", data: { email: "new@example.com", subscribedAt: fixedNow } }];
+fixedNow = "2026-07-11T11:00:00.000Z";
+failInsert = false;
+calls.length = 0;
+result = JSON.parse(JSON.stringify(await subscribeEmailToWix("new@example.com")));
+
+assert.deepEqual(result, { success: true, alreadySubscribed: true });
+assert.equal(calls.some((call) => call.type === "insert"), false);
 
 existingItems = [];
 failInsert = true;
@@ -158,6 +182,8 @@ console.log(
       normalizedEmail: normalizeSubscriberEmail("  USER@Example.COM  "),
       duplicateCreatesRecord: false,
       newEmailCreatesRecord: true,
+      newEmailWritesSubscribedAt: true,
+      duplicateDoesNotAlterSubscribedAt: true,
       wixFailureIsSafe: true,
       honeypotDoesNotWrite: true,
       footerFormHasSubmit: true,

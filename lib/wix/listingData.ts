@@ -7,7 +7,6 @@ import {
   whatsOnConcertEvents,
 } from "@/data/tours";
 import { formatPublicDateDisplay } from "@/lib/dateDisplay";
-import { getTourSlugFromHref } from "@/lib/tourSlug";
 import { isWixConfigured } from "@/lib/wix/client";
 import { getEvents, getEventsByProgram, getFeaturedHomeEvents } from "@/lib/wix/events";
 import { getPrograms } from "@/lib/wix/programs";
@@ -79,80 +78,11 @@ function isUsableAsset(value?: string) {
   return !["MANUAL", "OPTIONAL", "UPLOAD TO WIX"].includes(value);
 }
 
-function buildLocalEventIndex(localEvents: TourCardData[]) {
-  const byId = new Map<string, TourCardData>();
-  const bySlug = new Map<string, TourCardData>();
-  const byTitle = new Map<string, TourCardData>();
-
-  localEvents.forEach((event) => {
-    byId.set(event.id, event);
-    byTitle.set(event.title.toLowerCase(), event);
-
-    const slug = getTourSlugFromHref(event.href);
-    if (slug) {
-      bySlug.set(slug, event);
-    }
-  });
-
-  return { byId, bySlug, byTitle };
-}
-
-function findLocalEvent(event: TourCardData, localEvents: TourCardData[]) {
-  const index = buildLocalEventIndex(localEvents);
-  const slug = getTourSlugFromHref(event.href);
-
-  return (
-    index.byId.get(event.id) ??
-    (slug ? index.bySlug.get(slug) : undefined) ??
-    index.byTitle.get(event.title.toLowerCase())
-  );
-}
-
-function findDefaultLocalImage(event: TourCardData, localEvents: TourCardData[]) {
-  const matchingCategory = localEvents.find((localEvent) => localEvent.category === event.category);
-  const matchingProgram = localEvents.find(
-    (localEvent) => getTourProgram(localEvent.category) === getTourProgram(event.category),
-  );
-
-  return matchingCategory?.image ?? matchingProgram?.image ?? localEvents[0]?.image ?? "";
-}
-
-function hydrateEventsWithLocalFallback(cmsEvents: TourCardData[], localEvents: TourCardData[]) {
-  if (cmsEvents.length === 0) {
-    return localEvents;
-  }
-
-  return cmsEvents.map((event) => {
-    const localEvent = findLocalEvent(event, localEvents);
-    const dateLabel = event.dateLabel || localEvent?.dateLabel || event.date;
-
-    return {
-      ...event,
-      id: event.id && event.id !== "manual-id" ? event.id : localEvent?.id ?? event.id,
-      title: event.title || localEvent?.title || "",
-      image: isUsableAsset(event.image)
-        ? event.image
-        : localEvent?.image ?? findDefaultLocalImage(event, localEvents),
-      href: event.href ?? localEvent?.href,
-      cities: event.cities.length > 0 ? event.cities : localEvent?.cities ?? [],
-      dateLabel: formatPublicDateDisplay(dateLabel) ?? dateLabel,
-      date: event.date || localEvent?.date || "",
-      ticketLinks: event.ticketLinks ?? localEvent?.ticketLinks,
-    };
-  });
-}
-
-function hasRequiredListingEventFields(event: TourCardData) {
-  return Boolean(
-    event.id &&
-      event.id !== "manual-id" &&
-      event.title &&
-      event.date &&
-      event.dateLabel &&
-      event.cities.length > 0 &&
-      event.image &&
-      getTourProgram(event.category),
-  );
+export function resolveCmsListingEventsForRuntime(cmsEvents: TourCardData[]) {
+  return cmsEvents.map((event) => ({
+    ...event,
+    dateLabel: formatPublicDateDisplay(event.dateLabel || event.date) ?? event.dateLabel,
+  }));
 }
 
 async function getCmsEventsWithFallback(
@@ -165,13 +95,7 @@ async function getCmsEventsWithFallback(
 
   try {
     const cmsEvents = await request();
-    const hydratedEvents = hydrateEventsWithLocalFallback(cmsEvents, localEvents);
-
-    if (hydratedEvents.length === 0 || !hydratedEvents.every(hasRequiredListingEventFields)) {
-      return localEvents;
-    }
-
-    return hydratedEvents;
+    return resolveCmsListingEventsForRuntime(cmsEvents);
   } catch {
     return localEvents;
   }

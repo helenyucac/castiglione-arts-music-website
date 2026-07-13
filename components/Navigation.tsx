@@ -17,21 +17,31 @@ export async function Navigation() {
     getResolvedSiteSettings(),
     getResolvedHeaderNavigationLinks(),
   ]);
+  const enquireButtonText = siteSettings.enquireButtonText ?? "ENQUIRE";
+  const enquireButtonHref = siteSettings.enquireButtonLink ?? "/partnerships";
 
-  const navItems: NavigationClientLink[] = navigationLinks.map((item) => ({
-    id: item.id,
-    label: item.label,
-    href: item.url,
-    activePath: toActivePath(item.url),
-    openNewTab: item.openNewTab,
-  }));
+  const navItems: NavigationClientLink[] = navigationLinks
+    .filter((item) => {
+      const isDuplicateEnquire =
+        item.label.trim().toLowerCase() === enquireButtonText.trim().toLowerCase() &&
+        item.url === enquireButtonHref;
+
+      return !isDuplicateEnquire;
+    })
+    .map((item) => ({
+      id: item.id,
+      label: item.label,
+      href: item.url,
+      activePath: toActivePath(item.url),
+      openNewTab: item.openNewTab,
+    }));
 
   return (
     <NavigationClient
       logoSrc={siteSettings.headerLogo ?? "/media/logo/castiglione-logo.png"}
       siteName={siteSettings.siteName}
-      enquireButtonText={siteSettings.enquireButtonText ?? "ENQUIRE"}
-      enquireButtonHref={siteSettings.enquireButtonLink ?? "/partnerships"}
+      enquireButtonText={enquireButtonText}
+      enquireButtonHref={enquireButtonHref}
       navItems={navItems}
     />
   );

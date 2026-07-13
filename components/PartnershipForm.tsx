@@ -38,79 +38,42 @@ const enquiryTypes = [
   "Venues & Institutions",
 ];
 
-type SubmissionStatus = "idle" | "submitting" | "success" | "invalid" | "error";
+const partnershipEmail = "partnerships@castiglione.art";
 
 function getFormValue(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
 }
 
-function getSubmissionMessage(status: SubmissionStatus) {
-  if (status === "success") {
-    return "Thank you. Your partnership enquiry has been sent.";
-  }
-
-  if (status === "invalid") {
-    return "Please complete the required fields with a valid email address.";
-  }
-
-  if (status === "error") {
-    return "Something went wrong. Please try again.";
-  }
-
-  return "";
+function createMailtoHref(subject: string, body: string) {
+  return `mailto:${partnershipEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 export function PartnershipForm() {
   const [selectedType, setSelectedType] = useState(enquiryTypes[0]);
   const [fileName, setFileName] = useState<string>(formLabels.noFileChosen);
-  const [submissionStatus, setSubmissionStatus] = useState<SubmissionStatus>("idle");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const isSubmitting = submissionStatus === "submitting";
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (isSubmitting) {
-      return;
-    }
-
     const formData = new FormData(event.currentTarget);
-    const form = event.currentTarget;
-    const payload = {
-      fullName: getFormValue(formData, "fullName"),
-      organisation: getFormValue(formData, "organisation"),
-      email: getFormValue(formData, "email"),
-      website: getFormValue(formData, "website"),
-      region: getFormValue(formData, "region"),
-      enquiryType: selectedType,
-      project: getFormValue(formData, "project"),
-      materials: Array.from(fileInputRef.current?.files ?? []).map((file) => file.name),
-    };
+    const body = [
+      `Full name: ${getFormValue(formData, "fullName")}`,
+      `Organisation: ${getFormValue(formData, "organisation")}`,
+      `Email: ${getFormValue(formData, "email")}`,
+      `Website: ${getFormValue(formData, "website") || "Not provided"}`,
+      `Country / Region: ${getFormValue(formData, "region") || "Not provided"}`,
+      `Enquiry type: ${selectedType}`,
+      "",
+      "Project:",
+      getFormValue(formData, "project") || "Not provided",
+      "",
+      `Supporting materials selected: ${fileName}`,
+      "Please attach supporting files directly in your email client before sending.",
+    ].join("\n");
 
-    setSubmissionStatus("submitting");
-
-    try {
-      const response = await fetch("/api/partnership-enquiry", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        form.reset();
-        setSelectedType(enquiryTypes[0]);
-        setFileName(formLabels.noFileChosen);
-        setSubmissionStatus("success");
-        return;
-      }
-
-      setSubmissionStatus(response.status === 400 ? "invalid" : "error");
-    } catch {
-      setSubmissionStatus("error");
-    }
+    window.location.href = createMailtoHref("Castiglione partnership enquiry", body);
   }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -118,18 +81,15 @@ export function PartnershipForm() {
 
     if (selectedFiles.length === 0) {
       setFileName(formLabels.noFileChosen);
-      setSubmissionStatus("idle");
       return;
     }
 
     if (selectedFiles.length === 1) {
       setFileName(selectedFiles[0].name);
-      setSubmissionStatus("idle");
       return;
     }
 
     setFileName(`${selectedFiles.length} ${formLabels.filesSelected}`);
-    setSubmissionStatus("idle");
   }
 
   function handleFileButtonClick() {
@@ -160,7 +120,7 @@ export function PartnershipForm() {
           partnerships@castiglione.art.
         </p>
 
-        <form className="mt-12" onSubmit={handleSubmit} noValidate>
+        <form className="mt-12" onSubmit={handleSubmit}>
           <div className="grid gap-x-10 gap-y-10 md:grid-cols-2">
             <div>
               <label className={labelClass} htmlFor="partner-full-name" style={interFont}>
@@ -171,9 +131,7 @@ export function PartnershipForm() {
                 name="fullName"
                 required
                 autoComplete="name"
-                disabled={isSubmitting}
                 className={inputClass}
-                onChange={() => setSubmissionStatus("idle")}
               />
             </div>
 
@@ -185,9 +143,7 @@ export function PartnershipForm() {
                 id="partner-organisation"
                 name="organisation"
                 required
-                disabled={isSubmitting}
                 className={inputClass}
-                onChange={() => setSubmissionStatus("idle")}
               />
             </div>
 
@@ -201,9 +157,7 @@ export function PartnershipForm() {
                 type="email"
                 required
                 autoComplete="email"
-                disabled={isSubmitting}
                 className={inputClass}
-                onChange={() => setSubmissionStatus("idle")}
               />
             </div>
 
@@ -211,27 +165,14 @@ export function PartnershipForm() {
               <label className={labelClass} htmlFor="partner-website" style={interFont}>
                 Website
               </label>
-              <input
-                id="partner-website"
-                name="website"
-                type="url"
-                disabled={isSubmitting}
-                className={inputClass}
-                onChange={() => setSubmissionStatus("idle")}
-              />
+              <input id="partner-website" name="website" type="url" className={inputClass} />
             </div>
 
             <div>
               <label className={labelClass} htmlFor="partner-region" style={interFont}>
                 Country / Region
               </label>
-              <input
-                id="partner-region"
-                name="region"
-                disabled={isSubmitting}
-                className={inputClass}
-                onChange={() => setSubmissionStatus("idle")}
-              />
+              <input id="partner-region" name="region" className={inputClass} />
             </div>
           </div>
 
@@ -247,11 +188,7 @@ export function PartnershipForm() {
                   <button
                     key={type}
                     type="button"
-                    onClick={() => {
-                      setSelectedType(type);
-                      setSubmissionStatus("idle");
-                    }}
-                    disabled={isSubmitting}
+                    onClick={() => setSelectedType(type)}
                     className={`min-h-10 border px-5 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] antialiased transition-colors ${
                       isSelected
                         ? "border-[#111111] bg-[#111111] text-white"
@@ -277,10 +214,8 @@ export function PartnershipForm() {
               name="project"
               rows={5}
               placeholder="What are you working on? Include your project, timeline, territory and goals."
-              disabled={isSubmitting}
               className="mt-4 w-full resize-y border-0 border-b border-[rgba(17,17,17,0.22)] bg-transparent px-0 pb-5 pt-0 text-[15px] font-normal leading-[24.375px] text-[#111111] outline-none placeholder:text-[rgba(17,17,17,0.45)] focus:border-[#111111]"
               style={interFont}
-              onChange={() => setSubmissionStatus("idle")}
             />
           </div>
 
@@ -292,7 +227,6 @@ export function PartnershipForm() {
               <button
                 type="button"
                 onClick={handleFileButtonClick}
-                disabled={isSubmitting}
                 className="inline-flex min-h-10 cursor-pointer items-center border border-[rgba(17,17,17,0.22)] bg-white px-5 text-[13px] font-semibold text-[#111111] transition-colors hover:border-[#111111]"
                 style={interFont}
               >
@@ -308,7 +242,6 @@ export function PartnershipForm() {
                 type="file"
                 hidden
                 multiple
-                disabled={isSubmitting}
                 onChange={handleFileChange}
               />
             </div>
@@ -323,20 +256,11 @@ export function PartnershipForm() {
 
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="mt-12 inline-flex min-h-14 items-center bg-[#111111] px-9 text-[11px] font-semibold uppercase leading-none tracking-[2.75px] text-white antialiased transition-opacity hover:opacity-80 disabled:cursor-wait disabled:opacity-60"
+            className="mt-12 inline-flex min-h-14 items-center bg-[#111111] px-9 text-[11px] font-semibold uppercase leading-none tracking-[2.75px] text-white antialiased transition-opacity hover:opacity-80"
             style={interFont}
           >
-            {isSubmitting ? "Sending..." : "Start the conversation →"}
+            Start the conversation →
           </button>
-
-          <p
-            aria-live="polite"
-            className="mt-5 min-h-[21px] text-[13px] font-normal leading-[21px] text-[rgba(17,17,17,0.65)]"
-            style={interFont}
-          >
-            {getSubmissionMessage(submissionStatus)}
-          </p>
 
         </form>
       </div>

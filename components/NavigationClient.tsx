@@ -60,7 +60,7 @@ export function NavigationClient({
     <header className="sticky top-0 z-50 border-b border-[rgba(17,17,17,0.06)] bg-[#f5f1ea]">
       <nav
         aria-label="Main navigation"
-        className="mx-auto grid min-h-14 w-full max-w-[1540px] grid-cols-[1fr_auto] items-center px-4 sm:px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-10"
+        className="relative mx-auto flex min-h-14 w-full max-w-[1540px] items-center justify-between px-4 sm:px-6 lg:px-10"
       >
         <Link
           href="/"
@@ -70,7 +70,7 @@ export function NavigationClient({
           <LogoImage logoSrc={logoSrc} siteName={siteName} />
         </Link>
 
-        <div className="hidden items-center justify-center gap-10 lg:flex">
+        <div className="absolute left-1/2 hidden -translate-x-1/2 items-center justify-center gap-10 lg:flex">
           {navItems.map((item) => {
             const isActive = item.activePath === pathname;
 
@@ -91,16 +91,6 @@ export function NavigationClient({
               </Link>
             );
           })}
-        </div>
-
-        <div className="hidden items-center justify-end lg:flex">
-          <Link
-            href={enquireButtonHref}
-            className="inline-flex min-h-9 items-center border border-[rgba(17,17,17,0.3)] bg-transparent px-6 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-[#111111] antialiased transition-colors duration-150 ease-[cubic-bezier(0.4,0,0.2,1)] hover:border-[rgb(217,74,40)] hover:text-[rgb(217,74,40)]"
-            style={{ fontFamily: "Inter, sans-serif" }}
-          >
-            {enquireButtonText}
-          </Link>
         </div>
 
         <button

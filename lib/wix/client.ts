@@ -20,6 +20,7 @@ const collectionEnvKeys: Record<WixCollectionName, string> = {
   EventGallery: "WIX_COLLECTION_EVENT_GALLERY_ID",
   SocialLinks: "WIX_COLLECTION_SOCIAL_LINKS_ID",
   NavigationLinks: "WIX_COLLECTION_NAVIGATION_LINKS_ID",
+  PartnershipPage: "WIX_COLLECTION_PARTNERSHIP_PAGE_ID",
   Partners: "WIX_COLLECTION_PARTNERS_ID",
   Venues: "WIX_COLLECTION_VENUES_ID",
   Testimonials: "WIX_COLLECTION_TESTIMONIALS_ID",

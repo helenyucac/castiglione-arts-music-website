@@ -5,10 +5,8 @@ import vm from "node:vm";
 
 process.env.WIX_API_KEY = "test-api-key";
 process.env.WIX_SITE_ID = "test-site-id";
-process.env.GOOGLE_GMAIL_CLIENT_ID = "test-client-id";
-process.env.GOOGLE_GMAIL_CLIENT_SECRET = "test-client-secret";
-process.env.GOOGLE_GMAIL_REFRESH_TOKEN = "test-refresh-token";
-process.env.GOOGLE_GMAIL_SENDER_EMAIL = "helen.y@castiglione.com.au";
+process.env.PARTNERSHIP_GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/test/exec";
+process.env.PARTNERSHIP_GOOGLE_SCRIPT_SECRET = "test-shared-secret";
 process.env.PARTNERSHIP_EMAIL_TO = "fallback@example.com";
 delete process.env.WIX_PARTNERSHIP_PAGE_RECORD_ID;
 process.env.WIX_PARTNERSHIP_PAGE_KEY = "partnership-main";
@@ -19,6 +17,10 @@ const source = await readFile(
 );
 const formSource = await readFile(
   new URL("../components/PartnershipForm.tsx", import.meta.url),
+  "utf8",
+);
+const appsScriptSource = await readFile(
+  new URL("../scripts/google-apps-script-partnership-enquiry.gs", import.meta.url),
   "utf8",
 );
 const executableSource = stripTypeScriptTypes(
@@ -67,6 +69,9 @@ const sandbox = {
   Error,
   Date,
   URLSearchParams,
+  AbortController,
+  clearTimeout,
+  setTimeout,
   async queryWixCollection(collectionName, options) {
     assert.equal(collectionName, "PartnershipPage");
     if (process.env.WIX_PARTNERSHIP_PAGE_RECORD_ID) {
@@ -95,22 +100,12 @@ const sandbox = {
   },
   fetch: async (url, options) => {
     fetchCalls.push({ url: String(url), options });
-    if (String(url).includes("oauth2.googleapis.com/token")) {
-      return {
-        ok: true,
-        status: 200,
-        statusText: "OK",
-        json: async () => ({ access_token: "test-access-token" }),
-        text: async () => JSON.stringify({ access_token: "test-access-token" }),
-      };
-    }
-
     return {
       ok: true,
       status: 200,
       statusText: "OK",
-      json: async () => ({ id: "gmail-message-id" }),
-      text: async () => JSON.stringify({ id: "gmail-message-id" }),
+      json: async () => ({ success: true }),
+      text: async () => JSON.stringify({ success: true }),
     };
   },
 };
@@ -198,31 +193,30 @@ const result = await sendPartnershipEnquiry({
 });
 
 assert.deepEqual(JSON.parse(JSON.stringify(result)), { success: true });
-assert.equal(fetchCalls.length, 2);
+assert.equal(fetchCalls.length, 1);
 
-const tokenCall = fetchCalls[0];
-assert.equal(tokenCall.url, "https://oauth2.googleapis.com/token");
-assert.equal(String(tokenCall.options.body).includes("grant_type=refresh_token"), true);
+const scriptCall = fetchCalls[0];
+assert.equal(scriptCall.url, "https://script.google.com/macros/s/test/exec");
+assert.equal(scriptCall.options.headers["Content-Type"], "application/json");
 
-const gmailCall = fetchCalls[1];
-assert.equal(gmailCall.url, "https://gmail.googleapis.com/gmail/v1/users/me/messages/send");
-assert.equal(gmailCall.options.headers.Authorization, "Bearer test-access-token");
+const scriptPayload = JSON.parse(scriptCall.options.body);
+assert.equal(scriptPayload.secret, "test-shared-secret");
+assert.deepEqual(scriptPayload.recipients, ["one@example.com", "two@example.com"]);
+assert.equal(scriptPayload.name, "Ada Lovelace");
+assert.equal(scriptPayload.email, "ada@example.com");
+assert.equal(scriptPayload.company, "Analytical Engine");
+assert.equal(scriptPayload.website, "https://example.com");
+assert.equal(scriptPayload.countryRegion, "AU");
+assert.equal(scriptPayload.enquiryType, "Artists & Producers");
+assert.equal(scriptPayload.projectDescription, "A new project");
+assert.equal(scriptPayload.attachments.length, 1);
+assert.equal(scriptPayload.attachments[0].filename, "deck.pdf");
+assert.equal(scriptPayload.attachments[0].mimeType, "application/pdf");
+assert.ok(scriptPayload.attachments[0].base64);
+assert.equal(JSON.stringify({ success: true }).includes("one@example.com"), false);
 
-const gmailPayload = JSON.parse(gmailCall.options.body);
-const rawMime = Buffer.from(
-  gmailPayload.raw.replace(/-/g, "+").replace(/_/g, "/"),
-  "base64",
-).toString("utf8");
-
-assert.match(rawMime, /From: Castiglione Website <helen\.y@castiglione\.com\.au>/);
-assert.match(rawMime, /To: one@example\.com, two@example\.com/);
-assert.match(rawMime, /Reply-To: ada@example\.com/);
-assert.match(rawMime, /filename="deck\.pdf"/);
-assert.match(rawMime, /Content-Type: application\/pdf; name="deck\.pdf"/);
-assert.equal(rawMime.includes("fintan.hocking@castiglione.com.au"), false);
-
-const previousRefreshToken = process.env.GOOGLE_GMAIL_REFRESH_TOKEN;
-delete process.env.GOOGLE_GMAIL_REFRESH_TOKEN;
+const previousScriptSecret = process.env.PARTNERSHIP_GOOGLE_SCRIPT_SECRET;
+delete process.env.PARTNERSHIP_GOOGLE_SCRIPT_SECRET;
 const missingConfigResult = await sendPartnershipEnquiry({
   fullName: "Ada Lovelace",
   organisation: "Analytical Engine",
@@ -237,7 +231,15 @@ assert.deepEqual(JSON.parse(JSON.stringify(missingConfigResult)), {
   success: false,
   reason: "missing-email-config",
 });
-process.env.GOOGLE_GMAIL_REFRESH_TOKEN = previousRefreshToken;
+process.env.PARTNERSHIP_GOOGLE_SCRIPT_SECRET = previousScriptSecret;
+
+assert.match(appsScriptSource, /function doPost\(e\)/);
+assert.match(appsScriptSource, /PropertiesService[\s\S]*getScriptProperties/);
+assert.match(appsScriptSource, /PARTNERSHIP_GOOGLE_SCRIPT_SECRET/);
+assert.match(appsScriptSource, /payload\.secret !== expectedSecret/);
+assert.match(appsScriptSource, /Utilities\.newBlob/);
+assert.match(appsScriptSource, /MailApp\.sendEmail/);
+assert.match(appsScriptSource, /replyTo: submission\.email/);
 
 assert.match(formSource, /fetch\("\/api\/partnership-enquiry"/);
 assert.match(formSource, /new FormData\(event\.currentTarget\)/);
@@ -248,11 +250,10 @@ assert.match(formSource, /setStatusMessage\("Thank you\. Your enquiry has been s
 console.log(
   JSON.stringify(
     {
-      gmailSendUrl: gmailCall.url,
-      mimeIncludesAttachment: rawMime.includes('filename="deck.pdf"'),
-      mimeIncludesRecipients: rawMime.includes("To: one@example.com, two@example.com"),
+      scriptUrl: scriptCall.url,
+      payloadIncludesAttachment: Boolean(scriptPayload.attachments[0].base64),
+      payloadIncludesRecipients: scriptPayload.recipients.length === 2,
       recipientSource: "PartnershipPage.recipientEmails",
-      sender: "helen.y@castiglione.com.au",
       maxFileSizeMb: partnershipFileLimits.maxFileSizeBytes / 1024 / 1024,
       maxTotalSizeMb: partnershipFileLimits.maxTotalFileSizeBytes / 1024 / 1024,
     },

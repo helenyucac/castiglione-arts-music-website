@@ -39,6 +39,11 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const MAX_TOTAL_FILE_SIZE_BYTES = 20 * 1024 * 1024;
 const PARTNERSHIP_PAGE_COLLECTION = "PartnershipPage";
 const DEFAULT_PARTNERSHIP_PAGE_KEY = "partnership-main";
+const GMAIL_SEND_SCOPE = "https://www.googleapis.com/auth/gmail.send";
+const GMAIL_SENDER_NAME = "Castiglione Website";
+const REQUIRED_GMAIL_SENDER_EMAIL = "helen.y@castiglione.com.au";
+const GMAIL_TOKEN_URL = "https://oauth2.googleapis.com/token";
+const GMAIL_SEND_URL = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send";
 
 const allowedFileTypes = new Set([
   "application/pdf",
@@ -336,6 +341,155 @@ function buildSubject(submission: PartnershipEnquirySubmission) {
   return `New Partnership Enquiry — ${submission.organisation || submission.fullName}`;
 }
 
+function encodeMimeHeader(value: string) {
+  return Buffer.from(value, "utf8").toString("base64");
+}
+
+function sanitizeHeaderValue(value: string) {
+  return value.replace(/[\r\n]+/g, " ").trim();
+}
+
+function formatMailbox(name: string, email: string) {
+  return `${sanitizeHeaderValue(name)} <${sanitizeHeaderValue(email)}>`;
+}
+
+function base64UrlEncode(value: string) {
+  return Buffer.from(value, "utf8")
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
+
+function createMimeBoundary(prefix: string) {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+}
+
+function buildMimeEmail({
+  attachments,
+  html,
+  recipients,
+  replyTo,
+  senderEmail,
+  subject,
+  text,
+}: {
+  attachments: AttachmentPayload[];
+  html: string;
+  recipients: string[];
+  replyTo: string;
+  senderEmail: string;
+  subject: string;
+  text: string;
+}) {
+  const mixedBoundary = createMimeBoundary("castiglione_mixed");
+  const alternativeBoundary = createMimeBoundary("castiglione_alt");
+  const lines = [
+    `From: ${formatMailbox(GMAIL_SENDER_NAME, senderEmail)}`,
+    `To: ${recipients.map((recipient) => sanitizeHeaderValue(recipient)).join(", ")}`,
+    `Reply-To: ${sanitizeHeaderValue(replyTo)}`,
+    `Subject: =?UTF-8?B?${encodeMimeHeader(subject)}?=`,
+    "MIME-Version: 1.0",
+    `Content-Type: multipart/mixed; boundary="${mixedBoundary}"`,
+    "",
+    `--${mixedBoundary}`,
+    `Content-Type: multipart/alternative; boundary="${alternativeBoundary}"`,
+    "",
+    `--${alternativeBoundary}`,
+    'Content-Type: text/plain; charset="UTF-8"',
+    "Content-Transfer-Encoding: base64",
+    "",
+    Buffer.from(text, "utf8").toString("base64"),
+    `--${alternativeBoundary}`,
+    'Content-Type: text/html; charset="UTF-8"',
+    "Content-Transfer-Encoding: base64",
+    "",
+    Buffer.from(html, "utf8").toString("base64"),
+    `--${alternativeBoundary}--`,
+  ];
+
+  for (const attachment of attachments) {
+    const safeFilename = sanitizeHeaderValue(attachment.filename);
+    lines.push(
+      `--${mixedBoundary}`,
+      `Content-Type: ${attachment.contentType ?? "application/octet-stream"}; name="${safeFilename}"`,
+      "Content-Transfer-Encoding: base64",
+      `Content-Disposition: attachment; filename="${safeFilename}"`,
+      "",
+      attachment.content,
+    );
+  }
+
+  lines.push(`--${mixedBoundary}--`, "");
+
+  return lines.join("\r\n");
+}
+
+function getGmailConfig() {
+  const clientId = textValue(process.env.GOOGLE_GMAIL_CLIENT_ID);
+  const clientSecret = textValue(process.env.GOOGLE_GMAIL_CLIENT_SECRET);
+  const refreshToken = textValue(process.env.GOOGLE_GMAIL_REFRESH_TOKEN);
+  const senderEmail = normalizeEmail(process.env.GOOGLE_GMAIL_SENDER_EMAIL);
+
+  if (
+    !clientId ||
+    !clientSecret ||
+    !refreshToken ||
+    senderEmail !== REQUIRED_GMAIL_SENDER_EMAIL
+  ) {
+    return null;
+  }
+
+  return {
+    clientId,
+    clientSecret,
+    refreshToken,
+    senderEmail,
+  };
+}
+
+async function getGmailAccessToken(config: NonNullable<ReturnType<typeof getGmailConfig>>) {
+  const response = await fetch(GMAIL_TOKEN_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      client_id: config.clientId,
+      client_secret: config.clientSecret,
+      refresh_token: config.refreshToken,
+      grant_type: "refresh_token",
+    }),
+  });
+  const payload = (await response.json().catch(() => ({}))) as { access_token?: unknown };
+
+  if (!response.ok || typeof payload.access_token !== "string" || !payload.access_token) {
+    throw new Error(`Gmail OAuth token request failed: ${response.status}`);
+  }
+
+  return payload.access_token;
+}
+
+async function sendGmailMessage(rawMime: string, accessToken: string) {
+  const response = await fetch(GMAIL_SEND_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      raw: base64UrlEncode(rawMime),
+    }),
+  });
+  const responseText = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`Gmail API send failed: ${response.status} ${responseText.slice(0, 500)}`);
+  }
+
+  return responseText ? (JSON.parse(responseText) as unknown) : {};
+}
+
 export async function sendPartnershipEnquiry(
   submission: PartnershipEnquirySubmission,
 ): Promise<PartnershipEnquiryResult> {
@@ -350,50 +504,34 @@ export async function sendPartnershipEnquiry(
     return { success: false, reason: "missing-recipients" };
   }
 
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = textValue(process.env.PARTNERSHIP_EMAIL_FROM);
+  const gmailConfig = getGmailConfig();
 
-  if (!apiKey || !from) {
-    console.error("Partnership enquiry email provider is not configured.");
+  if (!gmailConfig) {
+    console.error("Partnership enquiry Gmail API credentials are not configured.");
     return { success: false, reason: "missing-email-config" };
   }
 
   try {
     const attachments = await Promise.all(submission.files.map(fileToAttachment));
     const body = buildEmailBody(submission);
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from,
-        to: recipients.recipients,
-        subject: buildSubject(submission),
-        html: body.html,
-        text: body.text,
-        reply_to: submission.email,
-        attachments,
-      }),
+    const accessToken = await getGmailAccessToken(gmailConfig);
+    const rawMime = buildMimeEmail({
+      attachments,
+      html: body.html,
+      recipients: recipients.recipients,
+      replyTo: submission.email,
+      senderEmail: gmailConfig.senderEmail,
+      subject: buildSubject(submission),
+      text: body.text,
     });
 
-    if (!response.ok) {
-      const responseText = await response.text();
-      console.error("Partnership enquiry email send failed", {
-        status: response.status,
-        statusText: response.statusText,
-        recipientSource: recipients.source,
-        message: responseText.slice(0, 1000),
-      });
-      return { success: false, reason: "send-error" };
-    }
+    await sendGmailMessage(rawMime, accessToken);
 
     return { success: true };
   } catch (error) {
-    console.error("Partnership enquiry email send failed", {
+    console.error("Partnership enquiry Gmail send failed", {
       recipientSource: recipients.source,
-      message: error instanceof Error ? error.message : "Unknown Resend error",
+      message: error instanceof Error ? error.message : "Unknown Gmail API error",
     });
 
     return { success: false, reason: "send-error" };
@@ -402,6 +540,7 @@ export async function sendPartnershipEnquiry(
 
 export const partnershipFileLimits = {
   allowedFileExtensions: Array.from(allowedFileExtensions).sort(),
+  gmailSendScope: GMAIL_SEND_SCOPE,
   maxFileSizeBytes: MAX_FILE_SIZE_BYTES,
   maxTotalFileSizeBytes: MAX_TOTAL_FILE_SIZE_BYTES,
 };

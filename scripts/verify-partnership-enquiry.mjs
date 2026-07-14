@@ -5,8 +5,10 @@ import vm from "node:vm";
 
 process.env.WIX_API_KEY = "test-api-key";
 process.env.WIX_SITE_ID = "test-site-id";
-process.env.RESEND_API_KEY = "test-resend-key";
-process.env.PARTNERSHIP_EMAIL_FROM = "Castiglione <noreply@example.com>";
+process.env.GOOGLE_GMAIL_CLIENT_ID = "test-client-id";
+process.env.GOOGLE_GMAIL_CLIENT_SECRET = "test-client-secret";
+process.env.GOOGLE_GMAIL_REFRESH_TOKEN = "test-refresh-token";
+process.env.GOOGLE_GMAIL_SENDER_EMAIL = "helen.y@castiglione.com.au";
 process.env.PARTNERSHIP_EMAIL_TO = "fallback@example.com";
 delete process.env.WIX_PARTNERSHIP_PAGE_RECORD_ID;
 process.env.WIX_PARTNERSHIP_PAGE_KEY = "partnership-main";
@@ -64,6 +66,7 @@ const sandbox = {
   Object,
   Error,
   Date,
+  URLSearchParams,
   async queryWixCollection(collectionName, options) {
     assert.equal(collectionName, "PartnershipPage");
     if (process.env.WIX_PARTNERSHIP_PAGE_RECORD_ID) {
@@ -92,11 +95,22 @@ const sandbox = {
   },
   fetch: async (url, options) => {
     fetchCalls.push({ url: String(url), options });
+    if (String(url).includes("oauth2.googleapis.com/token")) {
+      return {
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        json: async () => ({ access_token: "test-access-token" }),
+        text: async () => JSON.stringify({ access_token: "test-access-token" }),
+      };
+    }
+
     return {
       ok: true,
       status: 200,
       statusText: "OK",
-      text: async () => JSON.stringify({ id: "email-id" }),
+      json: async () => ({ id: "gmail-message-id" }),
+      text: async () => JSON.stringify({ id: "gmail-message-id" }),
     };
   },
 };
@@ -184,19 +198,31 @@ const result = await sendPartnershipEnquiry({
 });
 
 assert.deepEqual(JSON.parse(JSON.stringify(result)), { success: true });
-assert.equal(fetchCalls.length, 1);
+assert.equal(fetchCalls.length, 2);
 
-const resendPayload = JSON.parse(fetchCalls[0].options.body);
-assert.deepEqual(resendPayload.to, ["one@example.com", "two@example.com"]);
-assert.equal(resendPayload.reply_to, "ada@example.com");
-assert.equal(resendPayload.attachments.length, 1);
-assert.equal(resendPayload.attachments[0].filename, "deck.pdf");
-assert.equal(resendPayload.attachments[0].contentType, "application/pdf");
-assert.ok(resendPayload.attachments[0].content);
-assert.equal(JSON.stringify(resendPayload).includes("fintan.hocking@castiglione.com.au"), false);
+const tokenCall = fetchCalls[0];
+assert.equal(tokenCall.url, "https://oauth2.googleapis.com/token");
+assert.equal(String(tokenCall.options.body).includes("grant_type=refresh_token"), true);
 
-const previousApiKey = process.env.RESEND_API_KEY;
-delete process.env.RESEND_API_KEY;
+const gmailCall = fetchCalls[1];
+assert.equal(gmailCall.url, "https://gmail.googleapis.com/gmail/v1/users/me/messages/send");
+assert.equal(gmailCall.options.headers.Authorization, "Bearer test-access-token");
+
+const gmailPayload = JSON.parse(gmailCall.options.body);
+const rawMime = Buffer.from(
+  gmailPayload.raw.replace(/-/g, "+").replace(/_/g, "/"),
+  "base64",
+).toString("utf8");
+
+assert.match(rawMime, /From: Castiglione Website <helen\.y@castiglione\.com\.au>/);
+assert.match(rawMime, /To: one@example\.com, two@example\.com/);
+assert.match(rawMime, /Reply-To: ada@example\.com/);
+assert.match(rawMime, /filename="deck\.pdf"/);
+assert.match(rawMime, /Content-Type: application\/pdf; name="deck\.pdf"/);
+assert.equal(rawMime.includes("fintan.hocking@castiglione.com.au"), false);
+
+const previousRefreshToken = process.env.GOOGLE_GMAIL_REFRESH_TOKEN;
+delete process.env.GOOGLE_GMAIL_REFRESH_TOKEN;
 const missingConfigResult = await sendPartnershipEnquiry({
   fullName: "Ada Lovelace",
   organisation: "Analytical Engine",
@@ -211,7 +237,7 @@ assert.deepEqual(JSON.parse(JSON.stringify(missingConfigResult)), {
   success: false,
   reason: "missing-email-config",
 });
-process.env.RESEND_API_KEY = previousApiKey;
+process.env.GOOGLE_GMAIL_REFRESH_TOKEN = previousRefreshToken;
 
 assert.match(formSource, /fetch\("\/api\/partnership-enquiry"/);
 assert.match(formSource, /new FormData\(event\.currentTarget\)/);
@@ -222,9 +248,11 @@ assert.match(formSource, /setStatusMessage\("Thank you\. Your enquiry has been s
 console.log(
   JSON.stringify(
     {
-      recipients: resendPayload.to,
-      attachmentFilename: resendPayload.attachments[0].filename,
+      gmailSendUrl: gmailCall.url,
+      mimeIncludesAttachment: rawMime.includes('filename="deck.pdf"'),
+      mimeIncludesRecipients: rawMime.includes("To: one@example.com, two@example.com"),
       recipientSource: "PartnershipPage.recipientEmails",
+      sender: "helen.y@castiglione.com.au",
       maxFileSizeMb: partnershipFileLimits.maxFileSizeBytes / 1024 / 1024,
       maxTotalSizeMb: partnershipFileLimits.maxTotalFileSizeBytes / 1024 / 1024,
     },

@@ -1,5 +1,14 @@
 import assert from "node:assert/strict";
 import { getEventCardHref } from "../lib/eventCardHref.ts";
+import {
+  resolveUpcomingRelatedEventsForRuntime,
+} from "../lib/wix/eventDetailContent.ts";
+import {
+  getTicketCtaLabel,
+  getValidTicketHref,
+  isDisabledTicketCtaState,
+  isRelatedEventStatusEligible,
+} from "../lib/ticketCta.ts";
 import { normalizeEvent } from "../lib/wix/normalizers.ts";
 import { resolveCmsListingEventsForRuntime } from "../lib/wix/listingData.ts";
 
@@ -80,10 +89,56 @@ assert.equal(
   false,
 );
 
-console.log("CMS event regression verification passed", {
-  changImage: cmsChang.image,
-  changHref: getEventCardHref(cmsChang),
-  narutoHref: getEventCardHref(cmsNaruto),
-  daVinciHref: getEventCardHref(cmsTypoSlug),
-  runtimeEventCount: runtimeEvents.length,
+const cmsDongpo = normalizeEvent({
+  _id: "cms-dongpo",
+  fieldData: {
+    title: "Dongpo: Life in Poems",
+    slug: "dongpo-life-in-poems",
+    program: "Classical Concerts & Theatre",
+    categoryLabel: "Classical Concerts & Theatre",
+    status: "coming-soon",
+    sortDate: "2026-11-01",
+    eventCardDate: "NOV 2026",
+    eventCardCities: "Melbourne",
+    isVisible: true,
+    isFeaturedHome: true,
+    isFeaturedProgram: true,
+    cardImageAsset:
+      "wix:image://v1/dongpo-card.jpg/dongpo-card.jpg#originWidth=1080&originHeight=1350",
+    ticketPrimaryUrl: "",
+    ticketPrimaryLabel: "COMING SOON",
+  },
 });
+
+assert.equal(cmsDongpo.status, "coming-soon");
+assert.equal(isRelatedEventStatusEligible(cmsDongpo.status), true);
+assert.equal(getValidTicketHref(""), undefined);
+assert.equal(getTicketCtaLabel("coming_soon", "BUY TICKETS", ""), "COMING SOON");
+assert.equal(isDisabledTicketCtaState("coming soon", ""), true);
+assert.equal(getTicketCtaLabel("event-ended", "BUY TICKETS", "https://example.com"), "EVENT ENDED");
+assert.equal(isDisabledTicketCtaState("past", "https://example.com"), true);
+
+const relatedEvents = await resolveUpcomingRelatedEventsForRuntime(
+  [cmsNaruto, cmsDongpo, cmsChang],
+  [cmsNaruto.id, cmsNaruto.slug],
+  async (event) => (event.slug === "dongpo-life-in-poems" ? 1 : 2),
+);
+
+assert.equal(relatedEvents.some((event) => event.slug === "naruto-the-symphonic-experience"), false);
+assert.equal(relatedEvents.some((event) => event.slug === "dongpo-life-in-poems"), true);
+assert.equal(relatedEvents[0].slug, "dongpo-life-in-poems");
+
+console.log(
+  "CMS event regression verification passed",
+  {
+    changImage: cmsChang.image,
+    changHref: getEventCardHref(cmsChang),
+    narutoHref: getEventCardHref(cmsNaruto),
+    daVinciHref: getEventCardHref(cmsTypoSlug),
+    dongpoStatus: cmsDongpo.status,
+    dongpoTopCtaLabel: getTicketCtaLabel("coming-soon", "BUY TICKETS", ""),
+    dongpoTopCtaHref: getValidTicketHref(""),
+    relatedEventSlugs: relatedEvents.map((event) => event.slug),
+    runtimeEventCount: runtimeEvents.length,
+  },
+);

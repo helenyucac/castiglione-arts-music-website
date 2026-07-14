@@ -6,6 +6,12 @@ import { Navigation } from "@/components/Navigation";
 import { WhatsOnEventCard } from "@/components/WhatsOnEventCard";
 import type { EventDetailData, EventTourDate } from "@/data/eventDetails";
 import { formatPublicDateDisplay } from "@/lib/dateDisplay";
+import {
+  getTicketCtaLabel,
+  getValidPrimaryCtaHref,
+  getValidTicketHref,
+  isDisabledTicketCtaState,
+} from "@/lib/ticketCta";
 
 type EventDetailPageProps = {
   event: EventDetailData;
@@ -25,7 +31,6 @@ const richDescriptionClass =
   "w-full max-w-[1200px] text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.8)] antialiased [&_a]:underline [&_a]:underline-offset-4 [&_em]:italic [&_h2]:mb-4 [&_h2]:font-semibold [&_h3]:mb-4 [&_h3]:font-semibold [&_h4]:mb-4 [&_h4]:font-semibold [&_li]:mb-2 [&_ol]:mb-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mb-6 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_ul]:mb-6 [&_ul]:list-disc [&_ul]:pl-6";
 const ticketCtaClass =
   "inline-flex items-center justify-center bg-[#111111] px-6 py-4 text-[11px] font-semibold uppercase leading-none tracking-[2.2px] text-white antialiased";
-const invalidTicketHrefValues = new Set(["", "#", "OPTIONAL", "MANUAL", "UPLOAD TO WIX"]);
 
 const tourDateMonthIndexes: Record<string, number> = {
   JAN: 0,
@@ -69,48 +74,10 @@ function getTourDateTimestamp(date: string) {
   return new Date(Number(year), monthIndex, Number(day), hour, minute).getTime();
 }
 
-function normalizeTicketText(value?: string) {
-  return value?.trim() ?? "";
-}
-
-function normalizeTicketStatus(value?: string) {
-  return normalizeTicketText(value).toLowerCase().replace(/[\s_]+/g, "-");
-}
-
-function isEndedTicketStatus(status?: string) {
-  const normalizedStatus = normalizeTicketStatus(status);
-  return (
-    normalizedStatus === "event-ended" ||
-    normalizedStatus === "ended" ||
-    normalizedStatus === "past"
-  );
-}
-
-function getValidTicketHref(href?: string) {
-  const normalizedHref = normalizeTicketText(href);
-
-  if (invalidTicketHrefValues.has(normalizedHref) || invalidTicketHrefValues.has(normalizedHref.toUpperCase())) {
-    return undefined;
-  }
-
-  return /^https?:\/\//i.test(normalizedHref) ? normalizedHref : undefined;
-}
-
-function getTicketLabel(tourDate: EventTourDate) {
-  if (isEndedTicketStatus(tourDate.ticketStatus)) {
-    return "EVENT ENDED";
-  }
-
-  const ticketLabel = normalizeTicketText(tourDate.ticketLabel);
-  return invalidTicketHrefValues.has(ticketLabel) || invalidTicketHrefValues.has(ticketLabel.toUpperCase())
-    ? "BUY TICKETS"
-    : ticketLabel;
-}
-
 function getTourDateCta(tourDate: EventTourDate) {
-  if (isEndedTicketStatus(tourDate.ticketStatus)) {
+  if (isDisabledTicketCtaState(tourDate.ticketStatus, tourDate.ticketHref, tourDate.ticketLabel)) {
     return {
-      label: "EVENT ENDED",
+      label: getTicketCtaLabel(tourDate.ticketStatus, tourDate.ticketLabel, tourDate.ticketHref),
       href: undefined,
       isDisabled: true,
     };
@@ -123,20 +90,10 @@ function getTourDateCta(tourDate: EventTourDate) {
   }
 
   return {
-    label: getTicketLabel(tourDate),
+    label: getTicketCtaLabel(tourDate.ticketStatus, tourDate.ticketLabel, tourDate.ticketHref),
     href,
     isDisabled: false,
   };
-}
-
-function getValidPrimaryCtaHref(href?: string) {
-  const normalizedHref = normalizeTicketText(href);
-
-  if (invalidTicketHrefValues.has(normalizedHref) || invalidTicketHrefValues.has(normalizedHref.toUpperCase())) {
-    return undefined;
-  }
-
-  return /^(https?:\/\/|\/|#)/i.test(normalizedHref) ? normalizedHref : undefined;
 }
 
 function getPrimaryCta(event: EventDetailData, tourDates: EventTourDate[]) {
@@ -144,10 +101,27 @@ function getPrimaryCta(event: EventDetailData, tourDates: EventTourDate[]) {
     return null;
   }
 
+  if (isDisabledTicketCtaState(event.primaryCtaStatus, event.primaryCtaHref, event.primaryCtaLabel)) {
+    return {
+      label: getTicketCtaLabel(event.primaryCtaStatus, event.primaryCtaLabel, event.primaryCtaHref),
+      href: undefined,
+      isDisabled: true,
+    };
+  }
+
   if (event.primaryCtaLabel.toLowerCase().includes("ticket") && tourDates.length > 0) {
-    if (tourDates.every((tourDate) => isEndedTicketStatus(tourDate.ticketStatus))) {
+    if (
+      tourDates.every((tourDate) =>
+        isDisabledTicketCtaState(tourDate.ticketStatus, tourDate.ticketHref, tourDate.ticketLabel),
+      )
+    ) {
+      const firstTourDate = tourDates[0];
       return {
-        label: "EVENT ENDED",
+        label: getTicketCtaLabel(
+          firstTourDate?.ticketStatus,
+          firstTourDate?.ticketLabel ?? event.primaryCtaLabel,
+          firstTourDate?.ticketHref,
+        ),
         href: undefined,
         isDisabled: true,
       };

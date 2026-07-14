@@ -353,7 +353,7 @@ function normalizeCategory(
 function normalizeStatus(value: unknown): TourStatus {
   const status = stringValue(value).toLowerCase();
 
-  if (status === "on-sale" || status === "upcoming" || status === "past") {
+  if (status === "on-sale" || status === "upcoming" || status === "coming-soon" || status === "past") {
     return status;
   }
 

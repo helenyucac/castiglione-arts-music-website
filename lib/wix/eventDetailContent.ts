@@ -4,6 +4,7 @@ import { isWixConfigured, queryWixCollection, visibleFilter } from "@/lib/wix/cl
 import { getTourProgram, homepageWhatsOnEvents, tourProgramLabels } from "@/data/tours";
 import { formatPublicDateRangeFromValues, formatPublicEventDate } from "@/lib/dateDisplay";
 import { getEventCardHref } from "@/lib/eventCardHref";
+import { isRelatedEventStatusEligible } from "@/lib/ticketCta";
 import { getTourSlugFromHref, normalizeTourSlug } from "@/lib/tourSlug";
 import { getWixFields } from "@/lib/wix/normalizers";
 import { optionalMediaUrl, SAFE_EVENT_IMAGE_FALLBACK } from "@/lib/wix/media";
@@ -546,7 +547,7 @@ function resolveProgram(fields: WixRecordFields) {
 function normalizeStatus(value: unknown): TourStatus | undefined {
   const status = stringValue(value).toLowerCase();
 
-  if (status === "on-sale" || status === "upcoming" || status === "past") {
+  if (status === "on-sale" || status === "upcoming" || status === "coming-soon" || status === "past") {
     return status;
   }
 
@@ -772,7 +773,13 @@ function mergeCmsEventDetail(
     fallback.primaryCtaLabel;
   const primaryCtaHref =
     optionalString(fields.ctaUrl) ??
+    optionalString(fields.ticketPrimaryUrl) ??
     fallback.primaryCtaHref;
+  const primaryCtaStatus =
+    optionalString(fields.ticketStatus) ??
+    optionalString(fields.ticketPrimaryStatus) ??
+    optionalString(fields.status) ??
+    fallback.primaryCtaStatus;
   const secondaryCtaLabel =
     optionalString(fields.partnerCtaLabel) ??
     optionalString(fields.partnerButtonLabel) ?? fallback.secondaryCtaLabel;
@@ -809,6 +816,7 @@ function mergeCmsEventDetail(
       fallback.citySummary,
     primaryCtaLabel,
     primaryCtaHref,
+    primaryCtaStatus,
     secondaryCtaLabel,
     secondaryCtaHref,
     aboutEyebrow: optionalString(fields.aboutTitle) ?? fallback.aboutEyebrow,
@@ -818,8 +826,6 @@ function mergeCmsEventDetail(
     relatedTitle: "More Events",
   };
 }
-
-const activeRelatedStatuses = new Set(["on-sale", "upcoming"]);
 
 function getLocalDateTimestamp(date: string) {
   if (!date.trim()) {
@@ -847,13 +853,12 @@ function normalizeRelatedEventKey(value?: string) {
   return normalizeTourSlug(value) ?? optionalString(value)?.toLowerCase();
 }
 
-function getRelatedEventKeys(event: Pick<TourCardData, "id" | "href" | "slug" | "title">) {
+function getRelatedEventKeys(event: Pick<TourCardData, "id" | "href" | "slug">) {
   return [
     event.id,
     event.slug,
     getTourSlugFromHref(event.href),
     getTourSlugFromHref(getEventCardHref(event)),
-    event.title,
   ]
     .map(normalizeRelatedEventKey)
     .filter((key): key is string => Boolean(key));
@@ -872,8 +877,6 @@ function getCurrentRelatedEventKeys(
     optionalString(fields._id),
     optionalString(fields.id),
     fallback?.slug,
-    optionalString(fields.title),
-    fallback?.title,
   ]
     .map(normalizeRelatedEventKey)
     .filter((key): key is string => Boolean(key));
@@ -890,7 +893,7 @@ function getUpcomingRelatedEvents(currentEventKeys: string[]) {
   return homepageWhatsOnEvents
     .filter((event) => !isCurrentRelatedEvent(event, currentEventKeySet))
     .filter((event) => Boolean(getEventCardHref(event)))
-    .filter((event) => activeRelatedStatuses.has(event.status))
+    .filter((event) => isRelatedEventStatusEligible(event.status))
     .filter((event) => getLocalDateTimestamp(event.date) >= todayTimestamp)
     .sort(
       (firstEvent, secondEvent) =>
@@ -921,19 +924,22 @@ async function getRelatedEventTimestamp(event: TourCardData, todayTimestamp: num
   return upcomingTourDateTimestamps[0] ?? null;
 }
 
-async function getWixUpcomingRelatedEvents(currentEventKeys: string[]) {
+export async function resolveUpcomingRelatedEventsForRuntime(
+  events: TourCardData[],
+  currentEventKeys: string[],
+  getTimestamp: (event: TourCardData, todayTimestamp: number) => Promise<number | null> = getRelatedEventTimestamp,
+) {
   const todayTimestamp = getTodayTimestamp();
   const currentEventKeySet = new Set(currentEventKeys);
-  const events = await getEvents();
   const candidateEvents = events
     .filter((event) => !isCurrentRelatedEvent(event, currentEventKeySet))
     .filter((event) => Boolean(getEventCardHref(event)))
-    .filter((event) => activeRelatedStatuses.has(event.status))
+    .filter((event) => isRelatedEventStatusEligible(event.status))
     .filter((event) => Boolean(optionalString(event.image)));
   const relatedEventsWithTimestamp = await Promise.all(
     candidateEvents.map(async (event) => ({
       event,
-      timestamp: await getRelatedEventTimestamp(event, todayTimestamp),
+      timestamp: await getTimestamp(event, todayTimestamp),
     })),
   );
 
@@ -945,6 +951,11 @@ async function getWixUpcomingRelatedEvents(currentEventKeys: string[]) {
     .sort((firstEvent, secondEvent) => firstEvent.timestamp - secondEvent.timestamp)
     .map((item) => item.event)
     .slice(0, 3);
+}
+
+async function getWixUpcomingRelatedEvents(currentEventKeys: string[]) {
+  const events = await getEvents();
+  return resolveUpcomingRelatedEventsForRuntime(events, currentEventKeys);
 }
 
 function createCmsOnlyFallback(fields: WixRecordFields, requestedSlug: string) {
@@ -976,6 +987,10 @@ function createCmsOnlyFallback(fields: WixRecordFields, requestedSlug: string) {
     citySummary: DEFAULT_CITY_SUMMARY,
     primaryCtaLabel: "BUY TICKETS",
     primaryCtaHref: "#tour-dates",
+    primaryCtaStatus:
+      optionalString(fields.ticketStatus) ??
+      optionalString(fields.ticketPrimaryStatus) ??
+      optionalString(fields.status),
     secondaryCtaLabel: "PARTNER ON THIS TOUR",
     secondaryCtaHref: "/partnerships",
     aboutEyebrow: "ABOUT THE SHOW",

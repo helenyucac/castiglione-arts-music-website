@@ -40,7 +40,12 @@ function filterEvents(events: TourCardData[], filter: EventShowcaseActiveFilterV
   }
 
   if (filter === "whats-on") {
-    return events.filter((event) => event.status === "on-sale" || event.status === "upcoming");
+    return events.filter(
+      (event) =>
+        event.status === "on-sale" ||
+        event.status === "upcoming" ||
+        event.status === "coming-soon",
+    );
   }
 
   if (filter === "past") {

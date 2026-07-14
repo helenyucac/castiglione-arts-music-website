@@ -10,7 +10,7 @@ export type TourProgram =
   | "classical-concert-theatre"
   | "live-music-festival"
   | "touring-exhibition";
-export type TourStatus = "on-sale" | "upcoming" | "past";
+export type TourStatus = "on-sale" | "upcoming" | "coming-soon" | "past";
 
 export type TourTicketLink = {
   label: string;

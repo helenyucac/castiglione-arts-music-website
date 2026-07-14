@@ -62,6 +62,7 @@ export type EventDetailData = {
   citySummary: string;
   primaryCtaLabel: string;
   primaryCtaHref: string;
+  primaryCtaStatus?: string;
   secondaryCtaLabel: string;
   secondaryCtaHref: string;
   aboutEyebrow: string;
@@ -81,7 +82,7 @@ export type EventDetailData = {
   relatedEvents: TourCardData[];
 };
 
-const activeRelatedStatuses = new Set(["on-sale", "upcoming"]);
+const activeRelatedStatuses = new Set(["on-sale", "upcoming", "coming-soon"]);
 const maxRelatedEvents = 3;
 
 function getLocalDateTimestamp(date: string) {

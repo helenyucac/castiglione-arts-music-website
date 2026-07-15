@@ -38,42 +38,130 @@ const enquiryTypes = [
   "Venues & Institutions",
 ];
 
-const partnershipEmail = "partnerships@castiglione.art";
+const allowedFileExtensions = new Set([
+  "pdf",
+  "doc",
+  "docx",
+  "ppt",
+  "pptx",
+  "xls",
+  "xlsx",
+  "jpg",
+  "jpeg",
+  "png",
+]);
+const maxFileSizeBytes = 10 * 1024 * 1024;
+const maxTotalFileSizeBytes = 20 * 1024 * 1024;
+const successMessage = "Thank you. Your enquiry has been sent.";
+const fallbackErrorMessage = "Something went wrong. Please try again.";
+
+type PartnershipApiResponse = {
+  success?: unknown;
+  error?: string;
+};
+
+export function getPartnershipSubmissionMessage(
+  responseOk: boolean,
+  body: PartnershipApiResponse | null,
+) {
+  return responseOk && body?.success === true
+    ? successMessage
+    : body?.error || fallbackErrorMessage;
+}
 
 function getFormValue(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
 }
 
-function createMailtoHref(subject: string, body: string) {
-  return `mailto:${partnershipEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function getFileExtension(fileName: string) {
+  return fileName.split(".").pop()?.toLowerCase() ?? "";
+}
+
+function validateFiles(files: File[]) {
+  const totalSize = files.reduce((total, file) => total + file.size, 0);
+
+  return (
+    totalSize <= maxTotalFileSizeBytes &&
+    files.every(
+      (file) =>
+        file.size > 0 &&
+        file.size <= maxFileSizeBytes &&
+        allowedFileExtensions.has(getFileExtension(file.name)),
+    )
+  );
 }
 
 export function PartnershipForm() {
   const [selectedType, setSelectedType] = useState(enquiryTypes[0]);
   const [fileName, setFileName] = useState<string>(formLabels.noFileChosen);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
-    const body = [
-      `Full name: ${getFormValue(formData, "fullName")}`,
-      `Organisation: ${getFormValue(formData, "organisation")}`,
-      `Email: ${getFormValue(formData, "email")}`,
-      `Website: ${getFormValue(formData, "website") || "Not provided"}`,
-      `Country / Region: ${getFormValue(formData, "region") || "Not provided"}`,
-      `Enquiry type: ${selectedType}`,
-      "",
-      "Project:",
-      getFormValue(formData, "project") || "Not provided",
-      "",
-      `Supporting materials selected: ${fileName}`,
-      "Please attach supporting files directly in your email client before sending.",
-    ].join("\n");
+    if (isSubmitting) {
+      return;
+    }
 
-    window.location.href = createMailtoHref("Castiglione partnership enquiry", body);
+    const form = event.currentTarget;
+
+    setStatusMessage("");
+
+    const formData = new FormData(form);
+    const email = getFormValue(formData, "email").toLowerCase();
+    const files = Array.from(fileInputRef.current?.files ?? []);
+
+    if (!getFormValue(formData, "fullName") || !getFormValue(formData, "organisation") || !isValidEmail(email)) {
+      setStatusMessage("Please check your details before submitting.");
+      return;
+    }
+
+    if (!validateFiles(files)) {
+      setStatusMessage("One or more files are too large or not supported.");
+      return;
+    }
+
+    formData.set("email", email);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/partnership-enquiry", {
+        method: "POST",
+        body: formData,
+      });
+      const raw = await response.text();
+      let body: PartnershipApiResponse | null = null;
+
+      try {
+        body = JSON.parse(raw) as PartnershipApiResponse;
+      } catch {
+        body = null;
+      }
+
+      const message = getPartnershipSubmissionMessage(response.ok, body);
+
+      if (message !== successMessage) {
+        setStatusMessage(message);
+        return;
+      }
+
+      form.reset();
+      setSelectedType(enquiryTypes[0]);
+      setFileName(formLabels.noFileChosen);
+      setStatusMessage(successMessage);
+    } catch (error) {
+      console.error("Partnership form submission failed", error);
+      setStatusMessage(fallbackErrorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -240,6 +328,7 @@ export function PartnershipForm() {
                 id="partner-materials"
                 name="materials"
                 type="file"
+                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.jpg,.jpeg,.png"
                 hidden
                 multiple
                 onChange={handleFileChange}
@@ -256,12 +345,21 @@ export function PartnershipForm() {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="mt-12 inline-flex min-h-14 items-center bg-[#111111] px-9 text-[11px] font-semibold uppercase leading-none tracking-[2.75px] text-white antialiased transition-opacity hover:opacity-80"
             style={interFont}
           >
-            Start the conversation →
+            {isSubmitting ? "Sending..." : "Start the conversation →"}
           </button>
 
+          <p
+            className="mt-5 text-[13px] font-normal leading-[21px] text-[rgba(17,17,17,0.58)]"
+            style={interFont}
+            role="status"
+            aria-live="polite"
+          >
+            {statusMessage}
+          </p>
         </form>
       </div>
     </section>

@@ -17,6 +17,7 @@ export type WixCollectionName =
   | "EventGallery"
   | "SocialLinks"
   | "NavigationLinks"
+  | "PartnershipPage"
   | "Partners"
   | "Venues"
   | "Testimonials"

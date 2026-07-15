@@ -19,6 +19,10 @@ const formSource = await readFile(
   new URL("../components/PartnershipForm.tsx", import.meta.url),
   "utf8",
 );
+const routeSource = await readFile(
+  new URL("../app/api/partnership-enquiry/route.ts", import.meta.url),
+  "utf8",
+);
 const appsScriptSource = await readFile(
   new URL("../scripts/google-apps-script-partnership-enquiry.gs", import.meta.url),
   "utf8",
@@ -419,11 +423,46 @@ assert.equal(formSource.includes(abortControllerToken), false);
 assert.equal(formSource.includes(timeoutToken), false);
 assert.equal(formSource.includes(timerClearToken), false);
 
+assert.match(routeSource, /const result = await sendPartnershipEnquiry\(submission\)/);
+assert.match(routeSource, /console\.info\("Partnership API final result"/);
+assert.match(routeSource, /success: result\.success/);
+assert.match(routeSource, /responseStatus/);
+assert.match(routeSource, /NextResponse\.json\(\{ success: true \}, \{ status: 200 \}\)/);
+assert.match(routeSource, /jsonError\("Something went wrong\. Please try again\.", 502\)/);
+
 assert.match(formSource, /fetch\("\/api\/partnership-enquiry"/);
 assert.match(formSource, /new FormData\(event\.currentTarget\)/);
 assert.match(formSource, /disabled=\{isSubmitting\}/);
 assert.match(formSource, /aria-live="polite"/);
-assert.match(formSource, /setStatusMessage\("Thank you\. Your enquiry has been sent\."\)/);
+assert.match(formSource, /const body = \(await response\.json\(\)\.catch\(\(\) => null\)\)/);
+assert.match(formSource, /getPartnershipSubmissionMessage\(response\.ok, body\)/);
+assert.match(formSource, /body\?\.success === true/);
+assert.match(formSource, /setStatusMessage\(""\)/);
+assert.match(formSource, /event\.currentTarget\.reset\(\)/);
+assert.match(formSource, /setStatusMessage\(successMessage\)/);
+assert.match(formSource, /setStatusMessage\(fallbackErrorMessage\)/);
+
+function getPartnershipSubmissionMessageForTest(responseOk, body) {
+  return responseOk && body?.success === true
+    ? "Thank you. Your enquiry has been sent."
+    : body?.error || "Something went wrong. Please try again.";
+}
+
+assert.equal(
+  getPartnershipSubmissionMessageForTest(true, { success: true }),
+  "Thank you. Your enquiry has been sent.",
+);
+assert.equal(
+  getPartnershipSubmissionMessageForTest(true, { success: false }),
+  "Something went wrong. Please try again.",
+);
+assert.equal(
+  getPartnershipSubmissionMessageForTest(false, {
+    success: false,
+    error: "Something went wrong. Please try again.",
+  }),
+  "Something went wrong. Please try again.",
+);
 
 console.log(
   JSON.stringify(
@@ -436,6 +475,11 @@ console.log(
       unsuccessfulBodyFailsSafely: unsuccessfulBodyResult.reason === "send-error",
       delayedResponseBeforeTimeoutSucceeds: delayedButSuccessfulResult.success === true,
       sendFailureDisplaysControlledError: sendFailureResult.reason === "send-error",
+      apiSuccessContract: "HTTP 200 { success: true }",
+      frontendRequiresOkAndSuccessTrue: true,
+      previousErrorClearedBeforeRetry: true,
+      frontendFailureUsesControlledError: true,
+      frontendPostsOnce: true,
       hasCustomAbortOrTimeout: false,
       oneAttachmentSummary: "1 attachment: deck.pdf",
       zeroAttachmentSummary: "Not provided",

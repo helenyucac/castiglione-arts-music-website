@@ -52,6 +52,22 @@ const allowedFileExtensions = new Set([
 ]);
 const maxFileSizeBytes = 10 * 1024 * 1024;
 const maxTotalFileSizeBytes = 20 * 1024 * 1024;
+const successMessage = "Thank you. Your enquiry has been sent.";
+const fallbackErrorMessage = "Something went wrong. Please try again.";
+
+type PartnershipApiResponse = {
+  success?: unknown;
+  error?: string;
+};
+
+export function getPartnershipSubmissionMessage(
+  responseOk: boolean,
+  body: PartnershipApiResponse | null,
+) {
+  return responseOk && body?.success === true
+    ? successMessage
+    : body?.error || fallbackErrorMessage;
+}
 
 function getFormValue(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -118,19 +134,20 @@ export function PartnershipForm() {
         method: "POST",
         body: formData,
       });
+      const body = (await response.json().catch(() => null)) as PartnershipApiResponse | null;
+      const message = getPartnershipSubmissionMessage(response.ok, body);
 
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-        setStatusMessage(payload?.error ?? "Something went wrong. Please try again.");
+      if (message !== successMessage) {
+        setStatusMessage(message);
         return;
       }
 
       event.currentTarget.reset();
       setSelectedType(enquiryTypes[0]);
       setFileName(formLabels.noFileChosen);
-      setStatusMessage("Thank you. Your enquiry has been sent.");
+      setStatusMessage(successMessage);
     } catch {
-      setStatusMessage("Something went wrong. Please try again.");
+      setStatusMessage(fallbackErrorMessage);
     } finally {
       setIsSubmitting(false);
     }

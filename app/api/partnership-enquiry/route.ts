@@ -32,6 +32,12 @@ export async function POST(request: NextRequest) {
   }
 
   const result = await sendPartnershipEnquiry(submission);
+  const responseStatus = result.success ? 200 : 502;
+
+  console.info("Partnership API final result", {
+    success: result.success,
+    responseStatus,
+  });
 
   if (result.success) {
     return NextResponse.json({ success: true }, { status: 200 });

@@ -110,9 +110,11 @@ export function PartnershipForm() {
       return;
     }
 
+    const form = event.currentTarget;
+
     setStatusMessage("");
 
-    const formData = new FormData(event.currentTarget);
+    const formData = new FormData(form);
     const email = getFormValue(formData, "email").toLowerCase();
     const files = Array.from(fileInputRef.current?.files ?? []);
 
@@ -134,7 +136,15 @@ export function PartnershipForm() {
         method: "POST",
         body: formData,
       });
-      const body = (await response.json().catch(() => null)) as PartnershipApiResponse | null;
+      const raw = await response.text();
+      let body: PartnershipApiResponse | null = null;
+
+      try {
+        body = JSON.parse(raw) as PartnershipApiResponse;
+      } catch {
+        body = null;
+      }
+
       const message = getPartnershipSubmissionMessage(response.ok, body);
 
       if (message !== successMessage) {
@@ -142,11 +152,12 @@ export function PartnershipForm() {
         return;
       }
 
-      event.currentTarget.reset();
+      form.reset();
       setSelectedType(enquiryTypes[0]);
       setFileName(formLabels.noFileChosen);
       setStatusMessage(successMessage);
-    } catch {
+    } catch (error) {
+      console.error("Partnership form submission failed", error);
       setStatusMessage(fallbackErrorMessage);
     } finally {
       setIsSubmitting(false);

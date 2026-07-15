@@ -6,8 +6,12 @@ import {
 
 const MAX_PARTNERSHIP_FORM_BODY_BYTES = 22 * 1024 * 1024;
 
+function jsonResponse(responseBody: { success: boolean; error?: string }, status: number) {
+  return NextResponse.json(responseBody, { status });
+}
+
 function jsonError(message: string, status: number) {
-  return NextResponse.json({ success: false, error: message }, { status });
+  return jsonResponse({ success: false, error: message }, status);
 }
 
 export async function POST(request: NextRequest) {
@@ -32,15 +36,9 @@ export async function POST(request: NextRequest) {
   }
 
   const result = await sendPartnershipEnquiry(submission);
-  const responseStatus = result.success ? 200 : 502;
-
-  console.info("Partnership API final result", {
-    success: result.success,
-    responseStatus,
-  });
 
   if (result.success) {
-    return NextResponse.json({ success: true }, { status: 200 });
+    return jsonResponse({ success: true }, 200);
   }
 
   if (result.reason === "invalid-file") {

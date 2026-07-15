@@ -424,21 +424,27 @@ assert.equal(formSource.includes(timeoutToken), false);
 assert.equal(formSource.includes(timerClearToken), false);
 
 assert.match(routeSource, /const result = await sendPartnershipEnquiry\(submission\)/);
-assert.match(routeSource, /console\.info\("Partnership API final result"/);
-assert.match(routeSource, /success: result\.success/);
-assert.match(routeSource, /responseStatus/);
-assert.match(routeSource, /NextResponse\.json\(\{ success: true \}, \{ status: 200 \}\)/);
+assert.match(routeSource, /return jsonResponse\(\{ success: true \}, 200\)/);
+assert.match(routeSource, /return NextResponse\.json\(responseBody, \{ status \}\)/);
 assert.match(routeSource, /jsonError\("Something went wrong\. Please try again\.", 502\)/);
+assert.doesNotMatch(routeSource, /API RETURN/);
+assert.doesNotMatch(routeSource, /Partnership API final result/);
 
 assert.match(formSource, /fetch\("\/api\/partnership-enquiry"/);
-assert.match(formSource, /new FormData\(event\.currentTarget\)/);
+assert.match(formSource, /const form = event\.currentTarget/);
+assert.match(formSource, /new FormData\(form\)/);
 assert.match(formSource, /disabled=\{isSubmitting\}/);
 assert.match(formSource, /aria-live="polite"/);
-assert.match(formSource, /const body = \(await response\.json\(\)\.catch\(\(\) => null\)\)/);
+assert.match(formSource, /const raw = await response\.text\(\)/);
+assert.match(formSource, /body = JSON\.parse\(raw\) as PartnershipApiResponse/);
 assert.match(formSource, /getPartnershipSubmissionMessage\(response\.ok, body\)/);
 assert.match(formSource, /body\?\.success === true/);
 assert.match(formSource, /setStatusMessage\(""\)/);
-assert.match(formSource, /event\.currentTarget\.reset\(\)/);
+assert.match(formSource, /form\.reset\(\)/);
+assert.doesNotMatch(formSource, /event\.currentTarget\.reset\(\)/);
+assert.doesNotMatch(formSource, /FETCH STATUS|RAW RESPONSE|PARSED BODY|INVALID JSON/);
+assert.match(formSource, /catch \(error\)/);
+assert.match(formSource, /console\.error\("Partnership form submission failed", error\)/);
 assert.match(formSource, /setStatusMessage\(successMessage\)/);
 assert.match(formSource, /setStatusMessage\(fallbackErrorMessage\)/);
 

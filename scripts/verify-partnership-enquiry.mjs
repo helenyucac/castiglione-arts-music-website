@@ -40,6 +40,8 @@ let scriptResponseOk = true;
 let scriptResponseStatus = 200;
 let scriptResponseRedirected = true;
 let scriptResponseText = JSON.stringify({ success: true });
+let scriptFetchError = null;
+const timeoutDelays = [];
 
 class MockFile {
   constructor(parts, name, options = {}) {
@@ -75,7 +77,10 @@ const sandbox = {
   URLSearchParams,
   AbortController,
   clearTimeout,
-  setTimeout,
+  setTimeout(callback, delay) {
+    timeoutDelays.push(delay);
+    return setTimeout(callback, delay);
+  },
   async queryWixCollection(collectionName, options) {
     assert.equal(collectionName, "PartnershipPage");
     if (process.env.WIX_PARTNERSHIP_PAGE_RECORD_ID) {
@@ -104,6 +109,11 @@ const sandbox = {
   },
   fetch: async (url, options) => {
     fetchCalls.push({ url: String(url), options });
+
+    if (scriptFetchError) {
+      throw scriptFetchError;
+    }
+
     return {
       ok: scriptResponseOk,
       status: scriptResponseStatus,
@@ -198,6 +208,7 @@ const result = await sendPartnershipEnquiry({
 
 assert.deepEqual(JSON.parse(JSON.stringify(result)), { success: true });
 assert.equal(fetchCalls.length, 1);
+assert.equal(timeoutDelays.at(-1), 60000);
 
 const scriptCall = fetchCalls[0];
 assert.equal(scriptCall.url, "https://script.google.com/macros/s/test/exec");
@@ -218,6 +229,26 @@ assert.equal(scriptPayload.attachments[0].filename, "deck.pdf");
 assert.equal(scriptPayload.attachments[0].mimeType, "application/pdf");
 assert.ok(scriptPayload.attachments[0].base64);
 assert.equal(JSON.stringify({ success: true }).includes("one@example.com"), false);
+
+fetchCalls.length = 0;
+scriptResponseOk = true;
+scriptResponseStatus = 200;
+scriptResponseText = JSON.stringify({ success: true });
+const delayedButSuccessfulResult = await sendPartnershipEnquiry({
+  fullName: "Ada Lovelace",
+  organisation: "Analytical Engine",
+  email: "ada@example.com",
+  website: "",
+  region: "",
+  enquiryType: "Artists & Producers",
+  project: "",
+  files: [],
+});
+assert.deepEqual(JSON.parse(JSON.stringify(delayedButSuccessfulResult)), {
+  success: true,
+});
+assert.equal(fetchCalls.length, 1);
+assert.equal(timeoutDelays.at(-1), 60000);
 
 fetchCalls.length = 0;
 scriptResponseOk = true;
@@ -256,6 +287,27 @@ assert.deepEqual(JSON.parse(JSON.stringify(unsuccessfulBodyResult)), {
   reason: "send-error",
 });
 assert.equal(fetchCalls.length, 1);
+
+fetchCalls.length = 0;
+const timeoutError = new Error("The operation was aborted.");
+timeoutError.name = "AbortError";
+scriptFetchError = timeoutError;
+const timeoutResult = await sendPartnershipEnquiry({
+  fullName: "Ada Lovelace",
+  organisation: "Analytical Engine",
+  email: "ada@example.com",
+  website: "",
+  region: "",
+  enquiryType: "Artists & Producers",
+  project: "",
+  files: [],
+});
+assert.deepEqual(JSON.parse(JSON.stringify(timeoutResult)), {
+  success: false,
+  reason: "send-error",
+});
+assert.equal(fetchCalls.length, 1);
+scriptFetchError = null;
 
 scriptResponseText = JSON.stringify({ success: true });
 
@@ -378,6 +430,9 @@ console.log(
       recipientSource: "PartnershipPage.recipientEmails",
       malformedResponseFailsSafely: malformedResponseResult.reason === "send-error",
       unsuccessfulBodyFailsSafely: unsuccessfulBodyResult.reason === "send-error",
+      delayedResponseBeforeTimeoutSucceeds: delayedButSuccessfulResult.success === true,
+      timeoutFailsSafely: timeoutResult.reason === "send-error",
+      googleScriptTimeoutMs: timeoutDelays.at(-1),
       oneAttachmentSummary: "1 attachment: deck.pdf",
       zeroAttachmentSummary: "Not provided",
       maxFileSizeMb: partnershipFileLimits.maxFileSizeBytes / 1024 / 1024,

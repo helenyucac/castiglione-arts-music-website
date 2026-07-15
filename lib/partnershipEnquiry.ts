@@ -37,7 +37,7 @@ const MAX_TEXT_LENGTH = 5000;
 const MAX_EMAIL_LENGTH = 254;
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const MAX_TOTAL_FILE_SIZE_BYTES = 20 * 1024 * 1024;
-const GOOGLE_SCRIPT_TIMEOUT_MS = 15000;
+const GOOGLE_SCRIPT_TIMEOUT_MS = 60000;
 const PARTNERSHIP_PAGE_COLLECTION = "PartnershipPage";
 const DEFAULT_PARTNERSHIP_PAGE_KEY = "partnership-main";
 
@@ -317,6 +317,12 @@ function parseAppsScriptResponse(responseText: string) {
   }
 }
 
+function getAppsScriptErrorType(error: unknown) {
+  return error instanceof Error && error.name === "AbortError"
+    ? "timeout"
+    : "send-error";
+}
+
 export async function sendPartnershipEnquiry(
   submission: PartnershipEnquirySubmission,
 ): Promise<PartnershipEnquiryResult> {
@@ -388,6 +394,7 @@ export async function sendPartnershipEnquiry(
     return { success: true };
   } catch (error) {
     console.error("Partnership enquiry Google Apps Script send failed", {
+      errorType: getAppsScriptErrorType(error),
       recipientSource: recipients.source,
       message: error instanceof Error ? error.message : "Unknown Apps Script error",
     });

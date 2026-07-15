@@ -57,6 +57,23 @@ function line(label, value) {
   return label + ": " + (value || "Not provided");
 }
 
+function formatAttachmentSummary(attachmentItems) {
+  if (!attachmentItems.length) {
+    return "Not provided";
+  }
+
+  const filenames = attachmentItems.map(function (attachment) {
+    return attachment.filename;
+  }).filter(Boolean);
+
+  if (attachmentItems.length === 1) {
+    return "1 attachment" + (filenames[0] ? ": " + filenames[0] : "");
+  }
+
+  return attachmentItems.length + " attachments"
+    + (filenames.length ? ": " + filenames.join(", ") : "");
+}
+
 function buildBody(payload) {
   const lines = [
     "New Partnership Enquiry",
@@ -72,14 +89,7 @@ function buildBody(payload) {
     "Project:",
     payload.projectDescription || "Not provided",
     "",
-    line(
-      "Supporting materials",
-      payload.attachments && payload.attachments.length
-        ? payload.attachments.map(function (attachment) {
-            return attachment.filename;
-          }).join(", ")
-        : "None"
-    ),
+    line("Supporting materials", payload.attachmentSummary),
   ];
 
   return {
@@ -110,14 +120,26 @@ function toBlobAttachment(attachment) {
   }
 }
 
-function getAttachments(payload) {
+function getAttachmentItems(payload) {
   if (!Array.isArray(payload.attachments)) {
     return [];
   }
 
   return payload.attachments
     .slice(0, MAX_ATTACHMENTS)
-    .map(toBlobAttachment)
+    .map(function (attachment) {
+      const filename = safeString(attachment && attachment.filename, 255);
+      const blob = toBlobAttachment(attachment);
+
+      if (!filename || !blob) {
+        return null;
+      }
+
+      return {
+        filename: filename,
+        blob: blob,
+      };
+    })
     .filter(function (attachment) {
       return Boolean(attachment);
     });
@@ -128,6 +150,7 @@ function validatePayload(payload) {
   const name = safeString(payload.name, 200);
   const email = safeString(payload.email, 254).toLowerCase();
   const company = safeString(payload.company, 200);
+  const attachmentItems = getAttachmentItems(payload);
 
   if (!recipients.length || !name || !company || !isValidEmail(email)) {
     return null;
@@ -142,7 +165,10 @@ function validatePayload(payload) {
     countryRegion: safeString(payload.countryRegion, 200),
     enquiryType: safeString(payload.enquiryType, 200),
     projectDescription: safeString(payload.projectDescription, 5000),
-    attachments: getAttachments(payload),
+    attachmentSummary: formatAttachmentSummary(attachmentItems),
+    attachments: attachmentItems.map(function (attachment) {
+      return attachment.blob;
+    }),
   };
 }
 

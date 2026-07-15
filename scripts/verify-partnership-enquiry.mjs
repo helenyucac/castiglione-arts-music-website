@@ -36,6 +36,10 @@ let partnershipPageItem = {
 };
 let siteSettings = { id: "site-settings-main", contactEmail: "site@example.com" };
 const fetchCalls = [];
+let scriptResponseOk = true;
+let scriptResponseStatus = 200;
+let scriptResponseRedirected = true;
+let scriptResponseText = JSON.stringify({ success: true });
 
 class MockFile {
   constructor(parts, name, options = {}) {
@@ -101,11 +105,11 @@ const sandbox = {
   fetch: async (url, options) => {
     fetchCalls.push({ url: String(url), options });
     return {
-      ok: true,
-      status: 200,
-      statusText: "OK",
-      json: async () => ({ success: true }),
-      text: async () => JSON.stringify({ success: true }),
+      ok: scriptResponseOk,
+      status: scriptResponseStatus,
+      statusText: scriptResponseOk ? "OK" : "Error",
+      redirected: scriptResponseRedirected,
+      text: async () => scriptResponseText,
     };
   },
 };
@@ -215,6 +219,46 @@ assert.equal(scriptPayload.attachments[0].mimeType, "application/pdf");
 assert.ok(scriptPayload.attachments[0].base64);
 assert.equal(JSON.stringify({ success: true }).includes("one@example.com"), false);
 
+fetchCalls.length = 0;
+scriptResponseOk = true;
+scriptResponseStatus = 200;
+scriptResponseText = "not json";
+const malformedResponseResult = await sendPartnershipEnquiry({
+  fullName: "Ada Lovelace",
+  organisation: "Analytical Engine",
+  email: "ada@example.com",
+  website: "",
+  region: "",
+  enquiryType: "Artists & Producers",
+  project: "",
+  files: [],
+});
+assert.deepEqual(JSON.parse(JSON.stringify(malformedResponseResult)), {
+  success: false,
+  reason: "send-error",
+});
+assert.equal(fetchCalls.length, 1);
+
+fetchCalls.length = 0;
+scriptResponseText = JSON.stringify({ success: false, statusCode: 200 });
+const unsuccessfulBodyResult = await sendPartnershipEnquiry({
+  fullName: "Ada Lovelace",
+  organisation: "Analytical Engine",
+  email: "ada@example.com",
+  website: "",
+  region: "",
+  enquiryType: "Artists & Producers",
+  project: "",
+  files: [],
+});
+assert.deepEqual(JSON.parse(JSON.stringify(unsuccessfulBodyResult)), {
+  success: false,
+  reason: "send-error",
+});
+assert.equal(fetchCalls.length, 1);
+
+scriptResponseText = JSON.stringify({ success: true });
+
 const previousScriptSecret = process.env.PARTNERSHIP_GOOGLE_SCRIPT_SECRET;
 delete process.env.PARTNERSHIP_GOOGLE_SCRIPT_SECRET;
 const missingConfigResult = await sendPartnershipEnquiry({
@@ -240,6 +284,84 @@ assert.match(appsScriptSource, /payload\.secret !== expectedSecret/);
 assert.match(appsScriptSource, /Utilities\.newBlob/);
 assert.match(appsScriptSource, /MailApp\.sendEmail/);
 assert.match(appsScriptSource, /replyTo: submission\.email/);
+assert.match(appsScriptSource, /function formatAttachmentSummary/);
+assert.match(appsScriptSource, /1 attachment/);
+assert.match(appsScriptSource, /attachmentSummary/);
+
+const appsScriptSandbox = {
+  console,
+  Buffer,
+  Utilities: {
+    base64Decode(value) {
+      return Buffer.from(value, "base64");
+    },
+    newBlob(bytes, mimeType, filename) {
+      return {
+        bytes,
+        mimeType,
+        filename,
+      };
+    },
+  },
+  ContentService: {
+    MimeType: { JSON: "application/json" },
+    createTextOutput(value) {
+      return {
+        value,
+        setMimeType() {
+          return this;
+        },
+      };
+    },
+  },
+};
+
+vm.createContext(appsScriptSandbox);
+vm.runInContext(
+  `${appsScriptSource}\nthis.__appsScript = { validatePayload, buildBody };`,
+  appsScriptSandbox,
+);
+
+const attachmentPayload = {
+  recipients: ["one@example.com"],
+  name: "Ada Lovelace",
+  email: "ada@example.com",
+  company: "Analytical Engine",
+  attachments: [
+    {
+      filename: "deck.pdf",
+      mimeType: "application/pdf",
+      base64: Buffer.from("hello").toString("base64"),
+    },
+  ],
+};
+const oneAttachmentSubmission =
+  appsScriptSandbox.__appsScript.validatePayload(attachmentPayload);
+const oneAttachmentBody =
+  appsScriptSandbox.__appsScript.buildBody(oneAttachmentSubmission);
+
+assert.match(
+  oneAttachmentBody.text,
+  /Supporting materials: 1 attachment: deck\.pdf/,
+);
+assert.doesNotMatch(
+  oneAttachmentBody.text,
+  /Supporting materials: Not provided/,
+);
+assert.equal(oneAttachmentSubmission.attachments.length, 1);
+assert.equal(oneAttachmentSubmission.attachments[0].filename, "deck.pdf");
+
+const noAttachmentSubmission = appsScriptSandbox.__appsScript.validatePayload({
+  recipients: ["one@example.com"],
+  name: "Ada Lovelace",
+  email: "ada@example.com",
+  company: "Analytical Engine",
+  attachments: [],
+});
+const noAttachmentBody =
+  appsScriptSandbox.__appsScript.buildBody(noAttachmentSubmission);
+
+assert.match(noAttachmentBody.text, /Supporting materials: Not provided/);
 
 assert.match(formSource, /fetch\("\/api\/partnership-enquiry"/);
 assert.match(formSource, /new FormData\(event\.currentTarget\)/);
@@ -254,6 +376,10 @@ console.log(
       payloadIncludesAttachment: Boolean(scriptPayload.attachments[0].base64),
       payloadIncludesRecipients: scriptPayload.recipients.length === 2,
       recipientSource: "PartnershipPage.recipientEmails",
+      malformedResponseFailsSafely: malformedResponseResult.reason === "send-error",
+      unsuccessfulBodyFailsSafely: unsuccessfulBodyResult.reason === "send-error",
+      oneAttachmentSummary: "1 attachment: deck.pdf",
+      zeroAttachmentSummary: "Not provided",
       maxFileSizeMb: partnershipFileLimits.maxFileSizeBytes / 1024 / 1024,
       maxTotalSizeMb: partnershipFileLimits.maxTotalFileSizeBytes / 1024 / 1024,
     },

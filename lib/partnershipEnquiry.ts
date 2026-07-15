@@ -288,6 +288,35 @@ async function fileToAttachment(file: File): Promise<AttachmentPayload> {
   };
 }
 
+function parseAppsScriptResponse(responseText: string) {
+  if (!responseText.trim()) {
+    return {
+      parsed: false,
+      success: false,
+      statusCode: undefined,
+    };
+  }
+
+  try {
+    const body = JSON.parse(responseText) as {
+      success?: unknown;
+      statusCode?: unknown;
+    };
+
+    return {
+      parsed: true,
+      success: body?.success === true,
+      statusCode: body?.statusCode,
+    };
+  } catch {
+    return {
+      parsed: false,
+      success: false,
+      statusCode: undefined,
+    };
+  }
+}
+
 export async function sendPartnershipEnquiry(
   submission: PartnershipEnquirySubmission,
 ): Promise<PartnershipEnquiryResult> {
@@ -314,32 +343,45 @@ export async function sendPartnershipEnquiry(
     const attachments = await Promise.all(submission.files.map(fileToAttachment));
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), GOOGLE_SCRIPT_TIMEOUT_MS);
-    const response = await fetch(scriptUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        secret: scriptSecret,
-        recipients: recipients.recipients,
-        name: submission.fullName,
-        email: submission.email,
-        company: submission.organisation,
-        website: submission.website,
-        countryRegion: submission.region,
-        enquiryType: submission.enquiryType,
-        projectDescription: submission.project,
-        attachments,
-      }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    const responseText = await response.text();
-    const responseBody = responseText
-      ? ((JSON.parse(responseText) as { success?: unknown }) ?? {})
-      : {};
+    let response: Response;
 
-    if (!response.ok || responseBody.success !== true) {
+    try {
+      response = await fetch(scriptUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          secret: scriptSecret,
+          recipients: recipients.recipients,
+          name: submission.fullName,
+          email: submission.email,
+          company: submission.organisation,
+          website: submission.website,
+          countryRegion: submission.region,
+          enquiryType: submission.enquiryType,
+          projectDescription: submission.project,
+          attachments,
+        }),
+        redirect: "follow",
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    const responseText = await response.text();
+    const scriptResponse = parseAppsScriptResponse(responseText);
+
+    console.info("Partnership enquiry Google Apps Script response", {
+      httpStatus: response.status,
+      redirected: response.redirected,
+      jsonParsed: scriptResponse.parsed,
+      appsScriptSuccess: scriptResponse.success,
+      appsScriptStatusCode: scriptResponse.statusCode,
+    });
+
+    if (!response.ok || !scriptResponse.success) {
       throw new Error(`Google Apps Script send failed: ${response.status}`);
     }
 

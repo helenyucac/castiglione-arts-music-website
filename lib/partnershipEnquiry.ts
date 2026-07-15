@@ -37,7 +37,6 @@ const MAX_TEXT_LENGTH = 5000;
 const MAX_EMAIL_LENGTH = 254;
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const MAX_TOTAL_FILE_SIZE_BYTES = 20 * 1024 * 1024;
-const GOOGLE_SCRIPT_TIMEOUT_MS = 60000;
 const PARTNERSHIP_PAGE_COLLECTION = "PartnershipPage";
 const DEFAULT_PARTNERSHIP_PAGE_KEY = "partnership-main";
 
@@ -317,12 +316,6 @@ function parseAppsScriptResponse(responseText: string) {
   }
 }
 
-function getAppsScriptErrorType(error: unknown) {
-  return error instanceof Error && error.name === "AbortError"
-    ? "timeout"
-    : "send-error";
-}
-
 export async function sendPartnershipEnquiry(
   submission: PartnershipEnquirySubmission,
 ): Promise<PartnershipEnquiryResult> {
@@ -347,34 +340,25 @@ export async function sendPartnershipEnquiry(
 
   try {
     const attachments = await Promise.all(submission.files.map(fileToAttachment));
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), GOOGLE_SCRIPT_TIMEOUT_MS);
-    let response: Response;
-
-    try {
-      response = await fetch(scriptUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          secret: scriptSecret,
-          recipients: recipients.recipients,
-          name: submission.fullName,
-          email: submission.email,
-          company: submission.organisation,
-          website: submission.website,
-          countryRegion: submission.region,
-          enquiryType: submission.enquiryType,
-          projectDescription: submission.project,
-          attachments,
-        }),
-        redirect: "follow",
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timeout);
-    }
+    const response = await fetch(scriptUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        secret: scriptSecret,
+        recipients: recipients.recipients,
+        name: submission.fullName,
+        email: submission.email,
+        company: submission.organisation,
+        website: submission.website,
+        countryRegion: submission.region,
+        enquiryType: submission.enquiryType,
+        projectDescription: submission.project,
+        attachments,
+      }),
+      redirect: "follow",
+    });
 
     const responseText = await response.text();
     const scriptResponse = parseAppsScriptResponse(responseText);
@@ -394,7 +378,7 @@ export async function sendPartnershipEnquiry(
     return { success: true };
   } catch (error) {
     console.error("Partnership enquiry Google Apps Script send failed", {
-      errorType: getAppsScriptErrorType(error),
+      errorType: "send-error",
       recipientSource: recipients.source,
       message: error instanceof Error ? error.message : "Unknown Apps Script error",
     });

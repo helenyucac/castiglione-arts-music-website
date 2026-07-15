@@ -41,7 +41,6 @@ let scriptResponseStatus = 200;
 let scriptResponseRedirected = true;
 let scriptResponseText = JSON.stringify({ success: true });
 let scriptFetchError = null;
-const timeoutDelays = [];
 
 class MockFile {
   constructor(parts, name, options = {}) {
@@ -75,12 +74,6 @@ const sandbox = {
   Error,
   Date,
   URLSearchParams,
-  AbortController,
-  clearTimeout,
-  setTimeout(callback, delay) {
-    timeoutDelays.push(delay);
-    return setTimeout(callback, delay);
-  },
   async queryWixCollection(collectionName, options) {
     assert.equal(collectionName, "PartnershipPage");
     if (process.env.WIX_PARTNERSHIP_PAGE_RECORD_ID) {
@@ -208,7 +201,6 @@ const result = await sendPartnershipEnquiry({
 
 assert.deepEqual(JSON.parse(JSON.stringify(result)), { success: true });
 assert.equal(fetchCalls.length, 1);
-assert.equal(timeoutDelays.at(-1), 60000);
 
 const scriptCall = fetchCalls[0];
 assert.equal(scriptCall.url, "https://script.google.com/macros/s/test/exec");
@@ -229,6 +221,7 @@ assert.equal(scriptPayload.attachments[0].filename, "deck.pdf");
 assert.equal(scriptPayload.attachments[0].mimeType, "application/pdf");
 assert.ok(scriptPayload.attachments[0].base64);
 assert.equal(JSON.stringify({ success: true }).includes("one@example.com"), false);
+assert.equal("signal" in scriptCall.options, false);
 
 fetchCalls.length = 0;
 scriptResponseOk = true;
@@ -248,7 +241,6 @@ assert.deepEqual(JSON.parse(JSON.stringify(delayedButSuccessfulResult)), {
   success: true,
 });
 assert.equal(fetchCalls.length, 1);
-assert.equal(timeoutDelays.at(-1), 60000);
 
 fetchCalls.length = 0;
 scriptResponseOk = true;
@@ -289,10 +281,8 @@ assert.deepEqual(JSON.parse(JSON.stringify(unsuccessfulBodyResult)), {
 assert.equal(fetchCalls.length, 1);
 
 fetchCalls.length = 0;
-const timeoutError = new Error("The operation was aborted.");
-timeoutError.name = "AbortError";
-scriptFetchError = timeoutError;
-const timeoutResult = await sendPartnershipEnquiry({
+scriptFetchError = new Error("Google Apps Script request failed.");
+const sendFailureResult = await sendPartnershipEnquiry({
   fullName: "Ada Lovelace",
   organisation: "Analytical Engine",
   email: "ada@example.com",
@@ -302,7 +292,7 @@ const timeoutResult = await sendPartnershipEnquiry({
   project: "",
   files: [],
 });
-assert.deepEqual(JSON.parse(JSON.stringify(timeoutResult)), {
+assert.deepEqual(JSON.parse(JSON.stringify(sendFailureResult)), {
   success: false,
   reason: "send-error",
 });
@@ -415,6 +405,20 @@ const noAttachmentBody =
 
 assert.match(noAttachmentBody.text, /Supporting materials: Not provided/);
 
+const timeoutToken = "set" + "Timeout";
+const timerClearToken = "clear" + timeoutToken.slice(3);
+const abortControllerToken = "Abort" + "Controller";
+const scriptTimeoutConstant = "GOOGLE_SCRIPT" + "_TIMEOUT_MS";
+const controllerSignal = "signal: " + "controller.signal";
+assert.equal(source.includes(abortControllerToken), false);
+assert.equal(source.includes(timeoutToken), false);
+assert.equal(source.includes(timerClearToken), false);
+assert.equal(source.includes(controllerSignal), false);
+assert.equal(source.includes(scriptTimeoutConstant), false);
+assert.equal(formSource.includes(abortControllerToken), false);
+assert.equal(formSource.includes(timeoutToken), false);
+assert.equal(formSource.includes(timerClearToken), false);
+
 assert.match(formSource, /fetch\("\/api\/partnership-enquiry"/);
 assert.match(formSource, /new FormData\(event\.currentTarget\)/);
 assert.match(formSource, /disabled=\{isSubmitting\}/);
@@ -431,8 +435,8 @@ console.log(
       malformedResponseFailsSafely: malformedResponseResult.reason === "send-error",
       unsuccessfulBodyFailsSafely: unsuccessfulBodyResult.reason === "send-error",
       delayedResponseBeforeTimeoutSucceeds: delayedButSuccessfulResult.success === true,
-      timeoutFailsSafely: timeoutResult.reason === "send-error",
-      googleScriptTimeoutMs: timeoutDelays.at(-1),
+      sendFailureDisplaysControlledError: sendFailureResult.reason === "send-error",
+      hasCustomAbortOrTimeout: false,
       oneAttachmentSummary: "1 attachment: deck.pdf",
       zeroAttachmentSummary: "Not provided",
       maxFileSizeMb: partnershipFileLimits.maxFileSizeBytes / 1024 / 1024,

@@ -155,14 +155,23 @@ export default function AboutPage() {
               </div>
             </div>
 
-            <div className="relative mt-14 aspect-[16/7] min-h-[280px] overflow-hidden bg-[#ded8cf] sm:mt-16 lg:mt-20">
+            <div className="relative mt-14 overflow-hidden bg-[#ded8cf] sm:mt-16 sm:aspect-[16/7] sm:min-h-[280px] lg:mt-20">
+              <Image
+                src="https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=1800&q=82"
+                alt="A quiet concert hall interior with tall windows"
+                width={1800}
+                height={1200}
+                priority
+                sizes="100vw"
+                className="h-auto w-full object-contain sm:hidden"
+              />
               <Image
                 src="https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=1800&q=82"
                 alt="A quiet concert hall interior with tall windows"
                 fill
                 priority
                 sizes="(min-width: 1280px) 92vw, 100vw"
-                className="object-cover"
+                className="hidden object-cover sm:block"
               />
             </div>
           </div>

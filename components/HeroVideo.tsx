@@ -62,14 +62,14 @@ export function HeroVideo({
 
         <div className="flex max-w-[760px] flex-col items-start pb-4 sm:pb-6 lg:pb-8">
           <h1
-            className="max-w-[18ch] text-left text-[clamp(2.35rem,4vw,4.5rem)] font-light leading-[0.96] tracking-normal text-white"
+            className="w-full max-w-full text-left text-[clamp(2.75rem,13vw,3.5rem)] font-light leading-[0.98] tracking-normal text-white sm:max-w-[18ch] sm:text-[clamp(2.35rem,4vw,4.5rem)] sm:leading-[0.96]"
             style={{
               fontFamily:
                 'Fraunces, Canela, "Canela Deck", "Cormorant Garamond", serif',
             }}
           >
             {headlineLines.map((line) => (
-              <span key={line} className="block whitespace-nowrap">
+              <span key={line} className="block whitespace-normal sm:whitespace-nowrap">
                 {line}
               </span>
             ))}

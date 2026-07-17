@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import { BRAND_COLORS, siteSettings } from "@/data/siteSettings";
 import type { NormalizedHeroStat } from "@/lib/wix/types";
 
@@ -26,20 +29,149 @@ export function HeroVideo({
   heroStats = [...siteSettings.heroStats],
 }: HeroVideoProps) {
   const headlineLines = getHeadlineLines(headline);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const attemptedPlaybackReasons = useRef<Set<string>>(new Set());
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(true);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    function syncReducedMotionPreference() {
+      setPrefersReducedMotion(mediaQuery.matches);
+    }
+
+    syncReducedMotionPreference();
+    mediaQuery.addEventListener("change", syncReducedMotionPreference);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncReducedMotionPreference);
+    };
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video || prefersReducedMotion) {
+      return;
+    }
+
+    attemptedPlaybackReasons.current.clear();
+
+    async function tryPlay(reason: string) {
+      if (!video || attemptedPlaybackReasons.current.has(reason)) {
+        return;
+      }
+
+      attemptedPlaybackReasons.current.add(reason);
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+      video.setAttribute("webkit-playsinline", "true");
+
+      try {
+        await video.play();
+      } catch {
+        setIsPlaying(false);
+      }
+    }
+
+    function handleLoadedMetadata() {
+      void tryPlay("loadedmetadata");
+    }
+
+    function handleCanPlay() {
+      void tryPlay("canplay");
+    }
+
+    function handlePageShow() {
+      void tryPlay("pageshow");
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        void tryPlay("visibilitychange");
+      }
+    }
+
+    function handleWeixinBridgeReady() {
+      void tryPlay("WeixinJSBridgeReady");
+    }
+
+    void tryPlay("mount");
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
+    video.addEventListener("canplay", handleCanPlay);
+    window.addEventListener("pageshow", handlePageShow);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("WeixinJSBridgeReady", handleWeixinBridgeReady);
+
+    return () => {
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      video.removeEventListener("canplay", handleCanPlay);
+      window.removeEventListener("pageshow", handlePageShow);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener("WeixinJSBridgeReady", handleWeixinBridgeReady);
+    };
+  }, [prefersReducedMotion, videoSrc]);
+
+  async function handleTapToPlay() {
+    const video = videoRef.current;
+
+    if (!video || prefersReducedMotion) {
+      return;
+    }
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.setAttribute("webkit-playsinline", "true");
+
+    try {
+      await video.play();
+    } catch {
+      setIsPlaying(false);
+    }
+  }
 
   return (
     <section className="relative min-h-[640px] overflow-hidden bg-black text-white sm:min-h-[720px]">
       <div className="absolute inset-0">
         {videoSrc ? (
-          <video
-            className="size-full object-cover"
-            src={videoSrc}
-            poster={posterSrc}
-            autoPlay
-            muted
-            loop
-            playsInline
-          />
+          <>
+            <div
+              className={`absolute inset-0 bg-black transition-opacity duration-300 ${
+                isPlaying || prefersReducedMotion ? "opacity-0" : "opacity-100"
+              }`}
+              aria-hidden="true"
+            />
+            <video
+              ref={videoRef}
+              className={`size-full object-cover transition-opacity duration-300 ${
+                isPlaying || prefersReducedMotion ? "opacity-100" : "opacity-0"
+              }`}
+              src={videoSrc}
+              autoPlay={!prefersReducedMotion}
+              muted
+              loop
+              playsInline
+              preload="auto"
+              onPlaying={() => setIsPlaying(true)}
+              onPause={() => {
+                if (!document.hidden) {
+                  setIsPlaying(false);
+                }
+              }}
+              {...{ "webkit-playsinline": "true" }}
+            />
+            {!isPlaying && !prefersReducedMotion ? (
+              <button
+                type="button"
+                className="absolute inset-0 z-[5] cursor-pointer bg-transparent"
+                aria-label="Play hero video"
+                onClick={handleTapToPlay}
+              />
+            ) : null}
+          </>
         ) : (
           <div
             className="size-full bg-cover bg-center"

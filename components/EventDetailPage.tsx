@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { EventRichContent } from "@/components/EventRichContent";
 import { Footer } from "@/components/Footer";
 import { EventGallery } from "@/components/EventGallery";
 import { Navigation } from "@/components/Navigation";
@@ -156,7 +157,10 @@ function getVideoSourceType(src: string) {
 export function EventDetailPage({ event }: EventDetailPageProps) {
   const heroTitleOffsetClass = event.heroTitleOffset ? "lg:mt-14" : "";
   const galleryImages = event.galleryImages ?? [];
-  const hasDescription = Boolean(event.descriptionHtml) || event.description.length > 0;
+  const richEventDescription = event.richEventDescription ?? [];
+  const hasRichEventDescription = richEventDescription.length > 0;
+  const hasDescription =
+    hasRichEventDescription || Boolean(event.descriptionHtml) || event.description.length > 0;
   const sortedTourDates = [...event.tourDates].sort(
     (firstDate, secondDate) =>
       getTourDateTimestamp(firstDate.date) - getTourDateTimestamp(secondDate.date),
@@ -283,7 +287,9 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                 {event.aboutEyebrow}
               </p>
               <div className="w-full max-w-[1200px]">
-                {event.descriptionHtml ? (
+                {hasRichEventDescription ? (
+                  <EventRichContent blocks={richEventDescription} />
+                ) : event.descriptionHtml ? (
                   <div
                     className={richDescriptionClass}
                     style={eyebrowStyle}

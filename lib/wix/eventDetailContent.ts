@@ -8,6 +8,7 @@ import { isRelatedEventStatusEligible } from "@/lib/ticketCta";
 import { getTourSlugFromHref, normalizeTourSlug } from "@/lib/tourSlug";
 import { getWixFields } from "@/lib/wix/normalizers";
 import { optionalMediaUrl, SAFE_EVENT_IMAGE_FALLBACK } from "@/lib/wix/media";
+import { normalizeRichEventDescription } from "@/lib/wix/richContent";
 import { getEventGallery, getEventVideos, getTourDates } from "@/lib/wix/eventDetails";
 import { getEvents } from "@/lib/wix/events";
 import { getPartnersByEvent } from "@/lib/wix/partners";
@@ -571,7 +572,6 @@ function resolveDescription(fields: WixRecordFields, fallback: EventDetailData) 
     fields.aboutBody,
     fields.aboutDescription,
     fields.aboutText,
-    fields.eventDescription,
     fields.showDescription,
     fields.overview,
     fields.synopsis,
@@ -600,7 +600,6 @@ function resolveDescriptionHtml(fields: WixRecordFields, fallback: EventDetailDa
     fields.aboutBody,
     fields.aboutDescription,
     fields.aboutText,
-    fields.eventDescription,
     fields.showDescription,
     fields.overview,
     fields.synopsis,
@@ -822,6 +821,7 @@ function mergeCmsEventDetail(
     aboutEyebrow: optionalString(fields.aboutTitle) ?? fallback.aboutEyebrow,
     description: resolveDescription(fields, fallback),
     descriptionHtml: resolveDescriptionHtml(fields, fallback),
+    richEventDescription: normalizeRichEventDescription(fields) ?? fallback.richEventDescription,
     tourDates: resolveInlineTourDates(fields, fallback.tourDates),
     relatedTitle: "More Events",
   };

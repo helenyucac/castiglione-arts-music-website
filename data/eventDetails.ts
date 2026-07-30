@@ -29,6 +29,41 @@ export type EventGalleryImage = {
   caption?: string;
 };
 
+export type EventRichTextSpan = {
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  href?: string;
+};
+
+export type EventRichContentBlock =
+  | {
+      type: "paragraph" | "heading" | "quote";
+      level?: number;
+      children: EventRichTextSpan[];
+    }
+  | {
+      type: "list";
+      ordered: boolean;
+      items: EventRichTextSpan[][];
+    }
+  | {
+      type: "image";
+      src: string;
+      alt?: string;
+      caption?: string;
+    }
+  | {
+      type: "video";
+      src: string;
+      poster?: string;
+      caption?: string;
+    }
+  | {
+      type: "divider";
+    };
+
 export type EventPartner = {
   name: string;
   logo?: string;
@@ -68,6 +103,7 @@ export type EventDetailData = {
   aboutEyebrow: string;
   description: string[];
   descriptionHtml?: string;
+  richEventDescription?: EventRichContentBlock[];
   trailerEyebrow?: string;
   trailerVideoSrc?: string;
   trailerPosterSrc?: string;

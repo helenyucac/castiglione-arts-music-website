@@ -4,6 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { BRAND_COLORS, siteSettings } from "@/data/siteSettings";
 import type { NormalizedHeroStat } from "@/lib/wix/types";
 
+const heroVideoPosterSrc = "/media/hero-video-poster.png";
+
+declare global {
+  interface Window {
+    WeixinJSBridge?: unknown;
+  }
+}
+
 type HeroVideoProps = {
   videoSrc?: string;
   posterSrc: string;
@@ -31,6 +39,7 @@ export function HeroVideo({
   const headlineLines = getHeadlineLines(headline);
   const videoRef = useRef<HTMLVideoElement>(null);
   const attemptedPlaybackReasons = useRef<Set<string>>(new Set());
+  const delayedRetryTimers = useRef<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(true);
 
@@ -57,6 +66,8 @@ export function HeroVideo({
     }
 
     attemptedPlaybackReasons.current.clear();
+    delayedRetryTimers.current.forEach((timer) => window.clearTimeout(timer));
+    delayedRetryTimers.current = [];
 
     async function tryPlay(reason: string) {
       if (!video || attemptedPlaybackReasons.current.has(reason)) {
@@ -68,6 +79,12 @@ export function HeroVideo({
       video.defaultMuted = true;
       video.playsInline = true;
       video.setAttribute("webkit-playsinline", "true");
+      video.setAttribute("x5-playsinline", "true");
+      video.setAttribute("x5-video-player-type", "h5-page");
+
+      if (video.readyState === 0) {
+        video.load();
+      }
 
       try {
         await video.play();
@@ -78,6 +95,10 @@ export function HeroVideo({
 
     function handleLoadedMetadata() {
       void tryPlay("loadedmetadata");
+    }
+
+    function handleLoadedData() {
+      void tryPlay("loadeddata");
     }
 
     function handleCanPlay() {
@@ -99,14 +120,31 @@ export function HeroVideo({
     }
 
     void tryPlay("mount");
+    delayedRetryTimers.current = [300, 1000].map((delay) =>
+      window.setTimeout(() => {
+        void tryPlay(`delayed-${delay}`);
+      }, delay),
+    );
+
+    if (window.WeixinJSBridge) {
+      void tryPlay("WeixinJSBridgeReady");
+    }
+
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
+    video.addEventListener("loadeddata", handleLoadedData);
     video.addEventListener("canplay", handleCanPlay);
     window.addEventListener("pageshow", handlePageShow);
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    document.addEventListener("WeixinJSBridgeReady", handleWeixinBridgeReady);
+
+    if (!window.WeixinJSBridge) {
+      document.addEventListener("WeixinJSBridgeReady", handleWeixinBridgeReady);
+    }
 
     return () => {
+      delayedRetryTimers.current.forEach((timer) => window.clearTimeout(timer));
+      delayedRetryTimers.current = [];
       video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      video.removeEventListener("loadeddata", handleLoadedData);
       video.removeEventListener("canplay", handleCanPlay);
       window.removeEventListener("pageshow", handlePageShow);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -125,6 +163,12 @@ export function HeroVideo({
     video.defaultMuted = true;
     video.playsInline = true;
     video.setAttribute("webkit-playsinline", "true");
+    video.setAttribute("x5-playsinline", "true");
+    video.setAttribute("x5-video-player-type", "h5-page");
+
+    if (video.readyState === 0) {
+      video.load();
+    }
 
     try {
       await video.play();
@@ -139,15 +183,16 @@ export function HeroVideo({
         {videoSrc ? (
           <>
             <div
-              className={`absolute inset-0 bg-black transition-opacity duration-300 ${
-                isPlaying || prefersReducedMotion ? "opacity-0" : "opacity-100"
+              className={`absolute inset-0 bg-cover bg-center transition-opacity duration-300 ${
+                isPlaying ? "opacity-0" : "opacity-100"
               }`}
+              style={{ backgroundImage: `url(${heroVideoPosterSrc})` }}
               aria-hidden="true"
             />
             <video
               ref={videoRef}
               className={`size-full object-cover transition-opacity duration-300 ${
-                isPlaying || prefersReducedMotion ? "opacity-100" : "opacity-0"
+                isPlaying ? "opacity-100" : "opacity-0"
               }`}
               src={videoSrc}
               autoPlay={!prefersReducedMotion}
@@ -161,7 +206,11 @@ export function HeroVideo({
                   setIsPlaying(false);
                 }
               }}
-              {...{ "webkit-playsinline": "true" }}
+              {...{
+                "webkit-playsinline": "true",
+                "x5-playsinline": "true",
+                "x5-video-player-type": "h5-page",
+              }}
             />
             {!isPlaying && !prefersReducedMotion ? (
               <button

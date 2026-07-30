@@ -53,6 +53,8 @@ export type EventRichContentBlock =
       src: string;
       alt?: string;
       caption?: string;
+      width?: number;
+      height?: number;
     }
   | {
       type: "video";

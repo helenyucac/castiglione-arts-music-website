@@ -106,6 +106,8 @@ export function EventRichContent({ blocks }: EventRichContentProps) {
               <img
                 src={block.src}
                 alt={block.alt ?? block.caption ?? ""}
+                width={block.width}
+                height={block.height}
                 className="block h-auto w-full max-w-full"
                 loading="lazy"
               />

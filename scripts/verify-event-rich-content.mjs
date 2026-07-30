@@ -97,6 +97,22 @@ const mockWixRichContent = {
       },
     },
     {
+      type: "IMAGE",
+      imageData: {
+        image: {
+          src: {
+            id: "8bb438_2a22b3e85bb1434e81f6fbd4878fb4ae.jpg",
+          },
+          width: 5600,
+          height: 3728,
+        },
+        altText: "Ricos image id",
+        caption: {
+          nodes: [{ type: "TEXT", textData: { text: "Ricos image caption" } }],
+        },
+      },
+    },
+    {
       type: "VIDEO",
       videoData: {
         video: "wix:video://v1/mock-rich-video/1080p/mp4/file.mp4",
@@ -132,16 +148,27 @@ assert.equal(normalizeRichEventDescription(fieldsWithRichContent)?.[0]?.type, "h
 assert.equal(normalizeRichEventDescription(fieldsWithRichContent)?.some((block) => block.type === "image"), true);
 assert.equal(normalizeRichEventDescription(fieldsWithRichContent)?.some((block) => block.type === "video"), true);
 assert.equal(normalizeRichEventDescription(fieldsWithRichContent)?.some((block) => block.type === "list"), true);
-assert.equal(normalizeRichEventDescription(fieldsWithLowercaseKey)?.length, 8);
+assert.equal(normalizeRichEventDescription(fieldsWithLowercaseKey)?.length, 9);
 assert.equal(normalizeRichEventDescription(fieldsWithoutRichContent), undefined);
 assert.equal(normalizeRichEventDescription(malformedFields), undefined);
 assert.equal(hasVisibleRichContent(normalizeRichEventDescription(fieldsWithRichContent)), true);
 
 const imageBlock = normalizeRichEventDescription(fieldsWithRichContent)?.find((block) => block.type === "image");
+const ricosImageBlock = normalizeRichEventDescription(fieldsWithRichContent)
+  ?.filter((block) => block.type === "image")
+  .at(1);
 const videoBlock = normalizeRichEventDescription(fieldsWithRichContent)?.find((block) => block.type === "video");
 assert.equal(imageBlock?.src, "https://static.wixstatic.com/media/mock-rich-image.jpg");
 assert.equal(imageBlock?.alt, "Concert rehearsal");
 assert.equal(imageBlock?.caption, "Rehearsal image caption");
+assert.equal(
+  ricosImageBlock?.src,
+  "https://static.wixstatic.com/media/8bb438_2a22b3e85bb1434e81f6fbd4878fb4ae.jpg",
+);
+assert.equal(ricosImageBlock?.width, 5600);
+assert.equal(ricosImageBlock?.height, 3728);
+assert.equal(ricosImageBlock?.alt, "Ricos image id");
+assert.equal(ricosImageBlock?.caption, "Ricos image caption");
 assert.equal(videoBlock?.src, "https://video.wixstatic.com/video/mock-rich-video/1080p/mp4/file.mp4");
 
 console.log(
@@ -154,6 +181,7 @@ console.log(
       fallbackWhenMalformed: normalizeRichEventDescription(malformedFields) === undefined,
       imageSrc: imageBlock?.src,
       imageCaption: imageBlock?.caption,
+      ricosImageSrc: ricosImageBlock?.src,
       videoSrc: videoBlock?.src,
     },
     null,

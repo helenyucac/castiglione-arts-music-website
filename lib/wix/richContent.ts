@@ -37,6 +37,19 @@ function optionalString(value: unknown) {
   return text;
 }
 
+function optionalNumber(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : undefined;
+  }
+
+  return undefined;
+}
+
 function parsePossiblyJsonValue(value: string): unknown {
   const text = value.trim();
 
@@ -219,9 +232,40 @@ function mediaValueSources(value: WixRecordFields) {
   ];
 }
 
+function wixImageMediaIdToStaticUrl(value: unknown) {
+  const mediaId = optionalString(value);
+
+  if (!mediaId || !/\.(?:avif|gif|jpe?g|png|svg|webp)$/i.test(mediaId)) {
+    return undefined;
+  }
+
+  return `https://static.wixstatic.com/media/${mediaId}`;
+}
+
+function getRicosMediaUrl(value: unknown): string | undefined {
+  const resolvedUrl = optionalMediaUrl(value);
+
+  if (resolvedUrl) {
+    return resolvedUrl;
+  }
+
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const src = value.src as WixRecordFields | undefined;
+
+  return wixImageMediaIdToStaticUrl(src?.id ?? value.id);
+}
+
 function getImageBlock(value: WixRecordFields): EventRichContentBlock | null {
   const imageData = value.imageData as WixRecordFields | undefined;
-  const src = mediaValueSources(value).map(optionalMediaUrl).find(Boolean);
+  const image = imageData?.image as WixRecordFields | undefined;
+  const imageSrc = image?.src as WixRecordFields | undefined;
+  const src =
+    getRicosMediaUrl(image) ??
+    getRicosMediaUrl(imageSrc) ??
+    mediaValueSources(value).map(optionalMediaUrl).find(Boolean);
 
   if (!src) {
     return null;
@@ -236,6 +280,8 @@ function getImageBlock(value: WixRecordFields): EventRichContentBlock | null {
   return {
     type: "image",
     src,
+    width: optionalNumber(image?.width ?? imageSrc?.width),
+    height: optionalNumber(image?.height ?? imageSrc?.height),
     alt:
       optionalString(imageData?.altText) ??
       optionalString(value.altText) ??

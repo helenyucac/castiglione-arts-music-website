@@ -81,6 +81,10 @@ function flattenRecord(value: unknown): WixRecordFields {
   };
 }
 
+function nestedRecord(value: unknown): WixRecordFields {
+  return flattenRecord(value);
+}
+
 async function wixFormsFetch(path: string, init: RequestInit = {}) {
   const config = getWixClientConfig();
   const response = await fetch(path, {
@@ -126,12 +130,39 @@ function getFormName(value: unknown) {
 }
 
 function getFieldOptions(value: WixRecordFields): WixSurveyFieldOption[] {
+  const inputOptions = nestedRecord(value.inputOptions);
+  const view = nestedRecord(value.view);
+  const fieldTypeData = nestedRecord(value.fieldTypeData);
+  const selectionOptions = nestedRecord(inputOptions.selectionOptions);
+  const checkboxGroupOptions = nestedRecord(inputOptions.checkboxGroupOptions);
+  const radioGroupOptions = nestedRecord(inputOptions.radioGroupOptions);
+  const dropdownOptions = nestedRecord(inputOptions.dropdownOptions);
+  const multiChoiceOptions = nestedRecord(inputOptions.multiChoiceOptions);
+  const stringOptions = nestedRecord(inputOptions.stringOptions);
   const optionSources = [
     value.options,
-    (value.view as WixRecordFields | undefined)?.options,
-    (value.fieldTypeData as WixRecordFields | undefined)?.options,
+    value.choices,
+    value.items,
+    view.options,
+    view.choices,
+    fieldTypeData.options,
+    fieldTypeData.choices,
+    inputOptions.options,
+    inputOptions.choices,
+    inputOptions.items,
+    selectionOptions.options,
+    selectionOptions.choices,
+    checkboxGroupOptions.options,
+    checkboxGroupOptions.choices,
+    radioGroupOptions.options,
+    radioGroupOptions.choices,
+    dropdownOptions.options,
+    dropdownOptions.choices,
+    multiChoiceOptions.options,
+    multiChoiceOptions.choices,
+    stringOptions.options,
   ];
-  const options = optionSources.find(Array.isArray);
+  const options = optionSources.find((source) => Array.isArray(source) && source.length > 0);
 
   if (!Array.isArray(options)) {
     return [];
@@ -151,6 +182,27 @@ function getFieldOptions(value: WixRecordFields): WixSurveyFieldOption[] {
 function normalizeFieldType(value: string) {
   const type = value.toUpperCase().replace(/[^A-Z0-9]+/g, "_");
 
+  if (
+    type.includes("CHECKBOX_GROUP") ||
+    type.includes("MULTI") ||
+    type.includes("MULTIPLE") ||
+    type.includes("TAGS")
+  ) {
+    return "MULTIPLE_CHOICE";
+  }
+
+  if (type.includes("DROPDOWN") || type.includes("SELECT")) {
+    return "DROPDOWN";
+  }
+
+  if (type.includes("RADIO")) {
+    return "RADIO_GROUP";
+  }
+
+  if (type.includes("SINGLE_CHOICE")) {
+    return "SINGLE_CHOICE";
+  }
+
   if (type.includes("EMAIL")) {
     return "EMAIL";
   }
@@ -161,18 +213,6 @@ function normalizeFieldType(value: string) {
 
   if (type.includes("LONG") || type.includes("TEXT_AREA") || type.includes("TEXTAREA")) {
     return "LONG_TEXT";
-  }
-
-  if (type.includes("MULTIPLE") || type.includes("CHECKBOX_GROUP")) {
-    return "MULTIPLE_CHOICE";
-  }
-
-  if (type.includes("DROPDOWN") || type.includes("SELECT")) {
-    return "DROPDOWN";
-  }
-
-  if (type.includes("RADIO") || type.includes("SINGLE")) {
-    return "SINGLE_CHOICE";
   }
 
   if (type.includes("CHECKBOX") || type.includes("BOOLEAN")) {
@@ -190,25 +230,103 @@ function normalizeFieldType(value: string) {
   return type || "STRING";
 }
 
-function normalizeSurveyField(value: unknown): WixSurveyField | null {
-  const fields = flattenRecord(value);
-  const view = flattenRecord(fields.view);
-  const validation = flattenRecord(fields.validation);
-  const predefined = flattenRecord(validation.predefined);
-  const key = textValue(
-    fields.target ??
+function getFieldTypeCandidates(fields: WixRecordFields) {
+  const view = nestedRecord(fields.view);
+  const inputOptions = nestedRecord(fields.inputOptions);
+  const validation = nestedRecord(fields.validation);
+  const predefined = nestedRecord(validation.predefined);
+  const displayOptions = nestedRecord(fields.displayOptions);
+
+  return [
+    fields.type,
+    fields.fieldType,
+    fields.identifier,
+    view.type,
+    inputOptions.inputType,
+    inputOptions.type,
+    displayOptions.displayFieldType,
+    predefined.format,
+  ]
+    .map(textValue)
+    .filter(Boolean)
+    .join(" ");
+}
+
+function getFieldLabel(fields: WixRecordFields) {
+  const view = nestedRecord(fields.view);
+  const inputOptions = nestedRecord(fields.inputOptions);
+  const label = nestedRecord(inputOptions.label);
+
+  return textValue(
+    fields.label ??
+      view.label ??
+      inputOptions.label ??
+      label.text ??
+      label.value ??
+      fields.title ??
+      fields.name,
+  );
+}
+
+function getFieldKey(fields: WixRecordFields) {
+  const inputOptions = nestedRecord(fields.inputOptions);
+
+  return textValue(
+    inputOptions.target ??
+      fields.target ??
       fields.key ??
       fields.fieldKey ??
       fields.name ??
       fields.id,
   );
-  const id = textValue(fields.id ?? key);
-  const label = textValue(fields.label ?? view.label ?? fields.title ?? key);
-  const type = normalizeFieldType(
-    textValue(fields.type ?? fields.fieldType ?? view.type ?? predefined.format),
-  );
+}
 
-  if (!id || !key || !label) {
+function isDeletedField(fields: WixRecordFields, deletedFieldIds: Set<string>) {
+  const id = textValue(fields.id ?? fields._id);
+
+  return (
+    deletedFieldIds.has(id) ||
+    booleanValue(fields.deleted) ||
+    booleanValue(fields.isDeleted) ||
+    booleanValue(fields.softDeleted)
+  );
+}
+
+function isSystemOrDisplayField(fields: WixRecordFields) {
+  const fieldTypeText = getFieldTypeCandidates(fields).toUpperCase();
+  const identifier = textValue(fields.identifier).toUpperCase();
+
+  return (
+    fieldTypeText.includes("DISPLAY") ||
+    fieldTypeText.includes("SUBMIT") ||
+    identifier.includes("SUBMIT_BUTTON") ||
+    identifier.includes("PAGE_NAVIGATION") ||
+    identifier.includes("RECAPTCHA") ||
+    identifier.includes("CAPTCHA")
+  );
+}
+
+function normalizeSurveyField(
+  value: unknown,
+  deletedFieldIds = new Set<string>(),
+): WixSurveyField | null {
+  const fields = flattenRecord(value);
+  const view = nestedRecord(fields.view);
+  const inputOptions = nestedRecord(fields.inputOptions);
+  const validation = nestedRecord(fields.validation ?? inputOptions.validation);
+  const key = getFieldKey(fields);
+  const id = textValue(fields.id ?? key);
+  const label = getFieldLabel(fields) || key;
+  const options = getFieldOptions(fields);
+  const type = normalizeFieldType(getFieldTypeCandidates(fields));
+
+  if (
+    !id ||
+    !key ||
+    !label ||
+    isDeletedField(fields, deletedFieldIds) ||
+    isSystemOrDisplayField(fields)
+  ) {
     return null;
   }
 
@@ -216,10 +334,15 @@ function normalizeSurveyField(value: unknown): WixSurveyField | null {
     id,
     key,
     label,
-    type,
-    required: booleanValue(fields.required ?? validation.required ?? validation.mandatory),
+    type: options.length > 0 && type === "BOOLEAN" ? "MULTIPLE_CHOICE" : type,
+    required: booleanValue(
+      fields.required ??
+        inputOptions.required ??
+        validation.required ??
+        validation.mandatory,
+    ),
     hidden: booleanValue(fields.hidden ?? view.hidden),
-    options: getFieldOptions(fields),
+    options,
   };
 }
 
@@ -235,15 +358,101 @@ function getFormFieldArray(value: unknown): unknown[] {
   return [];
 }
 
-function normalizeSurveyForm(value: unknown, summary?: unknown): WixSurveyForm | null {
+function getDeletedFieldIdSet(value: unknown) {
+  const fields = flattenRecord(value);
+  const deletedFields = [
+    fields.deletedFields,
+    fields.deletedFormFields,
+  ].flatMap((candidate) => (Array.isArray(candidate) ? candidate : []));
+
+  return new Set(
+    deletedFields
+      .map((field) => textValue(flattenRecord(field).id ?? flattenRecord(field)._id))
+      .filter(Boolean),
+  );
+}
+
+function collectFieldIdsFromLayout(value: unknown, ids = new Set<string>()) {
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      collectFieldIdsFromLayout(item, ids);
+    }
+
+    return ids;
+  }
+
+  if (!isRecord(value)) {
+    return ids;
+  }
+
+  const fields = flattenRecord(value);
+  const fieldId = textValue(fields.fieldId ?? fields.formFieldId ?? fields.id);
+
+  if (fieldId) {
+    ids.add(fieldId);
+  }
+
+  for (const key of ["fields", "items", "rows", "columns", "sections", "steps", "layout"]) {
+    collectFieldIdsFromLayout(fields[key], ids);
+  }
+
+  return ids;
+}
+
+function getVisibleLayoutFieldIds(value: unknown) {
+  const fields = flattenRecord(value);
+  const ids = collectFieldIdsFromLayout(fields.steps);
+  return ids.size > 0 ? ids : collectFieldIdsFromLayout(fields.layout);
+}
+
+function getSummaryFieldMap(summary: unknown) {
+  const map = new Map<string, WixSurveyField>();
+
+  for (const field of getFormFieldArray(summary)) {
+    const normalizedField = normalizeSurveyField(field);
+
+    if (!normalizedField) {
+      continue;
+    }
+
+    map.set(normalizedField.id, normalizedField);
+    map.set(normalizedField.key, normalizedField);
+  }
+
+  return map;
+}
+
+export function normalizeSurveyForm(value: unknown, summary?: unknown): WixSurveyForm | null {
   const id = getFormId(value) || getFormId(summary);
   const name = getFormName(value) || getFormName(summary) || WHAT_SHOW_NEXT_FORM_NAME;
   const summaryFields = getFormFieldArray(summary);
   const formFields = getFormFieldArray(value);
-  const fields = (summaryFields.length > 0 ? summaryFields : formFields)
-    .map(normalizeSurveyField)
+  const deletedFieldIds = getDeletedFieldIdSet(value);
+  const visibleLayoutFieldIds = getVisibleLayoutFieldIds(value);
+  const summaryFieldMap = getSummaryFieldMap(summary);
+  const sourceFields = formFields.length > 0 ? formFields : summaryFields;
+  const fields = sourceFields
+    .filter((field) => {
+      if (visibleLayoutFieldIds.size === 0) {
+        return true;
+      }
+
+      const fieldId = textValue(flattenRecord(field).id ?? flattenRecord(field)._id);
+      return visibleLayoutFieldIds.has(fieldId);
+    })
+    .map((field) => normalizeSurveyField(field, deletedFieldIds))
     .filter((field): field is WixSurveyField => Boolean(field))
-    .filter((field) => !field.hidden);
+    .map((field) => {
+      const summaryField = summaryFieldMap.get(field.id) ?? summaryFieldMap.get(field.key);
+
+      return {
+        ...field,
+        label: summaryField?.label ?? field.label,
+        type: field.options.length > 0 ? field.type : summaryField?.type ?? field.type,
+      };
+    })
+    .filter((field) => !field.hidden)
+    .filter((field) => !(field.type === "MULTIPLE_CHOICE" && field.options.length === 0));
 
   if (!id) {
     return null;
@@ -299,6 +508,16 @@ async function getWixFormSummary(formId: string) {
   return payload.formSummary ?? payload.summary ?? null;
 }
 
+async function getWixForm(formId: string) {
+  const payload = await wixFormsFetch(`${WIX_FORM_SCHEMA_API_BASE_URL}/${formId}`);
+
+  if (!isRecord(payload)) {
+    return null;
+  }
+
+  return payload.form ?? payload;
+}
+
 async function resolveWhatShowNextFormId(forceRefresh = false) {
   if (!isWixConfigured()) {
     return null;
@@ -337,10 +556,13 @@ async function resolveWhatShowNextFormId(forceRefresh = false) {
 }
 
 async function getWhatShowNextFormById(formId: string) {
-  const summary = await getWixFormSummary(formId).catch(() => null);
+  const [form, summary] = await Promise.all([
+    getWixForm(formId).catch(() => null),
+    getWixFormSummary(formId).catch(() => null),
+  ]);
 
   return normalizeSurveyForm(
-    {
+    form ?? {
       id: formId,
       name: WHAT_SHOW_NEXT_FORM_NAME,
     },

@@ -79,7 +79,7 @@ function FieldControl({ field }: { field: WixSurveyField }) {
     );
   }
 
-  if (field.type === "DROPDOWN" || field.type === "SINGLE_CHOICE") {
+  if (field.type === "DROPDOWN") {
     return (
       <select
         id={field.id}
@@ -97,6 +97,29 @@ function FieldControl({ field }: { field: WixSurveyField }) {
           </option>
         ))}
       </select>
+    );
+  }
+
+  if (field.type === "SINGLE_CHOICE" || field.type === "RADIO_GROUP") {
+    return (
+      <div className="mt-4 grid gap-3" role="radiogroup" aria-required={field.required}>
+        {field.options.map((option) => (
+          <label
+            key={option.value}
+            className="flex items-start gap-3 text-[15px] leading-[24px] text-[rgba(17,17,17,0.78)]"
+            style={interFont}
+          >
+            <input
+              type="radio"
+              name={field.key}
+              value={option.value}
+              required={field.required}
+              className="mt-1 size-4 shrink-0 accent-[#111111]"
+            />
+            <span>{option.label}</span>
+          </label>
+        ))}
+      </div>
     );
   }
 

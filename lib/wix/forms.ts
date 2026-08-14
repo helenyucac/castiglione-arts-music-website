@@ -7,7 +7,6 @@ const WIX_FORM_SUBMISSION_API_URL =
   "https://www.wixapis.com/form-submission-service/v4/submissions";
 const WHAT_SHOW_NEXT_FORM_NAME = "What show next?";
 const FORM_NOT_FOUND_STATUS = 404;
-const WIX_FORMS_DEBUG_PREFIX = "What Show Next Wix Forms lookup";
 
 export type WixSurveyFieldOption = {
   label: string;
@@ -44,23 +43,6 @@ class WixFormsApiError extends Error {
 
 let cachedWhatShowNextFormId: string | null = null;
 let pendingWhatShowNextFormIdLookup: Promise<string | null> | null = null;
-
-function logWixFormsDebug(message: string, details?: Record<string, unknown>) {
-  console.info(WIX_FORMS_DEBUG_PREFIX, {
-    message,
-    ...details,
-  });
-}
-
-function logWixFormsError(message: string, error: unknown, details?: Record<string, unknown>) {
-  console.error(WIX_FORMS_DEBUG_PREFIX, {
-    message,
-    ...details,
-    errorName: error instanceof Error ? error.name : "UnknownError",
-    errorMessage: error instanceof Error ? error.message : String(error),
-    status: error instanceof WixFormsApiError ? error.status : undefined,
-  });
-}
 
 function isRecord(value: unknown): value is WixRecordFields {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -103,7 +85,7 @@ function nestedRecord(value: unknown): WixRecordFields {
   return flattenRecord(value);
 }
 
-async function wixFormsFetch(path: string, init: RequestInit = {}, debugLabel = "request") {
+async function wixFormsFetch(path: string, init: RequestInit = {}) {
   const config = getWixClientConfig();
   const response = await fetch(path, {
     ...init,
@@ -117,19 +99,7 @@ async function wixFormsFetch(path: string, init: RequestInit = {}, debugLabel = 
   });
   const responseText = await response.text();
 
-  logWixFormsDebug("Wix Forms API response", {
-    request: debugLabel,
-    status: response.status,
-    ok: response.ok,
-  });
-
   if (!response.ok) {
-    logWixFormsDebug("Wix Forms API error response", {
-      request: debugLabel,
-      status: response.status,
-      responseBodyPreview: responseText.slice(0, 500),
-    });
-
     throw new WixFormsApiError(
       `Wix Forms API request failed: ${response.status} ${response.statusText}${
         responseText ? ` ${responseText.slice(0, 500)}` : ""
@@ -157,19 +127,6 @@ function getFormId(value: unknown) {
 function getFormName(value: unknown) {
   const fields = flattenRecord(value);
   return textValue(fields.name ?? fields.displayName ?? fields.title);
-}
-
-function getFormDisplayName(value: unknown) {
-  const fields = flattenRecord(value);
-  return textValue(fields.displayName ?? fields.name ?? fields.title);
-}
-
-function summarizeForm(value: unknown) {
-  return {
-    id: getFormId(value),
-    displayName: getFormDisplayName(value),
-    name: getFormName(value),
-  };
 }
 
 function getFieldOptions(value: WixRecordFields): WixSurveyFieldOption[] {
@@ -465,6 +422,44 @@ function getSummaryFieldMap(summary: unknown) {
   return map;
 }
 
+function isLikelySurveyChoiceField(field: WixSurveyField) {
+  const label = normalizeLookupText(field.label);
+
+  return (
+    field.options.length > 0 &&
+    (field.type === "MULTIPLE_CHOICE" ||
+      field.type === "RADIO_GROUP" ||
+      field.type === "SINGLE_CHOICE" ||
+      field.type === "DROPDOWN") &&
+    (label.includes("chooseyournextliveexperience") ||
+      label.includes("selectallthatapply") ||
+      field.options.length >= 3)
+  );
+}
+
+function isLikelySurveyEmailField(field: WixSurveyField) {
+  const key = normalizeLookupText(field.key);
+  const label = normalizeLookupText(field.label);
+
+  return field.type === "EMAIL" || key === "email" || label === "email";
+}
+
+function selectWhatShowNextFields(fields: WixSurveyField[]) {
+  const choiceField =
+    fields.find((field) => isLikelySurveyChoiceField(field) && field.required) ??
+    fields.find(isLikelySurveyChoiceField);
+  const emailField = fields.find(isLikelySurveyEmailField);
+  const selectedFields: WixSurveyField[] = [];
+
+  for (const field of [choiceField, emailField]) {
+    if (field && !selectedFields.some((selectedField) => selectedField.key === field.key)) {
+      selectedFields.push(field);
+    }
+  }
+
+  return selectedFields;
+}
+
 export function normalizeSurveyForm(value: unknown, summary?: unknown): WixSurveyForm | null {
   const id = getFormId(value) || getFormId(summary);
   const name = getFormName(value) || getFormName(summary) || WHAT_SHOW_NEXT_FORM_NAME;
@@ -474,15 +469,7 @@ export function normalizeSurveyForm(value: unknown, summary?: unknown): WixSurve
   const visibleLayoutFieldIds = getVisibleLayoutFieldIds(value);
   const summaryFieldMap = getSummaryFieldMap(summary);
   const sourceFields = formFields.length > 0 ? formFields : summaryFields;
-  const fields = sourceFields
-    .filter((field) => {
-      if (visibleLayoutFieldIds.size === 0) {
-        return true;
-      }
-
-      const fieldId = textValue(flattenRecord(field).id ?? flattenRecord(field)._id);
-      return visibleLayoutFieldIds.has(fieldId);
-    })
+  const candidateFields = sourceFields
     .map((field) => normalizeSurveyField(field, deletedFieldIds))
     .filter((field): field is WixSurveyField => Boolean(field))
     .map((field) => {
@@ -496,6 +483,13 @@ export function normalizeSurveyForm(value: unknown, summary?: unknown): WixSurve
     })
     .filter((field) => !field.hidden)
     .filter((field) => !(field.type === "MULTIPLE_CHOICE" && field.options.length === 0));
+  const layoutFields =
+    visibleLayoutFieldIds.size > 0
+      ? candidateFields.filter((field) => visibleLayoutFieldIds.has(field.id))
+      : candidateFields;
+  const fields = selectWhatShowNextFields(
+    layoutFields.length > 0 ? layoutFields : candidateFields,
+  );
 
   if (!id) {
     return null;
@@ -514,62 +508,35 @@ async function listWixForms() {
   url.searchParams.set("paging.limit", "100");
   url.searchParams.set("enabled", "true");
 
-  const forms = getFormsArray(await wixFormsFetch(url.toString(), {}, "list forms"));
-
-  logWixFormsDebug("Wix Forms API returned available forms", {
-    searchName: WHAT_SHOW_NEXT_FORM_NAME,
-    forms: forms.map(summarizeForm),
-  });
-
-  return forms;
+  return getFormsArray(await wixFormsFetch(url.toString()));
 }
 
 async function queryWixFormsByName(name: string) {
-  logWixFormsDebug("Searching Wix form by exact name", {
-    searchName: name,
-    normalizedSearchName: normalizeLookupText(name),
-  });
-
-  const payload = await wixFormsFetch(
-    `${WIX_FORM_SCHEMA_API_BASE_URL}/query`,
-    {
-      method: "POST",
-      body: JSON.stringify({
-        namespace: WIX_FORMS_NAMESPACE,
-        query: {
-          filter: {
-            name: {
-              $eq: name,
-            },
-            namespace: {
-              $eq: WIX_FORMS_NAMESPACE,
-            },
+  const payload = await wixFormsFetch(`${WIX_FORM_SCHEMA_API_BASE_URL}/query`, {
+    method: "POST",
+    body: JSON.stringify({
+      namespace: WIX_FORMS_NAMESPACE,
+      query: {
+        filter: {
+          name: {
+            $eq: name,
           },
-          paging: {
-            limit: 100,
+          namespace: {
+            $eq: WIX_FORMS_NAMESPACE,
           },
         },
-      }),
-    },
-    "query forms by name",
-  );
-
-  const forms = getFormsArray(payload);
-
-  logWixFormsDebug("Wix Forms query returned forms", {
-    searchName: name,
-    forms: forms.map(summarizeForm),
+        paging: {
+          limit: 100,
+        },
+      },
+    }),
   });
 
-  return forms;
+  return getFormsArray(payload);
 }
 
 async function getWixFormSummary(formId: string) {
-  const payload = await wixFormsFetch(
-    `${WIX_FORM_SCHEMA_API_BASE_URL}/${formId}/summary`,
-    {},
-    "get form summary",
-  );
+  const payload = await wixFormsFetch(`${WIX_FORM_SCHEMA_API_BASE_URL}/${formId}/summary`);
 
   if (!isRecord(payload)) {
     return null;
@@ -579,43 +546,21 @@ async function getWixFormSummary(formId: string) {
 }
 
 async function getWixForm(formId: string) {
-  const payload = await wixFormsFetch(
-    `${WIX_FORM_SCHEMA_API_BASE_URL}/${formId}`,
-    {},
-    "get form schema",
-  );
+  const payload = await wixFormsFetch(`${WIX_FORM_SCHEMA_API_BASE_URL}/${formId}`);
 
   if (!isRecord(payload)) {
-    logWixFormsDebug("Wix form schema request returned non-object payload", {
-      formId,
-    });
     return null;
   }
 
-  const form = payload.form ?? payload;
-
-  logWixFormsDebug("Wix form schema request succeeded", {
-    formId,
-    form: summarizeForm(form),
-    fieldCount: getFormFieldArray(form).length,
-  });
-
-  return form;
+  return payload.form ?? payload;
 }
 
 async function resolveWhatShowNextFormId(forceRefresh = false) {
   if (!isWixConfigured()) {
-    logWixFormsDebug("Wix is not configured; cannot resolve form", {
-      searchName: WHAT_SHOW_NEXT_FORM_NAME,
-    });
     return null;
   }
 
   if (!forceRefresh && cachedWhatShowNextFormId) {
-    logWixFormsDebug("Using cached Wix form id", {
-      searchName: WHAT_SHOW_NEXT_FORM_NAME,
-      formId: cachedWhatShowNextFormId,
-    });
     return cachedWhatShowNextFormId;
   }
 
@@ -630,12 +575,7 @@ async function resolveWhatShowNextFormId(forceRefresh = false) {
 
   const normalizedTargetName = normalizeLookupText(WHAT_SHOW_NEXT_FORM_NAME);
   pendingWhatShowNextFormIdLookup = queryWixFormsByName(WHAT_SHOW_NEXT_FORM_NAME)
-    .catch((error) => {
-      logWixFormsError("Exact Wix form name query failed; falling back to list forms", error, {
-        searchName: WHAT_SHOW_NEXT_FORM_NAME,
-      });
-      return listWixForms();
-    })
+    .catch(() => listWixForms())
     .then((forms) => {
       const matchingForm = forms.find(
         (form) => normalizeLookupText(getFormName(form)) === normalizedTargetName,
@@ -643,20 +583,6 @@ async function resolveWhatShowNextFormId(forceRefresh = false) {
       const formId = matchingForm ? getFormId(matchingForm) : "";
 
       cachedWhatShowNextFormId = formId || null;
-
-      if (matchingForm) {
-        logWixFormsDebug("Matched Wix form", {
-          searchName: WHAT_SHOW_NEXT_FORM_NAME,
-          matchedForm: summarizeForm(matchingForm),
-        });
-      } else {
-        logWixFormsDebug("No matching Wix form found", {
-          searchName: WHAT_SHOW_NEXT_FORM_NAME,
-          normalizedSearchName: normalizedTargetName,
-          availableForms: forms.map(summarizeForm),
-        });
-      }
-
       return cachedWhatShowNextFormId;
     })
     .finally(() => {

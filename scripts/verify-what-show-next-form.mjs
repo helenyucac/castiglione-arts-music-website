@@ -11,7 +11,7 @@ const form = {
       inputOptions: {
         target: "chooseYourNextLiveExperience",
         label: {
-          text: "Choose your next live experience (Select all that apply)",
+          text: "Wix choice field",
         },
         inputType: "CHECKBOX_GROUP",
         required: true,
@@ -80,10 +80,10 @@ const form = {
   layout: {
     items: [
       {
-        fieldId: "shows-field",
+        fieldId: "not-the-real-choice-field-id",
       },
       {
-        fieldId: "email-field",
+        fieldId: "not-the-real-email-field-id",
       },
     ],
   },
@@ -96,7 +96,7 @@ const summary = {
     {
       id: "shows-field",
       key: "chooseYourNextLiveExperience",
-      label: "Choose your next live experience (Select all that apply)",
+      label: "Summary label should not be required for choice detection",
       type: "TEXT",
       required: true,
     },
@@ -128,6 +128,7 @@ assert.deepEqual(
 const checkboxField = normalized.fields[0];
 assert.equal(checkboxField.type, "MULTIPLE_CHOICE");
 assert.equal(checkboxField.required, true);
+assert.equal(checkboxField.label, "Wix choice field");
 assert.equal(checkboxField.options.length, 3);
 assert.deepEqual(
   checkboxField.options.map((option) => option.label),
@@ -166,6 +167,28 @@ assert.deepEqual(submittedValues.chooseYourNextLiveExperience, [
   "my-hero-academia-in-concert",
   "jujutsu-kaisen-in-concert",
 ]);
+
+assert.throws(
+  () =>
+    normalizeSurveyForm({
+      id: "broken-form",
+      name: "What show next?",
+      fields: [
+        {
+          id: "email-field",
+          inputOptions: {
+            target: "email",
+            label: {
+              text: "Email",
+            },
+            inputType: "EMAIL",
+            required: true,
+          },
+        },
+      ],
+    }),
+  /no field with options/,
+);
 
 console.log("What Show Next form verification passed", {
   fields: normalized.fields.map((field) => ({

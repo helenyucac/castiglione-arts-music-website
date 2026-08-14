@@ -260,9 +260,9 @@ function getFieldLabel(fields: WixRecordFields) {
   return textValue(
     fields.label ??
       view.label ??
-      inputOptions.label ??
       label.text ??
       label.value ??
+      inputOptions.label ??
       fields.title ??
       fields.name,
   );
@@ -372,39 +372,6 @@ function getDeletedFieldIdSet(value: unknown) {
   );
 }
 
-function collectFieldIdsFromLayout(value: unknown, ids = new Set<string>()) {
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      collectFieldIdsFromLayout(item, ids);
-    }
-
-    return ids;
-  }
-
-  if (!isRecord(value)) {
-    return ids;
-  }
-
-  const fields = flattenRecord(value);
-  const fieldId = textValue(fields.fieldId ?? fields.formFieldId ?? fields.id);
-
-  if (fieldId) {
-    ids.add(fieldId);
-  }
-
-  for (const key of ["fields", "items", "rows", "columns", "sections", "steps", "layout"]) {
-    collectFieldIdsFromLayout(fields[key], ids);
-  }
-
-  return ids;
-}
-
-function getVisibleLayoutFieldIds(value: unknown) {
-  const fields = flattenRecord(value);
-  const ids = collectFieldIdsFromLayout(fields.steps);
-  return ids.size > 0 ? ids : collectFieldIdsFromLayout(fields.layout);
-}
-
 function getSummaryFieldMap(summary: unknown) {
   const map = new Map<string, WixSurveyField>();
 
@@ -422,39 +389,54 @@ function getSummaryFieldMap(summary: unknown) {
   return map;
 }
 
-function isLikelySurveyChoiceField(field: WixSurveyField) {
-  const label = normalizeLookupText(field.label);
+function normalizeSurveyChoiceField(value: unknown): WixSurveyField | null {
+  const fields = flattenRecord(value);
+  const inputOptions = nestedRecord(fields.inputOptions);
+  const validation = nestedRecord(fields.validation ?? inputOptions.validation);
+  const key = getFieldKey(fields);
+  const id = textValue(fields.id ?? key);
+  const label = getFieldLabel(fields) || key;
+  const options = getFieldOptions(fields);
 
-  return (
-    field.options.length > 0 &&
-    (field.type === "MULTIPLE_CHOICE" ||
-      field.type === "RADIO_GROUP" ||
-      field.type === "SINGLE_CHOICE" ||
-      field.type === "DROPDOWN") &&
-    (label.includes("chooseyournextliveexperience") ||
-      label.includes("selectallthatapply") ||
-      field.options.length >= 3)
-  );
+  if (!id || !key || !label || options.length === 0) {
+    return null;
+  }
+
+  return {
+    id,
+    key,
+    label,
+    type: "MULTIPLE_CHOICE",
+    required: booleanValue(
+      fields.required ??
+        inputOptions.required ??
+        validation.required ??
+        validation.mandatory,
+    ),
+    hidden: false,
+    options,
+  };
 }
 
-function isLikelySurveyEmailField(field: WixSurveyField) {
-  const key = normalizeLookupText(field.key);
-  const label = normalizeLookupText(field.label);
+function normalizeSurveyEmailField(value: unknown): WixSurveyField | null {
+  const field = normalizeSurveyField(value);
 
-  return field.type === "EMAIL" || key === "email" || label === "email";
+  return field?.type === "EMAIL" ? field : null;
 }
 
-function selectWhatShowNextFields(fields: WixSurveyField[]) {
-  const choiceField =
-    fields.find((field) => isLikelySurveyChoiceField(field) && field.required) ??
-    fields.find(isLikelySurveyChoiceField);
-  const emailField = fields.find(isLikelySurveyEmailField);
+function selectWhatShowNextFields(sourceFields: unknown[]) {
+  const choiceField = sourceFields.map(normalizeSurveyChoiceField).find(Boolean);
+  const emailField = sourceFields.map(normalizeSurveyEmailField).find(Boolean);
   const selectedFields: WixSurveyField[] = [];
 
   for (const field of [choiceField, emailField]) {
     if (field && !selectedFields.some((selectedField) => selectedField.key === field.key)) {
       selectedFields.push(field);
     }
+  }
+
+  if (!choiceField) {
+    throw new Error("The What show next? Wix form schema has no field with options.");
   }
 
   return selectedFields;
@@ -466,10 +448,9 @@ export function normalizeSurveyForm(value: unknown, summary?: unknown): WixSurve
   const summaryFields = getFormFieldArray(summary);
   const formFields = getFormFieldArray(value);
   const deletedFieldIds = getDeletedFieldIdSet(value);
-  const visibleLayoutFieldIds = getVisibleLayoutFieldIds(value);
   const summaryFieldMap = getSummaryFieldMap(summary);
   const sourceFields = formFields.length > 0 ? formFields : summaryFields;
-  const candidateFields = sourceFields
+  const normalizedFields = sourceFields
     .map((field) => normalizeSurveyField(field, deletedFieldIds))
     .filter((field): field is WixSurveyField => Boolean(field))
     .map((field) => {
@@ -483,12 +464,8 @@ export function normalizeSurveyForm(value: unknown, summary?: unknown): WixSurve
     })
     .filter((field) => !field.hidden)
     .filter((field) => !(field.type === "MULTIPLE_CHOICE" && field.options.length === 0));
-  const layoutFields =
-    visibleLayoutFieldIds.size > 0
-      ? candidateFields.filter((field) => visibleLayoutFieldIds.has(field.id))
-      : candidateFields;
   const fields = selectWhatShowNextFields(
-    layoutFields.length > 0 ? layoutFields : candidateFields,
+    formFields.length > 0 ? sourceFields : normalizedFields,
   );
 
   if (!id) {

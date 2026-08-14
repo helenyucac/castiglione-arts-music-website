@@ -7,6 +7,7 @@ const WIX_FORM_SUBMISSION_API_URL =
   "https://www.wixapis.com/form-submission-service/v4/submissions";
 const WHAT_SHOW_NEXT_FORM_NAME = "What show next?";
 const FORM_NOT_FOUND_STATUS = 404;
+const WIX_FORMS_DEBUG_PREFIX = "What Show Next Wix Forms lookup";
 
 export type WixSurveyFieldOption = {
   label: string;
@@ -43,6 +44,23 @@ class WixFormsApiError extends Error {
 
 let cachedWhatShowNextFormId: string | null = null;
 let pendingWhatShowNextFormIdLookup: Promise<string | null> | null = null;
+
+function logWixFormsDebug(message: string, details?: Record<string, unknown>) {
+  console.info(WIX_FORMS_DEBUG_PREFIX, {
+    message,
+    ...details,
+  });
+}
+
+function logWixFormsError(message: string, error: unknown, details?: Record<string, unknown>) {
+  console.error(WIX_FORMS_DEBUG_PREFIX, {
+    message,
+    ...details,
+    errorName: error instanceof Error ? error.name : "UnknownError",
+    errorMessage: error instanceof Error ? error.message : String(error),
+    status: error instanceof WixFormsApiError ? error.status : undefined,
+  });
+}
 
 function isRecord(value: unknown): value is WixRecordFields {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -85,7 +103,7 @@ function nestedRecord(value: unknown): WixRecordFields {
   return flattenRecord(value);
 }
 
-async function wixFormsFetch(path: string, init: RequestInit = {}) {
+async function wixFormsFetch(path: string, init: RequestInit = {}, debugLabel = "request") {
   const config = getWixClientConfig();
   const response = await fetch(path, {
     ...init,
@@ -99,7 +117,19 @@ async function wixFormsFetch(path: string, init: RequestInit = {}) {
   });
   const responseText = await response.text();
 
+  logWixFormsDebug("Wix Forms API response", {
+    request: debugLabel,
+    status: response.status,
+    ok: response.ok,
+  });
+
   if (!response.ok) {
+    logWixFormsDebug("Wix Forms API error response", {
+      request: debugLabel,
+      status: response.status,
+      responseBodyPreview: responseText.slice(0, 500),
+    });
+
     throw new WixFormsApiError(
       `Wix Forms API request failed: ${response.status} ${response.statusText}${
         responseText ? ` ${responseText.slice(0, 500)}` : ""
@@ -127,6 +157,19 @@ function getFormId(value: unknown) {
 function getFormName(value: unknown) {
   const fields = flattenRecord(value);
   return textValue(fields.name ?? fields.displayName ?? fields.title);
+}
+
+function getFormDisplayName(value: unknown) {
+  const fields = flattenRecord(value);
+  return textValue(fields.displayName ?? fields.name ?? fields.title);
+}
+
+function summarizeForm(value: unknown) {
+  return {
+    id: getFormId(value),
+    displayName: getFormDisplayName(value),
+    name: getFormName(value),
+  };
 }
 
 function getFieldOptions(value: WixRecordFields): WixSurveyFieldOption[] {
@@ -471,35 +514,62 @@ async function listWixForms() {
   url.searchParams.set("paging.limit", "100");
   url.searchParams.set("enabled", "true");
 
-  return getFormsArray(await wixFormsFetch(url.toString()));
+  const forms = getFormsArray(await wixFormsFetch(url.toString(), {}, "list forms"));
+
+  logWixFormsDebug("Wix Forms API returned available forms", {
+    searchName: WHAT_SHOW_NEXT_FORM_NAME,
+    forms: forms.map(summarizeForm),
+  });
+
+  return forms;
 }
 
 async function queryWixFormsByName(name: string) {
-  const payload = await wixFormsFetch(`${WIX_FORM_SCHEMA_API_BASE_URL}/query`, {
-    method: "POST",
-    body: JSON.stringify({
-      namespace: WIX_FORMS_NAMESPACE,
-      query: {
-        filter: {
-          name: {
-            $eq: name,
-          },
-          namespace: {
-            $eq: WIX_FORMS_NAMESPACE,
-          },
-        },
-        paging: {
-          limit: 100,
-        },
-      },
-    }),
+  logWixFormsDebug("Searching Wix form by exact name", {
+    searchName: name,
+    normalizedSearchName: normalizeLookupText(name),
   });
 
-  return getFormsArray(payload);
+  const payload = await wixFormsFetch(
+    `${WIX_FORM_SCHEMA_API_BASE_URL}/query`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        namespace: WIX_FORMS_NAMESPACE,
+        query: {
+          filter: {
+            name: {
+              $eq: name,
+            },
+            namespace: {
+              $eq: WIX_FORMS_NAMESPACE,
+            },
+          },
+          paging: {
+            limit: 100,
+          },
+        },
+      }),
+    },
+    "query forms by name",
+  );
+
+  const forms = getFormsArray(payload);
+
+  logWixFormsDebug("Wix Forms query returned forms", {
+    searchName: name,
+    forms: forms.map(summarizeForm),
+  });
+
+  return forms;
 }
 
 async function getWixFormSummary(formId: string) {
-  const payload = await wixFormsFetch(`${WIX_FORM_SCHEMA_API_BASE_URL}/${formId}/summary`);
+  const payload = await wixFormsFetch(
+    `${WIX_FORM_SCHEMA_API_BASE_URL}/${formId}/summary`,
+    {},
+    "get form summary",
+  );
 
   if (!isRecord(payload)) {
     return null;
@@ -509,21 +579,43 @@ async function getWixFormSummary(formId: string) {
 }
 
 async function getWixForm(formId: string) {
-  const payload = await wixFormsFetch(`${WIX_FORM_SCHEMA_API_BASE_URL}/${formId}`);
+  const payload = await wixFormsFetch(
+    `${WIX_FORM_SCHEMA_API_BASE_URL}/${formId}`,
+    {},
+    "get form schema",
+  );
 
   if (!isRecord(payload)) {
+    logWixFormsDebug("Wix form schema request returned non-object payload", {
+      formId,
+    });
     return null;
   }
 
-  return payload.form ?? payload;
+  const form = payload.form ?? payload;
+
+  logWixFormsDebug("Wix form schema request succeeded", {
+    formId,
+    form: summarizeForm(form),
+    fieldCount: getFormFieldArray(form).length,
+  });
+
+  return form;
 }
 
 async function resolveWhatShowNextFormId(forceRefresh = false) {
   if (!isWixConfigured()) {
+    logWixFormsDebug("Wix is not configured; cannot resolve form", {
+      searchName: WHAT_SHOW_NEXT_FORM_NAME,
+    });
     return null;
   }
 
   if (!forceRefresh && cachedWhatShowNextFormId) {
+    logWixFormsDebug("Using cached Wix form id", {
+      searchName: WHAT_SHOW_NEXT_FORM_NAME,
+      formId: cachedWhatShowNextFormId,
+    });
     return cachedWhatShowNextFormId;
   }
 
@@ -538,7 +630,12 @@ async function resolveWhatShowNextFormId(forceRefresh = false) {
 
   const normalizedTargetName = normalizeLookupText(WHAT_SHOW_NEXT_FORM_NAME);
   pendingWhatShowNextFormIdLookup = queryWixFormsByName(WHAT_SHOW_NEXT_FORM_NAME)
-    .catch(() => listWixForms())
+    .catch((error) => {
+      logWixFormsError("Exact Wix form name query failed; falling back to list forms", error, {
+        searchName: WHAT_SHOW_NEXT_FORM_NAME,
+      });
+      return listWixForms();
+    })
     .then((forms) => {
       const matchingForm = forms.find(
         (form) => normalizeLookupText(getFormName(form)) === normalizedTargetName,
@@ -546,6 +643,20 @@ async function resolveWhatShowNextFormId(forceRefresh = false) {
       const formId = matchingForm ? getFormId(matchingForm) : "";
 
       cachedWhatShowNextFormId = formId || null;
+
+      if (matchingForm) {
+        logWixFormsDebug("Matched Wix form", {
+          searchName: WHAT_SHOW_NEXT_FORM_NAME,
+          matchedForm: summarizeForm(matchingForm),
+        });
+      } else {
+        logWixFormsDebug("No matching Wix form found", {
+          searchName: WHAT_SHOW_NEXT_FORM_NAME,
+          normalizedSearchName: normalizedTargetName,
+          availableForms: forms.map(summarizeForm),
+        });
+      }
+
       return cachedWhatShowNextFormId;
     })
     .finally(() => {

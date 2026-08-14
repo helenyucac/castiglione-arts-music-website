@@ -418,15 +418,98 @@ function normalizeSurveyChoiceField(value: unknown): WixSurveyField | null {
   };
 }
 
-function normalizeSurveyEmailField(value: unknown): WixSurveyField | null {
-  const field = normalizeSurveyField(value);
+function hasEmailMetadata(value: unknown): boolean {
+  if (typeof value === "string") {
+    return value.toLowerCase().includes("email");
+  }
 
-  return field?.type === "EMAIL" ? field : null;
+  if (Array.isArray(value)) {
+    return value.some(hasEmailMetadata);
+  }
+
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return Object.entries(value).some(([key, fieldValue]) => {
+    if (key.toLowerCase().includes("email")) {
+      return true;
+    }
+
+    return hasEmailMetadata(fieldValue);
+  });
 }
 
-function selectWhatShowNextFields(sourceFields: unknown[]) {
+function hasExplicitEmailMetadata(fields: WixRecordFields) {
+  const view = nestedRecord(fields.view);
+  const inputOptions = nestedRecord(fields.inputOptions);
+  const validation = nestedRecord(fields.validation ?? inputOptions.validation);
+  const predefined = nestedRecord(validation.predefined);
+  const fieldTypeData = nestedRecord(fields.fieldTypeData);
+  const displayOptions = nestedRecord(fields.displayOptions);
+
+  return [
+    fields.type,
+    fields.fieldType,
+    fields.identifier,
+    view.type,
+    inputOptions.inputType,
+    inputOptions.type,
+    inputOptions.format,
+    inputOptions.emailOptions,
+    inputOptions.emailInputOptions,
+    inputOptions.emailConfig,
+    validation.format,
+    predefined.format,
+    fieldTypeData.type,
+    fieldTypeData.format,
+    displayOptions.displayFieldType,
+  ].some(hasEmailMetadata);
+}
+
+function hasEmailIdentity(fields: WixRecordFields) {
+  const key = getFieldKey(fields);
+  const id = textValue(fields.id ?? fields._id);
+  const label = getFieldLabel(fields);
+  const name = textValue(fields.name ?? fields.title);
+
+  return [key, id, label, name].some((value) => normalizeLookupText(value).includes("email"));
+}
+
+function normalizeSurveyEmailField(
+  value: unknown,
+  deletedFieldIds: Set<string>,
+  allowIdentityFallback: boolean,
+): WixSurveyField | null {
+  const fields = flattenRecord(value);
+  const view = nestedRecord(fields.view);
+
+  if (
+    isDeletedField(fields, deletedFieldIds) ||
+    isSystemOrDisplayField(fields) ||
+    booleanValue(fields.hidden ?? view.hidden)
+  ) {
+    return null;
+  }
+
+  if (!hasExplicitEmailMetadata(fields) && (!allowIdentityFallback || !hasEmailIdentity(fields))) {
+    return null;
+  }
+
+  const field = normalizeSurveyField(value, deletedFieldIds);
+
+  return field ? { ...field, type: "EMAIL", options: [] } : null;
+}
+
+function selectWhatShowNextFields(sourceFields: unknown[], deletedFieldIds: Set<string>) {
   const choiceField = sourceFields.map(normalizeSurveyChoiceField).find(Boolean);
-  const emailField = sourceFields.map(normalizeSurveyEmailField).find(Boolean);
+  const emailField =
+    sourceFields
+      .map((field) => normalizeSurveyEmailField(field, deletedFieldIds, false))
+      .find(Boolean) ??
+    sourceFields
+      .map((field) => normalizeSurveyEmailField(field, deletedFieldIds, true))
+      .find(Boolean);
   const selectedFields: WixSurveyField[] = [];
 
   for (const field of [choiceField, emailField]) {
@@ -466,6 +549,7 @@ export function normalizeSurveyForm(value: unknown, summary?: unknown): WixSurve
     .filter((field) => !(field.type === "MULTIPLE_CHOICE" && field.options.length === 0));
   const fields = selectWhatShowNextFields(
     formFields.length > 0 ? sourceFields : normalizedFields,
+    deletedFieldIds,
   );
 
   if (!id) {

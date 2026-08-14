@@ -40,8 +40,13 @@ const form = {
         label: {
           text: "Email",
         },
-        inputType: "EMAIL",
+        inputType: "TEXT",
         required: true,
+        validation: {
+          predefined: {
+            format: "email",
+          },
+        },
       },
     },
     {
@@ -189,6 +194,42 @@ assert.throws(
     }),
   /no field with options/,
 );
+
+const identityFallbackForm = normalizeSurveyForm({
+  id: "identity-email-form",
+  name: "What show next?",
+  fields: [
+    form.fields[0],
+    {
+      id: "email-by-name",
+      inputOptions: {
+        target: "emailAddress",
+        label: {
+          text: "Email",
+        },
+        inputType: "TEXT",
+        required: true,
+      },
+    },
+    {
+      id: "name-field",
+      inputOptions: {
+        target: "name",
+        label: {
+          text: "Name",
+        },
+        inputType: "TEXT",
+      },
+    },
+  ],
+});
+
+assert.ok(identityFallbackForm, "identity fallback form normalizes");
+assert.deepEqual(
+  identityFallbackForm.fields.map((field) => field.key),
+  ["chooseYourNextLiveExperience", "emailAddress"],
+);
+assert.equal(identityFallbackForm.fields.filter((field) => field.type === "EMAIL").length, 1);
 
 console.log("What Show Next form verification passed", {
   fields: normalized.fields.map((field) => ({

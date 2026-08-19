@@ -200,10 +200,21 @@ function getPartnershipPageLookup() {
 
 async function getConfiguredPartnershipPageItem() {
   const lookup = getPartnershipPageLookup();
-  const items = await queryWixCollection(PARTNERSHIP_PAGE_COLLECTION, {
+  let items = await queryWixCollection(PARTNERSHIP_PAGE_COLLECTION, {
     filter: lookup.filter,
     limit: 2,
   });
+
+  if (
+    items.length === 0 &&
+    "pageKey" in lookup.filter &&
+    typeof lookup.filter.pageKey === "string"
+  ) {
+    items = await queryWixCollection(PARTNERSHIP_PAGE_COLLECTION, {
+      filter: { _id: lookup.filter.pageKey },
+      limit: 2,
+    });
+  }
 
   if (items.length > 1) {
     console.error("Multiple PartnershipPage records matched the configured lookup.", {
@@ -326,7 +337,9 @@ export async function sendPartnershipEnquiry(
   const recipients = await getPartnershipRecipients();
 
   if (recipients.recipients.length === 0) {
-    console.error("Partnership enquiry has no valid recipients configured.");
+    console.error("Partnership enquiry has no valid recipients configured.", {
+      recipientSource: recipients.source,
+    });
     return { success: false, reason: "missing-recipients" };
   }
 

@@ -38,6 +38,7 @@ let partnershipPageItem = {
       "fintan.hocking@castiglione.com.au, anna.x@castiglione.com.au\ninvalid-email; anna.x@castiglione.com.au",
   },
 };
+let partnershipPageItemById = null;
 let siteSettings = { id: "site-settings-main", contactEmail: "site@example.com" };
 const fetchCalls = [];
 let scriptResponseOk = true;
@@ -85,9 +86,13 @@ const sandbox = {
         _id: process.env.WIX_PARTNERSHIP_PAGE_RECORD_ID,
       });
     } else {
-      assert.deepEqual(JSON.parse(JSON.stringify(options.filter)), {
-        pageKey: "partnership-main",
-      });
+      assert.ok(
+        JSON.stringify(options.filter) === JSON.stringify({ pageKey: "partnership-main" }) ||
+          JSON.stringify(options.filter) === JSON.stringify({ _id: "partnership-main" }),
+      );
+    }
+    if (options.filter?._id === "partnership-main") {
+      return partnershipPageItemById ? [partnershipPageItemById] : [];
     }
     return partnershipPageItem ? [partnershipPageItem] : [];
   },
@@ -170,6 +175,19 @@ partnershipPageItem = { _id: "partnership-page-main", fieldData: {} };
 recipients = await getPartnershipRecipients();
 assert.equal(recipients.source, "SiteSettings.contactEmail");
 assert.deepEqual(recipients.recipients, ["site@example.com"]);
+
+partnershipPageItem = null;
+partnershipPageItemById = {
+  _id: "partnership-main",
+  fieldData: {
+    recipientEmails: "stable-id@example.com",
+  },
+};
+recipients = await getPartnershipRecipients();
+assert.equal(recipients.source, "PartnershipPage.recipientEmails");
+assert.deepEqual(recipients.recipients, ["stable-id@example.com"]);
+partnershipPageItemById = null;
+partnershipPageItem = { _id: "partnership-page-main", fieldData: {} };
 
 siteSettings = { id: "site-settings-main", contactEmail: "" };
 recipients = await getPartnershipRecipients();

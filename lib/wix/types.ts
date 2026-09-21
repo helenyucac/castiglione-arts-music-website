@@ -42,6 +42,7 @@ export type WixQueryOptions = {
   sort?: WixQuerySort[];
   limit?: number;
   skip?: number;
+  cache?: "default" | "no-store";
 };
 
 export type WixQueryResponse<TFields extends WixRecordFields = WixRecordFields> = {

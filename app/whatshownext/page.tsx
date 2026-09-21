@@ -15,7 +15,7 @@ const displayFont = {
   fontFamily: 'Fraunces, "Cormorant Garamond", serif',
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "What Show Next? | Castiglione",

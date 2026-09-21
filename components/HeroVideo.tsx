@@ -42,6 +42,7 @@ export function HeroVideo({
   const delayedRetryTimers = useRef<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(true);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -61,7 +62,7 @@ export function HeroVideo({
   useEffect(() => {
     const video = videoRef.current;
 
-    if (!video || prefersReducedMotion) {
+    if (!video || prefersReducedMotion || !shouldLoadVideo) {
       return;
     }
 
@@ -150,12 +151,21 @@ export function HeroVideo({
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       document.removeEventListener("WeixinJSBridgeReady", handleWeixinBridgeReady);
     };
-  }, [prefersReducedMotion, videoSrc]);
+  }, [prefersReducedMotion, shouldLoadVideo, videoSrc]);
 
   async function handleTapToPlay() {
+    if (prefersReducedMotion) {
+      return;
+    }
+
+    if (!shouldLoadVideo) {
+      setShouldLoadVideo(true);
+      return;
+    }
+
     const video = videoRef.current;
 
-    if (!video || prefersReducedMotion) {
+    if (!video) {
       return;
     }
 
@@ -194,12 +204,12 @@ export function HeroVideo({
               className={`size-full object-cover transition-opacity duration-300 ${
                 isPlaying ? "opacity-100" : "opacity-0"
               }`}
-              src={videoSrc}
-              autoPlay={!prefersReducedMotion}
+              src={shouldLoadVideo ? videoSrc : undefined}
+              autoPlay={shouldLoadVideo && !prefersReducedMotion}
               muted
               loop
               playsInline
-              preload="auto"
+              preload="metadata"
               onPlaying={() => setIsPlaying(true)}
               onPause={() => {
                 if (!document.hidden) {

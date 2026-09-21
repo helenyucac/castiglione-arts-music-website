@@ -1,4 +1,4 @@
-import { getWixClientConfig, isWixConfigured } from "@/lib/wix/client";
+import { getWixClientConfig, getWixReadFetchOptions, isWixConfigured } from "@/lib/wix/client";
 import type { WixRecordFields } from "@/lib/wix/types";
 
 const WIX_FORMS_NAMESPACE = "wix.form_app.form";
@@ -27,6 +27,11 @@ export type WixSurveyForm = {
   id: string;
   name: string;
   fields: WixSurveyField[];
+};
+
+type WixFormsFetchOptions = RequestInit & {
+  cacheRead?: boolean;
+  readCacheTags?: string[];
 };
 
 export type WixSurveySubmissionValue = string | string[] | boolean;
@@ -85,17 +90,21 @@ function nestedRecord(value: unknown): WixRecordFields {
   return flattenRecord(value);
 }
 
-async function wixFormsFetch(path: string, init: RequestInit = {}) {
+async function wixFormsFetch(path: string, init: WixFormsFetchOptions = {}) {
+  const { cacheRead, headers, readCacheTags, ...requestInit } = init;
   const config = getWixClientConfig();
+  const cacheOptions = cacheRead
+    ? getWixReadFetchOptions(["wix-forms", ...(readCacheTags ?? [])])
+    : ({ cache: "no-store" as const } satisfies Pick<RequestInit, "cache">);
   const response = await fetch(path, {
-    ...init,
+    ...requestInit,
     headers: {
       Authorization: config.apiKey,
       "Content-Type": "application/json",
       "wix-site-id": config.siteId,
-      ...init.headers,
+      ...headers,
     },
-    cache: "no-store",
+    ...cacheOptions,
   });
   const responseText = await response.text();
 
@@ -569,7 +578,12 @@ async function listWixForms() {
   url.searchParams.set("paging.limit", "100");
   url.searchParams.set("enabled", "true");
 
-  return getFormsArray(await wixFormsFetch(url.toString()));
+  return getFormsArray(
+    await wixFormsFetch(url.toString(), {
+      cacheRead: true,
+      readCacheTags: ["wix-forms-list"],
+    }),
+  );
 }
 
 async function queryWixFormsByName(name: string) {
@@ -591,13 +605,18 @@ async function queryWixFormsByName(name: string) {
         },
       },
     }),
+    cacheRead: true,
+    readCacheTags: ["wix-forms-query"],
   });
 
   return getFormsArray(payload);
 }
 
 async function getWixFormSummary(formId: string) {
-  const payload = await wixFormsFetch(`${WIX_FORM_SCHEMA_API_BASE_URL}/${formId}/summary`);
+  const payload = await wixFormsFetch(`${WIX_FORM_SCHEMA_API_BASE_URL}/${formId}/summary`, {
+    cacheRead: true,
+    readCacheTags: ["wix-form-summary"],
+  });
 
   if (!isRecord(payload)) {
     return null;
@@ -607,7 +626,10 @@ async function getWixFormSummary(formId: string) {
 }
 
 async function getWixForm(formId: string) {
-  const payload = await wixFormsFetch(`${WIX_FORM_SCHEMA_API_BASE_URL}/${formId}`);
+  const payload = await wixFormsFetch(`${WIX_FORM_SCHEMA_API_BASE_URL}/${formId}`, {
+    cacheRead: true,
+    readCacheTags: ["wix-form"],
+  });
 
   if (!isRecord(payload)) {
     return null;

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { EventDetailPage } from "@/components/EventDetailPage";
 import { getResolvedEventDetailBySlug } from "@/lib/wix/eventDetailContent";
 
+export const revalidate = 3600;
+
 type TourEventPageProps = {
   params: Promise<{
     slug: string;

@@ -9,6 +9,14 @@ import type {
 const WIX_DATA_API_BASE_URL =
   process.env.WIX_DATA_API_BASE_URL ?? "https://www.wixapis.com/wix-data/v2/items";
 const WIX_DATA_COLLECTIONS_API_URL = WIX_DATA_API_BASE_URL.replace(/\/items\/?$/, "/collections");
+const DEFAULT_WIX_READ_REVALIDATE_SECONDS = 60 * 60;
+
+type NextFetchInit = RequestInit & {
+  next?: {
+    revalidate?: number | false;
+    tags?: string[];
+  };
+};
 
 const collectionEnvKeys: Record<WixCollectionName, string> = {
   SiteSettings: "WIX_COLLECTION_SITE_SETTINGS_ID",
@@ -52,6 +60,24 @@ export function getWixClientConfig(): WixClientConfig {
 
 export function isWixConfigured() {
   return Boolean(process.env.WIX_API_KEY && (process.env.WIX_SITE_ID ?? process.env.WIX_ACCOUNT_SITE_ID));
+}
+
+export function getWixReadRevalidateSeconds() {
+  const configuredValue = process.env.WIX_READ_REVALIDATE_SECONDS;
+  const parsedValue = configuredValue ? Number.parseInt(configuredValue, 10) : NaN;
+
+  return Number.isFinite(parsedValue) && parsedValue > 0
+    ? parsedValue
+    : DEFAULT_WIX_READ_REVALIDATE_SECONDS;
+}
+
+export function getWixReadFetchOptions(tags: string[] = []) {
+  return {
+    next: {
+      revalidate: getWixReadRevalidateSeconds(),
+      tags: ["wix-cms", ...tags],
+    },
+  } satisfies Pick<NextFetchInit, "next">;
 }
 
 export function getCollectionId(collectionName: WixCollectionName) {
@@ -125,8 +151,8 @@ async function getCollectionIdLookup(config: WixClientConfig) {
         "Content-Type": "application/json",
         "wix-site-id": config.siteId,
       },
-      cache: "no-store",
-    })
+      ...getWixReadFetchOptions(["wix-collections"]),
+    } satisfies NextFetchInit)
       .then(async (response) => {
         if (!response.ok) {
           return new Map<string, string>();
@@ -247,6 +273,11 @@ export async function queryWixCollection<TFields extends WixRecordFields = WixRe
     },
   };
 
+  const cacheOptions =
+    options.cache === "no-store"
+      ? ({ cache: "no-store" as const } satisfies Pick<NextFetchInit, "cache">)
+      : getWixReadFetchOptions(["wix-query", `wix-${collectionName.toLowerCase()}`]);
+
   const response = await fetch(`${config.baseUrl}/query`, {
     method: "POST",
     headers: {
@@ -255,8 +286,8 @@ export async function queryWixCollection<TFields extends WixRecordFields = WixRe
       "wix-site-id": config.siteId,
     },
     body: JSON.stringify(requestBody),
-    cache: "no-store",
-  });
+    ...cacheOptions,
+  } satisfies NextFetchInit);
   const responseBody = await response.text();
 
   if (!response.ok) {

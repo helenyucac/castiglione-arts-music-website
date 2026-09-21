@@ -217,6 +217,7 @@ export async function subscribeEmailToWix(emailValue: unknown, honeypotValue?: u
         [emailFieldKey]: email,
       },
       limit: 1,
+      cache: "no-store",
     });
 
     if (existingItems.length > 0) {

@@ -7,6 +7,8 @@ import {
   getResolvedSiteSettings,
 } from "@/lib/wix/globalConfig";
 
+export const revalidate = 3600;
+
 export async function generateMetadata(): Promise<Metadata> {
   const siteSettings = await getResolvedSiteSettings();
   const title = siteSettings.defaultSeoTitle ?? siteSettings.siteName;

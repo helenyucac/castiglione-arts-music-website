@@ -15,11 +15,7 @@ export default async function Home() {
       <Navigation />
       <main>
         <HeroVideo
-          videoSrc={siteSettings.homepageHeroVideo}
-          posterSrc={
-            siteSettings.homepageHeroFallbackImage ??
-            "https://images.unsplash.com/photo-1508973379184-7517410fb0bc?auto=format&fit=crop&w=2400&q=85"
-          }
+          posterSrc="/media/hero-video-poster-optimized.jpg"
           eyebrow={siteSettings.homepageHeroEyebrow}
           headline={siteSettings.homepageHeroHeadline}
           heroStats={siteSettings.heroStats}

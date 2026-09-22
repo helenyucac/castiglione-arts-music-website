@@ -43,11 +43,11 @@ export async function getEvents() {
   return sortEventsByDateDesc(await withTourDateDisplayLabels(events));
 }
 
-export async function getFeaturedHomeEvents() {
+export async function getFeaturedHomeEvents(limit = 1000) {
   const items = await queryWixCollection("Events", {
     filter: { isFeaturedHome: true },
     sort: sortDesc("sortDate"),
-    limit: 1000,
+    limit,
   });
 
   const events = items

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { BRAND_COLORS, siteSettings } from "@/data/siteSettings";
 import type { NormalizedHeroStat } from "@/lib/wix/types";
 
-const heroVideoPosterSrc = "/media/hero-video-poster.png";
+const heroVideoPosterSrc = "/media/hero-video-poster-optimized.jpg";
 
 declare global {
   interface Window {

@@ -1,6 +1,9 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 import { normalizeTourSlug } from "@/lib/tourSlug";
+import { getResolvedCollectionId, queryWixCollection } from "@/lib/wix/client";
+import { getWixFields } from "@/lib/wix/normalizers";
+import type { WixCollectionItem, WixCollectionName } from "@/lib/wix/types";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +25,10 @@ const DEFAULT_CMS_PATHS = [
 ];
 
 type RevalidatePayload = {
+  data?: unknown;
+  dataCollectionId?: unknown;
+  id?: unknown;
+  itemId?: unknown;
   secret?: unknown;
   path?: unknown;
   paths?: unknown;
@@ -29,6 +36,11 @@ type RevalidatePayload = {
   eventSlug?: unknown;
   slug?: unknown;
   tags?: unknown;
+};
+
+type WixAutomationItemReference = {
+  collectionId?: string;
+  itemId?: string;
 };
 
 function jsonError(message: string, status: number) {
@@ -52,6 +64,45 @@ function stringValues(value: unknown): string[] {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function candidateStringValues(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.flatMap(candidateStringValues);
+  }
+
+  if (typeof value === "string") {
+    return stringValues(value);
+  }
+
+  if (typeof value === "number" || typeof value === "boolean") {
+    return [String(value)];
+  }
+
+  if (!isRecord(value)) {
+    return [];
+  }
+
+  return [
+    value.slug,
+    value.eventSlug,
+    value.event,
+    value.title,
+    value.name,
+    value.label,
+    value._id,
+    value.id,
+    value.data,
+    value.fieldData,
+  ].flatMap(candidateStringValues);
+}
+
+function firstCandidateString(value: unknown) {
+  return candidateStringValues(value)[0];
+}
+
+function normalizeLookupKey(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
 function normalizePath(value: unknown) {
@@ -96,7 +147,7 @@ function collectRequestTags(
   ).flatMap((tag) => normalizeTag(tag) ?? []);
 }
 
-function collectEventSlug(payload: RevalidatePayload, searchParams: URLSearchParams) {
+function collectExplicitEventSlug(payload: RevalidatePayload, searchParams: URLSearchParams) {
   return normalizeTourSlug(
     stringValues(payload.eventSlug)[0] ??
       stringValues(payload.event)[0] ??
@@ -106,6 +157,117 @@ function collectEventSlug(payload: RevalidatePayload, searchParams: URLSearchPar
       searchParams.get("slug") ??
       undefined,
   );
+}
+
+function getWixAutomationItemReference(payload: RevalidatePayload): WixAutomationItemReference {
+  const wixPayload = (isRecord(payload.data) ? payload.data : payload) as Record<string, unknown>;
+
+  return {
+    collectionId:
+      firstCandidateString(wixPayload["dataCollectionId"]) ??
+      firstCandidateString(wixPayload["collectionId"]) ??
+      firstCandidateString(wixPayload["collectionName"]) ??
+      firstCandidateString(payload.dataCollectionId),
+    itemId:
+      firstCandidateString(wixPayload["id"]) ??
+      firstCandidateString(wixPayload["_id"]) ??
+      firstCandidateString(wixPayload["itemId"]) ??
+      firstCandidateString(wixPayload["dataItemId"]) ??
+      firstCandidateString(payload.id) ??
+      firstCandidateString(payload.itemId),
+  };
+}
+
+async function matchesWixCollection(
+  collectionId: string | undefined,
+  collectionName: WixCollectionName,
+) {
+  if (!collectionId) {
+    return true;
+  }
+
+  const normalizedCollectionId = normalizeLookupKey(collectionId);
+
+  if (normalizedCollectionId === normalizeLookupKey(collectionName)) {
+    return true;
+  }
+
+  try {
+    const resolvedCollectionId = await getResolvedCollectionId(collectionName);
+    return normalizedCollectionId === normalizeLookupKey(resolvedCollectionId);
+  } catch {
+    return false;
+  }
+}
+
+function isWixItemMatch(item: WixCollectionItem, itemId: string) {
+  const fields = getWixFields(item);
+  return [item._id, item.id, fields._id, fields.id].some((value) => firstCandidateString(value) === itemId);
+}
+
+async function findWixItemById(collectionName: WixCollectionName, itemId: string) {
+  const items = await queryWixCollection(collectionName, {
+    cache: "no-store",
+    limit: 1000,
+  });
+
+  return items.find((item) => isWixItemMatch(item, itemId));
+}
+
+function getWixCmsEventSlug(collectionName: WixCollectionName, item: WixCollectionItem) {
+  const fields = getWixFields(item);
+
+  if (collectionName === "Events") {
+    return normalizeTourSlug(firstCandidateString(fields.slug));
+  }
+
+  if (collectionName === "TourDates") {
+    return normalizeTourSlug(
+      firstCandidateString(fields.event) ??
+        firstCandidateString(fields.eventSlug) ??
+        firstCandidateString(fields.eventId),
+    );
+  }
+
+  return undefined;
+}
+
+async function collectWixAutomationEventSlug(payload: RevalidatePayload) {
+  const { collectionId, itemId } = getWixAutomationItemReference(payload);
+
+  if (!itemId) {
+    return undefined;
+  }
+
+  const candidateCollections: WixCollectionName[] = [];
+
+  for (const collectionName of ["Events", "TourDates"] as const) {
+    if (await matchesWixCollection(collectionId, collectionName)) {
+      candidateCollections.push(collectionName);
+    }
+  }
+
+  const collectionsToCheck =
+    candidateCollections.length > 0 ? candidateCollections : (["Events", "TourDates"] as const);
+
+  for (const collectionName of collectionsToCheck) {
+    try {
+      const item = await findWixItemById(collectionName, itemId);
+      const eventSlug = item ? getWixCmsEventSlug(collectionName, item) : undefined;
+
+      if (eventSlug) {
+        return eventSlug;
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return undefined;
+}
+
+async function collectEventSlug(payload: RevalidatePayload, searchParams: URLSearchParams) {
+  return collectExplicitEventSlug(payload, searchParams) ?? (await collectWixAutomationEventSlug(payload));
 }
 
 function collectRequestPaths(
@@ -186,7 +348,7 @@ async function handleRevalidate(request: NextRequest) {
     return jsonError("Unauthorized.", 401);
   }
 
-  const eventSlug = collectEventSlug(payload, searchParams);
+  const eventSlug = await collectEventSlug(payload, searchParams);
   const tags = collectRequestTags(payload, searchParams, eventSlug);
   const paths = collectRequestPaths(payload, searchParams, eventSlug);
 

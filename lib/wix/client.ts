@@ -9,7 +9,7 @@ import type {
 const WIX_DATA_API_BASE_URL =
   process.env.WIX_DATA_API_BASE_URL ?? "https://www.wixapis.com/wix-data/v2/items";
 const WIX_DATA_COLLECTIONS_API_URL = WIX_DATA_API_BASE_URL.replace(/\/items\/?$/, "/collections");
-const DEFAULT_WIX_READ_REVALIDATE_SECONDS = 60;
+const DEFAULT_WIX_READ_REVALIDATE_SECONDS = 60 * 60;
 
 type NextFetchInit = RequestInit & {
   next?: {

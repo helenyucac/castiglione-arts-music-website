@@ -6,7 +6,10 @@ import type { TicketCtaMode } from "@/lib/ticketCta";
 import { getTourSlugFromHref } from "@/lib/tourSlug";
 
 export type EventTourDate = {
+  id?: string;
+  showLabel?: string;
   date: string;
+  displayDate?: string;
   city: string;
   venue: string;
   venueDetails?: EventVenue;

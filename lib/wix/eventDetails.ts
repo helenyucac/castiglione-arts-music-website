@@ -1,4 +1,5 @@
 import { isWixConfigured, queryWixCollection, sortAsc } from "@/lib/wix/client";
+import { normalizeTourSlug } from "@/lib/tourSlug";
 import {
   getWixFields,
   normalizeEventGalleryImages,
@@ -88,7 +89,27 @@ function getReferenceCandidates(value: unknown): string[] {
 }
 
 function hasMatchingEventReference(fields: WixRecordFields, eventIds: Set<string>) {
-  return getReferenceCandidates(fields.event).some((candidate) => eventIds.has(candidate));
+  return [fields.event, fields.eventSlug, fields.eventId].some((value) =>
+    getReferenceCandidates(value)
+      .flatMap(getEventReferenceKeys)
+      .some((candidate) => eventIds.has(candidate)),
+  );
+}
+
+function getEventReferenceKeys(value: string) {
+  const text = value.trim();
+
+  if (!text) {
+    return [];
+  }
+
+  return Array.from(
+    new Set(
+      [text, text.toLowerCase(), normalizeTourSlug(text)].filter(
+        (candidate): candidate is string => Boolean(candidate),
+      ),
+    ),
+  );
 }
 
 function sortTourDatesByOrderThenDate(tourDates: NormalizedTourDate[]) {
@@ -200,7 +221,7 @@ export async function getTourDates(eventIdOrSlug: string, alternateEventIds: str
 
   const eventIds = new Set(
     [eventIdOrSlug, ...alternateEventIds]
-      .map((candidate) => candidate.trim())
+      .flatMap((candidate) => getEventReferenceKeys(candidate))
       .filter(Boolean),
   );
 
@@ -241,7 +262,7 @@ export async function getEventVideos(eventIdOrSlug: string, alternateEventIds: s
 
   const eventIds = new Set(
     [eventIdOrSlug, ...alternateEventIds]
-      .map((candidate) => candidate.trim())
+      .flatMap((candidate) => getEventReferenceKeys(candidate))
       .filter(Boolean),
   );
 
@@ -272,7 +293,7 @@ export async function getEventGallery(eventIdOrSlug: string, alternateEventIds: 
 
   const eventIds = new Set(
     [eventIdOrSlug, ...alternateEventIds]
-      .map((candidate) => candidate.trim())
+      .flatMap((candidate) => getEventReferenceKeys(candidate))
       .filter(Boolean),
   );
 

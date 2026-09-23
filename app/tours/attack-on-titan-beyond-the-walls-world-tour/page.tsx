@@ -3,7 +3,7 @@ import { EventDetailPage } from "@/components/EventDetailPage";
 import { attackOnTitanEventDetail } from "@/data/eventDetails";
 import { getResolvedEventDetailBySlug } from "@/lib/wix/eventDetailContent";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const attackOnTitanDescription =
   "An epic anime concert experience bringing the iconic Attack on Titan soundtrack and immersive visuals to the concert hall.";

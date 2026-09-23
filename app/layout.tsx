@@ -7,7 +7,7 @@ import {
   getResolvedSiteSettings,
 } from "@/lib/wix/globalConfig";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteSettings = await getResolvedSiteSettings();

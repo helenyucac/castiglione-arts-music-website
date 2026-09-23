@@ -16,7 +16,7 @@ const displayFont = {
   fontFamily: 'Fraunces, "Cormorant Garamond", serif',
 };
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Register Interest | Castiglione",

@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 
 const MAX_REVALIDATE_PAYLOAD_LENGTH = 4096;
 const DEFAULT_CMS_TAGS = ["wix-cms"];
+const EVENT_CMS_TAGS = ["wix-events", "wix-tourdates"];
 const DEFAULT_CMS_PATHS = [
   "/",
   "/about",
@@ -80,10 +81,14 @@ function normalizeTag(value: string) {
   return /^[a-z0-9:_-]{1,128}$/i.test(tag) ? tag : undefined;
 }
 
-function collectRequestTags(payload: RevalidatePayload, searchParams: URLSearchParams) {
+function collectRequestTags(
+  payload: RevalidatePayload,
+  searchParams: URLSearchParams,
+  eventSlug?: string,
+) {
   return Array.from(
     new Set([
-      ...DEFAULT_CMS_TAGS,
+      ...(eventSlug ? EVENT_CMS_TAGS : DEFAULT_CMS_TAGS),
       ...stringValues(payload.tags).flatMap((tag) => normalizeTag(tag) ?? []),
       ...searchParams.getAll("tag").flatMap((tag) => stringValues(tag)),
       ...searchParams.getAll("tags").flatMap((tag) => stringValues(tag)),
@@ -103,8 +108,11 @@ function collectEventSlug(payload: RevalidatePayload, searchParams: URLSearchPar
   );
 }
 
-function collectRequestPaths(payload: RevalidatePayload, searchParams: URLSearchParams) {
-  const eventSlug = collectEventSlug(payload, searchParams);
+function collectRequestPaths(
+  payload: RevalidatePayload,
+  searchParams: URLSearchParams,
+  eventSlug?: string,
+) {
   const explicitPaths = [
     ...stringValues(payload.path),
     ...stringValues(payload.paths),
@@ -178,8 +186,9 @@ async function handleRevalidate(request: NextRequest) {
     return jsonError("Unauthorized.", 401);
   }
 
-  const tags = collectRequestTags(payload, searchParams);
-  const paths = collectRequestPaths(payload, searchParams);
+  const eventSlug = collectEventSlug(payload, searchParams);
+  const tags = collectRequestTags(payload, searchParams, eventSlug);
+  const paths = collectRequestPaths(payload, searchParams, eventSlug);
 
   for (const tag of tags) {
     revalidateTag(tag, "max");

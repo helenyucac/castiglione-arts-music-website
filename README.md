@@ -53,6 +53,8 @@ API before deployment, then update `WIX_COLLECTION_EVENTS_ID`.
 Most public CMS pages are cached for one hour to reduce Wix API usage and Netlify
 credit consumption. For urgent edits, such as changing a ticketing link, use the
 private CMS revalidation endpoint instead of redeploying the site.
+When an event slug is supplied, only the event and tour-date Wix caches are
+refreshed, then the affected public pages are regenerated on demand.
 
 Add `CMS_REVALIDATE_SECRET` in Netlify, then open this URL after editing an event
 in Wix:
@@ -61,9 +63,10 @@ in Wix:
 https://www.castiglione.com.au/api/revalidate-cms?secret=YOUR_SECRET&event=ray-chen-plays-8-seasons
 ```
 
-Replace `ray-chen-plays-8-seasons` with the event slug. This refreshes Wix CMS
-data plus the homepage, tours listing, event detail page, and register interest
-page for that event. To refresh the main CMS pages, omit the `event` parameter.
+Replace `ray-chen-plays-8-seasons` with the event slug. After the first page
+request regenerates the affected pages, visitors click the updated ticket link
+directly; ticket clicks do not call Wix. To refresh the main CMS pages, omit the
+`event` parameter.
 
 Do not share the revalidation secret or publish the full URL.
 

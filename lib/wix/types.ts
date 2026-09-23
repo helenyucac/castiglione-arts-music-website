@@ -21,7 +21,8 @@ export type WixCollectionName =
   | "Partners"
   | "Venues"
   | "Testimonials"
-  | "Subscribe";
+  | "Subscribe"
+  | "RegisterInterest";
 
 export type WixRecordFields = Record<string, unknown>;
 

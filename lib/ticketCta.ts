@@ -1,6 +1,26 @@
 export type TicketCtaState = "ended" | "coming-soon" | "sold-out" | "on-sale" | "unknown";
+export type TicketCtaMode = "buyTickets" | "registerInterest" | "comingSoon";
 
 const invalidTicketTextValues = new Set(["", "#", "OPTIONAL", "MANUAL", "UPLOAD TO WIX"]);
+const ticketCtaModeAliases: Record<string, TicketCtaMode> = {
+  "buy-tickets": "buyTickets",
+  buytickets: "buyTickets",
+  "buy-ticket": "buyTickets",
+  "book-now": "buyTickets",
+  "tickets": "buyTickets",
+  "ticket": "buyTickets",
+  "on-sale": "buyTickets",
+  "register-interest": "registerInterest",
+  registerinterest: "registerInterest",
+  "register-interests": "registerInterest",
+  registerinterests: "registerInterest",
+  "interest": "registerInterest",
+  "waitlist": "registerInterest",
+  "wait-list": "registerInterest",
+  "coming-soon": "comingSoon",
+  comingsoon: "comingSoon",
+  hidden: "comingSoon",
+};
 
 export function normalizeTicketText(value?: string) {
   return value?.trim() ?? "";
@@ -11,6 +31,21 @@ export function normalizeTicketStatus(value?: string) {
     .toLowerCase()
     .replace(/[\s_]+/g, "-")
     .replace(/-+/g, "-");
+}
+
+export function normalizeTicketCtaMode(value?: unknown): TicketCtaMode | undefined {
+  if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") {
+    return undefined;
+  }
+
+  const normalizedValue = String(value)
+    .trim()
+    .replace(/([a-z])([A-Z])/g, "$1-$2")
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-");
+
+  return ticketCtaModeAliases[normalizedValue];
 }
 
 export function isPlaceholderTicketValue(value?: string) {
@@ -51,7 +86,7 @@ export function resolveTicketCtaState(status?: string, href?: string, label?: st
     return "ended";
   }
 
-  if (normalizedStateText === "coming-soon") {
+  if (normalizedStateText === "coming-soon" || normalizedStateText === "hidden") {
     return "coming-soon";
   }
 
@@ -89,6 +124,13 @@ export function getTicketCtaLabel(status?: string, customLabel?: string, href?: 
 export function isDisabledTicketCtaState(status?: string, href?: string, label?: string) {
   const ctaState = resolveTicketCtaState(status, href, label);
   return ctaState === "ended" || ctaState === "coming-soon" || ctaState === "sold-out";
+}
+
+export function getRegisterInterestHref(eventSlug?: string) {
+  const slug = normalizeTicketText(eventSlug);
+  const params = slug ? `?event=${encodeURIComponent(slug)}` : "";
+
+  return `/register-interest${params}`;
 }
 
 export function isRelatedEventStatusEligible(status: string) {

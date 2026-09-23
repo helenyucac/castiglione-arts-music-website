@@ -8,10 +8,12 @@ import { WhatsOnEventCard } from "@/components/WhatsOnEventCard";
 import type { EventDetailData, EventTourDate } from "@/data/eventDetails";
 import { formatPublicDateDisplay } from "@/lib/dateDisplay";
 import {
+  getRegisterInterestHref,
   getTicketCtaLabel,
   getValidPrimaryCtaHref,
   getValidTicketHref,
   isDisabledTicketCtaState,
+  resolveTicketCtaState,
 } from "@/lib/ticketCta";
 
 type EventDetailPageProps = {
@@ -75,7 +77,48 @@ function getTourDateTimestamp(date: string) {
   return new Date(Number(year), monthIndex, Number(day), hour, minute).getTime();
 }
 
+function getTourDateEndTimestamp(date: string) {
+  const rangeMatch = date.match(/^(\d{1,2})\s*[-–]\s*(\d{1,2})\s+([A-Z]{3})\s+(\d{4})/i);
+
+  if (rangeMatch) {
+    const [, , endDay, month, year] = rangeMatch;
+    const monthIndex = tourDateMonthIndexes[month.toUpperCase()] ?? 0;
+    return new Date(Number(year), monthIndex, Number(endDay), 23, 59, 59, 999).getTime();
+  }
+
+  const timestamp = getTourDateTimestamp(date);
+
+  if (timestamp <= 0) {
+    return timestamp;
+  }
+
+  const endOfDate = new Date(timestamp);
+  endOfDate.setHours(23, 59, 59, 999);
+  return endOfDate.getTime();
+}
+
+function isPastTourDate(tourDate: EventTourDate) {
+  const timestamp = getTourDateEndTimestamp(tourDate.date);
+  return timestamp > 0 && timestamp < Date.now();
+}
+
+function isEndedTourDateCta(tourDate: EventTourDate) {
+  return (
+    isPastTourDate(tourDate) ||
+    resolveTicketCtaState(tourDate.ticketStatus, tourDate.ticketHref, tourDate.ticketLabel) ===
+      "ended"
+  );
+}
+
 function getTourDateCta(tourDate: EventTourDate) {
+  if (isEndedTourDateCta(tourDate)) {
+    return {
+      label: "EVENT ENDED",
+      href: undefined,
+      isDisabled: true,
+    };
+  }
+
   if (isDisabledTicketCtaState(tourDate.ticketStatus, tourDate.ticketHref, tourDate.ticketLabel)) {
     return {
       label: getTicketCtaLabel(tourDate.ticketStatus, tourDate.ticketLabel, tourDate.ticketHref),
@@ -98,19 +141,49 @@ function getTourDateCta(tourDate: EventTourDate) {
 }
 
 function getPrimaryCta(event: EventDetailData, tourDates: EventTourDate[]) {
-  if (!event.primaryCtaLabel) {
-    return null;
-  }
+  const primaryCtaLabel = event.primaryCtaLabel || "BUY TICKETS";
+  const comingSoonCta = {
+    label: "COMING SOON",
+    href: undefined,
+    isDisabled: true,
+  };
+  const primaryCtaState = resolveTicketCtaState(
+    event.primaryCtaStatus,
+    event.primaryCtaHref,
+    primaryCtaLabel,
+  );
+  const allTourDatesEnded =
+    tourDates.length > 0 && tourDates.every((tourDate) => isEndedTourDateCta(tourDate));
 
-  if (isDisabledTicketCtaState(event.primaryCtaStatus, event.primaryCtaHref, event.primaryCtaLabel)) {
+  if (primaryCtaState === "ended" || allTourDatesEnded) {
     return {
-      label: getTicketCtaLabel(event.primaryCtaStatus, event.primaryCtaLabel, event.primaryCtaHref),
+      label: "EVENT ENDED",
       href: undefined,
       isDisabled: true,
     };
   }
 
-  if (event.primaryCtaLabel.toLowerCase().includes("ticket") && tourDates.length > 0) {
+  if (event.ctaMode === "registerInterest") {
+    return {
+      label: "REGISTER INTEREST",
+      href: getValidPrimaryCtaHref(event.registerInterestHref) ?? getRegisterInterestHref(event.slug),
+      isDisabled: false,
+    };
+  }
+
+  if (event.ctaMode === "comingSoon") {
+    return comingSoonCta;
+  }
+
+  if (primaryCtaState === "coming-soon" || primaryCtaState === "sold-out") {
+    return {
+      label: getTicketCtaLabel(event.primaryCtaStatus, primaryCtaLabel, event.primaryCtaHref),
+      href: undefined,
+      isDisabled: true,
+    };
+  }
+
+  if (primaryCtaLabel.toLowerCase().includes("ticket") && tourDates.length > 0) {
     if (
       tourDates.every((tourDate) =>
         isDisabledTicketCtaState(tourDate.ticketStatus, tourDate.ticketHref, tourDate.ticketLabel),
@@ -120,7 +193,7 @@ function getPrimaryCta(event: EventDetailData, tourDates: EventTourDate[]) {
       return {
         label: getTicketCtaLabel(
           firstTourDate?.ticketStatus,
-          firstTourDate?.ticketLabel ?? event.primaryCtaLabel,
+          firstTourDate?.ticketLabel ?? primaryCtaLabel,
           firstTourDate?.ticketHref,
         ),
         href: undefined,
@@ -130,24 +203,24 @@ function getPrimaryCta(event: EventDetailData, tourDates: EventTourDate[]) {
 
     if (tourDates.some((tourDate) => Boolean(getTourDateCta(tourDate)?.href))) {
       return {
-        label: event.primaryCtaLabel,
+        label: primaryCtaLabel,
         href: "#tour-dates",
         isDisabled: false,
       };
     }
 
-    return null;
+    return comingSoonCta;
   }
 
   const href = getValidPrimaryCtaHref(event.primaryCtaHref);
 
   return href
     ? {
-        label: event.primaryCtaLabel,
+        label: primaryCtaLabel,
         href,
         isDisabled: false,
       }
-    : null;
+    : comingSoonCta;
 }
 
 function getVideoSourceType(src: string) {

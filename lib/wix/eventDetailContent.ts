@@ -4,7 +4,7 @@ import { isWixConfigured, queryWixCollection, visibleFilter } from "@/lib/wix/cl
 import { getTourProgram, homepageWhatsOnEvents, tourProgramLabels } from "@/data/tours";
 import { formatPublicDateRangeFromValues, formatPublicEventDate } from "@/lib/dateDisplay";
 import { getEventCardHref } from "@/lib/eventCardHref";
-import { isRelatedEventStatusEligible } from "@/lib/ticketCta";
+import { isRelatedEventStatusEligible, normalizeTicketCtaMode } from "@/lib/ticketCta";
 import { getTourSlugFromHref, normalizeTourSlug } from "@/lib/tourSlug";
 import { getWixFields } from "@/lib/wix/normalizers";
 import { optionalMediaUrl, SAFE_EVENT_IMAGE_FALLBACK } from "@/lib/wix/media";
@@ -485,6 +485,42 @@ function arrayItems(value: unknown): unknown[] {
   return [];
 }
 
+function uniqueTexts(values: string[]) {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+}
+
+function splitRegisterInterestCities(value: unknown) {
+  const items = arrayItems(value);
+
+  if (items.length > 0) {
+    return items
+      .map((item) => textField(item, ["city", "name", "title", "label", "text", "value"]))
+      .filter((item): item is string => Boolean(item));
+  }
+
+  return splitList(value);
+}
+
+function resolveRegisterInterestCities(
+  fields: WixRecordFields,
+  fallback?: Pick<EventDetailData, "registerInterestCities">,
+) {
+  for (const value of [
+    fields.registerInterestCities,
+    fields.registerInterestCityOptions,
+    fields.interestCities,
+    fields.cityOptions,
+  ]) {
+    const cities = uniqueTexts(splitRegisterInterestCities(value));
+
+    if (cities.length > 0) {
+      return cities;
+    }
+  }
+
+  return fallback?.registerInterestCities;
+}
+
 function getEventVideoSource(video: NormalizedEventVideo) {
   return optionalString(video.src) ?? optionalString(video.videoUrl);
 }
@@ -779,6 +815,20 @@ function mergeCmsEventDetail(
     optionalString(fields.ticketPrimaryStatus) ??
     optionalString(fields.status) ??
     fallback.primaryCtaStatus;
+  const ctaMode =
+    normalizeTicketCtaMode(
+      fields.ctaMode ??
+        fields.ticketCtaMode ??
+        fields.primaryCtaMode ??
+        fields.ticketButtonMode ??
+        fields.buttonMode,
+    ) ?? fallback.ctaMode;
+  const registerInterestHref =
+    optionalString(fields.registerInterestHref) ??
+    optionalString(fields.registerInterestUrl) ??
+    optionalString(fields.interestFormHref) ??
+    optionalString(fields.interestFormUrl) ??
+    fallback.registerInterestHref;
   const secondaryCtaLabel =
     optionalString(fields.partnerCtaLabel) ??
     optionalString(fields.partnerButtonLabel) ?? fallback.secondaryCtaLabel;
@@ -813,9 +863,12 @@ function mergeCmsEventDetail(
       optionalString(fields.citySummary) ??
       optionalString(fields.eventCardCities) ??
       fallback.citySummary,
+    ctaMode,
     primaryCtaLabel,
     primaryCtaHref,
     primaryCtaStatus,
+    registerInterestCities: resolveRegisterInterestCities(fields, fallback),
+    registerInterestHref,
     secondaryCtaLabel,
     secondaryCtaHref,
     aboutEyebrow: optionalString(fields.aboutTitle) ?? fallback.aboutEyebrow,
@@ -985,12 +1038,25 @@ function createCmsOnlyFallback(fields: WixRecordFields, requestedSlug: string) {
     heroAlt: `${title} event image`,
     seasonLabel: DEFAULT_SEASON_LABEL,
     citySummary: DEFAULT_CITY_SUMMARY,
+    ctaMode: normalizeTicketCtaMode(
+      fields.ctaMode ??
+        fields.ticketCtaMode ??
+        fields.primaryCtaMode ??
+        fields.ticketButtonMode ??
+        fields.buttonMode,
+    ),
     primaryCtaLabel: "BUY TICKETS",
     primaryCtaHref: "#tour-dates",
     primaryCtaStatus:
       optionalString(fields.ticketStatus) ??
       optionalString(fields.ticketPrimaryStatus) ??
       optionalString(fields.status),
+    registerInterestCities: resolveRegisterInterestCities(fields),
+    registerInterestHref:
+      optionalString(fields.registerInterestHref) ??
+      optionalString(fields.registerInterestUrl) ??
+      optionalString(fields.interestFormHref) ??
+      optionalString(fields.interestFormUrl),
     secondaryCtaLabel: "PARTNER ON THIS TOUR",
     secondaryCtaHref: "/partnerships",
     aboutEyebrow: "ABOUT THE SHOW",

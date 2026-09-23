@@ -351,10 +351,17 @@ function normalizeCategory(
 }
 
 function normalizeStatus(value: unknown): TourStatus {
-  const status = stringValue(value).toLowerCase();
+  const status = stringValue(value)
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-");
 
   if (status === "on-sale" || status === "upcoming" || status === "coming-soon" || status === "past") {
     return status;
+  }
+
+  if (status === "hidden") {
+    return "coming-soon";
   }
 
   return "upcoming";

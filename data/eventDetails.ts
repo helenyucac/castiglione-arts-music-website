@@ -2,6 +2,7 @@ import {
   homepageWhatsOnEvents,
   type TourCardData,
 } from "@/data/tours";
+import type { TicketCtaMode } from "@/lib/ticketCta";
 import { getTourSlugFromHref } from "@/lib/tourSlug";
 
 export type EventTourDate = {
@@ -97,9 +98,12 @@ export type EventDetailData = {
   heroAlt: string;
   seasonLabel: string;
   citySummary: string;
+  ctaMode?: TicketCtaMode;
   primaryCtaLabel: string;
   primaryCtaHref: string;
   primaryCtaStatus?: string;
+  registerInterestCities?: string[];
+  registerInterestHref?: string;
   secondaryCtaLabel: string;
   secondaryCtaHref: string;
   aboutEyebrow: string;

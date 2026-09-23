@@ -33,6 +33,7 @@ const collectionEnvKeys: Record<WixCollectionName, string> = {
   Venues: "WIX_COLLECTION_VENUES_ID",
   Testimonials: "WIX_COLLECTION_TESTIMONIALS_ID",
   Subscribe: "WIX_COLLECTION_SUBSCRIBE_ID",
+  RegisterInterest: "WIX_COLLECTION_REGISTER_INTEREST_ID",
 };
 
 export type WixClientConfig = {

@@ -133,41 +133,6 @@ export function getRegisterInterestHref(eventSlug?: string) {
   return `/register-interest${params}`;
 }
 
-export function getTicketLinkRedirectHref(
-  eventSlug?: string,
-  tourDate?: {
-    city?: string;
-    date?: string;
-    displayDate?: string;
-    showLabel?: string;
-  },
-) {
-  const slug = normalizeTicketText(eventSlug);
-
-  if (!slug) {
-    return undefined;
-  }
-
-  const params = new URLSearchParams({ event: slug });
-  const city = normalizeTicketText(tourDate?.city);
-  const date = normalizeTicketText(tourDate?.displayDate ?? tourDate?.date);
-  const show = normalizeTicketText(tourDate?.showLabel);
-
-  if (city) {
-    params.set("city", city);
-  }
-
-  if (date) {
-    params.set("date", date);
-  }
-
-  if (show) {
-    params.set("show", show);
-  }
-
-  return `/api/ticket-link?${params.toString()}`;
-}
-
 export function isRelatedEventStatusEligible(status: string) {
   const normalizedStatus = normalizeTicketStatus(status);
 

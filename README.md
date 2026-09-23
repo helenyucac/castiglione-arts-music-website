@@ -48,18 +48,11 @@ The Events CMS collection ID is currently `Import4`. The default fallback value
 recreated in the future, verify the collection ID using the Wix Data Collections
 API before deployment, then update `WIX_COLLECTION_EVENTS_ID`.
 
-## Live Ticket Links and CMS Refreshing
+## Refreshing CMS Content Without Deploying
 
 Most public CMS pages are cached for one hour to reduce Wix API usage and Netlify
-credit consumption. Ticket links are handled separately: public ticket buttons
-point to `/api/ticket-link`, which reads the latest Wix ticket URL at click time
-and redirects the visitor to the current ticketing platform. This means changing
-a ticket URL in Wix does not require redeploying the site or refreshing the whole
-page cache.
-
-For urgent non-ticket edits, such as switching an event to Register Interest or
-changing city lists, use the private CMS revalidation endpoint instead of
-redeploying the site.
+credit consumption. For urgent edits, such as changing a ticketing link, use the
+private CMS revalidation endpoint instead of redeploying the site.
 
 Add `CMS_REVALIDATE_SECRET` in Netlify, then open this URL after editing an event
 in Wix:

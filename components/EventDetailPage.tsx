@@ -10,7 +10,6 @@ import { formatPublicDateDisplay } from "@/lib/dateDisplay";
 import {
   getRegisterInterestHref,
   getTicketCtaLabel,
-  getTicketLinkRedirectHref,
   getValidPrimaryCtaHref,
   getValidTicketHref,
   isDisabledTicketCtaState,
@@ -111,7 +110,7 @@ function isEndedTourDateCta(tourDate: EventTourDate) {
   );
 }
 
-function getTourDateCta(tourDate: EventTourDate, eventSlug?: string) {
+function getTourDateCta(tourDate: EventTourDate) {
   if (isEndedTourDateCta(tourDate)) {
     return {
       label: "EVENT ENDED",
@@ -136,7 +135,7 @@ function getTourDateCta(tourDate: EventTourDate, eventSlug?: string) {
 
   return {
     label: getTicketCtaLabel(tourDate.ticketStatus, tourDate.ticketLabel, tourDate.ticketHref),
-    href: getTicketLinkRedirectHref(eventSlug, tourDate) ?? href,
+    href,
     isDisabled: false,
   };
 }
@@ -202,7 +201,7 @@ function getPrimaryCta(event: EventDetailData, tourDates: EventTourDate[]) {
       };
     }
 
-    if (tourDates.some((tourDate) => Boolean(getTourDateCta(tourDate, event.slug)?.href))) {
+    if (tourDates.some((tourDate) => Boolean(getTourDateCta(tourDate)?.href))) {
       return {
         label: primaryCtaLabel,
         href: "#tour-dates",
@@ -218,7 +217,7 @@ function getPrimaryCta(event: EventDetailData, tourDates: EventTourDate[]) {
   return href
     ? {
         label: primaryCtaLabel,
-        href: getValidTicketHref(href) ? getTicketLinkRedirectHref(event.slug) ?? href : href,
+        href,
         isDisabled: false,
       }
     : comingSoonCta;
@@ -422,7 +421,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                 <div className="w-full max-w-[1200px]">
                   <div className="grid">
                     {sortedTourDates.map((tourDate, index) => {
-                      const tourDateCta = getTourDateCta(tourDate, event.slug);
+                      const tourDateCta = getTourDateCta(tourDate);
 
                       return (
                         <article

@@ -7,7 +7,7 @@ export const defaultSiteSettings = {
   headerLogo: "/media/logo/castiglione-logo.png",
   enquireButtonText: "ENQUIRE",
   enquireButtonLink: "/partnerships",
-  homepageHeroVideo: "/media/video-banner-dark.mov",
+  homepageHeroVideo: "/media/video-banner-dark-optimized.mp4",
   homepageHeroFallbackImage:
     "https://images.unsplash.com/photo-1508973379184-7517410fb0bc?auto=format&fit=crop&w=2400&q=85",
   homepageHeroEyebrow: "Global Stories · Local Stages",

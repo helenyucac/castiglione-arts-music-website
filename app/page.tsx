@@ -15,6 +15,7 @@ export default async function Home() {
       <Navigation />
       <main>
         <HeroVideo
+          videoSrc={siteSettings.homepageHeroVideo}
           posterSrc="/media/hero-video-poster-optimized.jpg"
           eyebrow={siteSettings.homepageHeroEyebrow}
           headline={siteSettings.homepageHeroHeadline}

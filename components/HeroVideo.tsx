@@ -49,6 +49,7 @@ export function HeroVideo({
 
     function syncReducedMotionPreference() {
       setPrefersReducedMotion(mediaQuery.matches);
+      setShouldLoadVideo(Boolean(videoSrc) && !mediaQuery.matches);
     }
 
     syncReducedMotionPreference();
@@ -57,7 +58,7 @@ export function HeroVideo({
     return () => {
       mediaQuery.removeEventListener("change", syncReducedMotionPreference);
     };
-  }, []);
+  }, [videoSrc]);
 
   useEffect(() => {
     const video = videoRef.current;

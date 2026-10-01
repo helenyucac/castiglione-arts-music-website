@@ -11,11 +11,11 @@ function getSpanText(spans: EventRichTextSpan[]) {
   return spans.map((span) => span.text).join("").trim();
 }
 
-function isOrchestraHeading(
+function isOrchestraHeadingBlock(
   block: EventRichContentBlock,
-): block is EventRichContentBlock & { type: "heading" } {
+): block is EventRichContentBlock & { type: "heading" | "paragraph" } {
   return (
-    block.type === "heading" &&
+    (block.type === "heading" || block.type === "paragraph") &&
     getSpanText(block.children).toUpperCase() === "MEET THE ORCHESTRA"
   );
 }
@@ -165,14 +165,17 @@ function OrchestraGrid({
   entries,
   index,
 }: {
-  heading: EventRichContentBlock & { type: "heading" };
+  heading: EventRichContentBlock & { type: "heading" | "paragraph" };
   entries: {
     role: EventRichContentBlock & { type: "paragraph" };
     name?: EventRichContentBlock & { type: "paragraph" };
   }[];
   index: number;
 }) {
-  const HeadingTag = `h${Math.min(Math.max(heading.level ?? 2, 2), 4)}` as "h2" | "h3" | "h4";
+  const HeadingTag =
+    heading.type === "heading"
+      ? (`h${Math.min(Math.max(heading.level ?? 2, 2), 4)}` as "h2" | "h3" | "h4")
+      : "h2";
 
   return (
     <div key={`orchestra-${index}`} className="mb-6 last:mb-0">
@@ -203,7 +206,7 @@ export function EventRichContent({ blocks }: EventRichContentProps) {
   for (let index = 0; index < blocks.length; index += 1) {
     const block = blocks[index];
 
-    if (isOrchestraHeading(block)) {
+    if (isOrchestraHeadingBlock(block)) {
       const entryBlocks = [];
       let nextIndex = index + 1;
 

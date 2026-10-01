@@ -3,10 +3,12 @@ import Link from "next/link";
 import { EventRichContent } from "@/components/EventRichContent";
 import { Footer } from "@/components/Footer";
 import { EventGallery } from "@/components/EventGallery";
+import { EventTrackingPixels } from "@/components/EventTrackingPixels";
 import { Navigation } from "@/components/Navigation";
 import { WhatsOnEventCard } from "@/components/WhatsOnEventCard";
 import type { EventDetailData, EventTourDate } from "@/data/eventDetails";
 import { formatPublicDateDisplay } from "@/lib/dateDisplay";
+import { JJK_EVENT_SLUG } from "@/lib/eventPixelTracking";
 import {
   getRegisterInterestHref,
   getTicketCtaLabel,
@@ -227,7 +229,12 @@ function getVideoSourceType(src: string) {
   return /\.mp4(?:[?#]|$)/i.test(src) ? "video/mp4" : undefined;
 }
 
+function isExternalHref(href?: string) {
+  return /^https?:\/\//i.test(href ?? "");
+}
+
 export function EventDetailPage({ event }: EventDetailPageProps) {
+  const shouldTrackTicketClicks = event.slug === JJK_EVENT_SLUG;
   const heroTitleOffsetClass = event.heroTitleOffset ? "lg:mt-14" : "";
   const galleryImages = event.galleryImages ?? [];
   const richEventDescription = event.richEventDescription ?? [];
@@ -244,6 +251,9 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
 
   return (
     <>
+      {shouldTrackTicketClicks ? (
+        <EventTrackingPixels eventSlug={event.slug} eventTitle={event.title} />
+      ) : null}
       <Navigation />
       <main className="bg-[#f5f1ea] text-[#111111]">
         <section className="border-b border-[rgba(17,17,17,0.06)] py-5">
@@ -313,6 +323,21 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                       href={primaryCta.href}
                       className={`${ticketCtaClass} transition-opacity hover:opacity-80`}
                       style={eyebrowStyle}
+                      data-tracking-event={
+                        shouldTrackTicketClicks && isExternalHref(primaryCta.href)
+                          ? "ticketing-link-click"
+                          : undefined
+                      }
+                      data-tracking-location={
+                        shouldTrackTicketClicks && isExternalHref(primaryCta.href)
+                          ? "primary-cta"
+                          : undefined
+                      }
+                      data-tracking-destination={
+                        shouldTrackTicketClicks && isExternalHref(primaryCta.href)
+                          ? "external-ticket"
+                          : undefined
+                      }
                     >
                       {primaryCta.label} →
                     </a>
@@ -462,6 +487,19 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                                 rel="noopener noreferrer"
                                 className={`${ticketCtaClass} transition-opacity hover:opacity-80`}
                                 style={eyebrowStyle}
+                                data-tracking-event={
+                                  shouldTrackTicketClicks ? "ticketing-link-click" : undefined
+                                }
+                                data-tracking-location={
+                                  shouldTrackTicketClicks ? "tour-date" : undefined
+                                }
+                                data-tracking-destination={
+                                  shouldTrackTicketClicks ? "external-ticket" : undefined
+                                }
+                                data-tracking-city={shouldTrackTicketClicks ? tourDate.city : undefined}
+                                data-tracking-show={
+                                  shouldTrackTicketClicks ? `Show ${index + 1}` : undefined
+                                }
                               >
                                 {tourDateCta.label} →
                               </a>

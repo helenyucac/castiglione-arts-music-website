@@ -7,6 +7,19 @@ type EventRichContentProps = {
 const richContentClass =
   "w-full max-w-[1200px] text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.8)] antialiased";
 
+function getSpanText(spans: EventRichTextSpan[]) {
+  return spans.map((span) => span.text).join("").trim();
+}
+
+function isOrchestraHeading(
+  block: EventRichContentBlock,
+): block is EventRichContentBlock & { type: "heading" } {
+  return (
+    block.type === "heading" &&
+    getSpanText(block.children).toUpperCase() === "MEET THE ORCHESTRA"
+  );
+}
+
 function RichTextSpans({ spans }: { spans: EventRichTextSpan[] }) {
   return (
     <>
@@ -47,102 +60,189 @@ function RichTextSpans({ spans }: { spans: EventRichTextSpan[] }) {
   );
 }
 
+function EventRichContentBlockRenderer({
+  block,
+  index,
+}: {
+  block: EventRichContentBlock;
+  index: number;
+}) {
+  if (block.type === "heading") {
+    const HeadingTag = `h${Math.min(Math.max(block.level ?? 2, 2), 4)}` as "h2" | "h3" | "h4";
+    return (
+      <HeadingTag
+        key={`heading-${index}`}
+        className="mb-4 mt-8 font-semibold first:mt-0"
+      >
+        <RichTextSpans spans={block.children} />
+      </HeadingTag>
+    );
+  }
+
+  if (block.type === "quote") {
+    return (
+      <blockquote
+        key={`quote-${index}`}
+        className="mb-6 border-l border-[rgba(217,74,40,0.5)] pl-5 italic last:mb-0"
+      >
+        <RichTextSpans spans={block.children} />
+      </blockquote>
+    );
+  }
+
+  if (block.type === "paragraph") {
+    return (
+      <p key={`paragraph-${index}`} className="mb-6 last:mb-0">
+        <RichTextSpans spans={block.children} />
+      </p>
+    );
+  }
+
+  if (block.type === "list") {
+    const ListTag = block.ordered ? "ol" : "ul";
+
+    return (
+      <ListTag
+        key={`list-${index}`}
+        className={`mb-6 pl-6 last:mb-0 ${block.ordered ? "list-decimal" : "list-disc"}`}
+      >
+        {block.items.map((item, itemIndex) => (
+          <li key={`item-${index}-${itemIndex}`} className="mb-2 last:mb-0">
+            <RichTextSpans spans={item} />
+          </li>
+        ))}
+      </ListTag>
+    );
+  }
+
+  if (block.type === "image") {
+    return (
+      <figure key={`image-${index}`} className="my-8 first:mt-0 last:mb-0">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={block.src}
+          alt={block.alt ?? block.caption ?? ""}
+          width={block.width}
+          height={block.height}
+          className="block h-auto w-full max-w-full"
+          loading="lazy"
+        />
+        {block.caption ? (
+          <figcaption className="mt-3 text-[13px] leading-[21px] text-[rgba(17,17,17,0.58)]">
+            {block.caption}
+          </figcaption>
+        ) : null}
+      </figure>
+    );
+  }
+
+  if (block.type === "video") {
+    return (
+      <figure key={`video-${index}`} className="my-8 first:mt-0 last:mb-0">
+        <video
+          controls
+          playsInline
+          preload="metadata"
+          poster={block.poster}
+          className="aspect-video w-full max-w-full bg-black"
+        >
+          <source src={block.src} />
+        </video>
+        {block.caption ? (
+          <figcaption className="mt-3 text-[13px] leading-[21px] text-[rgba(17,17,17,0.58)]">
+            {block.caption}
+          </figcaption>
+        ) : null}
+      </figure>
+    );
+  }
+
+  return <hr key={`divider-${index}`} className="my-8 border-[rgba(17,17,17,0.12)]" />;
+}
+
+function OrchestraGrid({
+  heading,
+  entries,
+  index,
+}: {
+  heading: EventRichContentBlock & { type: "heading" };
+  entries: {
+    role: EventRichContentBlock & { type: "paragraph" };
+    name?: EventRichContentBlock & { type: "paragraph" };
+  }[];
+  index: number;
+}) {
+  const HeadingTag = `h${Math.min(Math.max(heading.level ?? 2, 2), 4)}` as "h2" | "h3" | "h4";
+
+  return (
+    <div key={`orchestra-${index}`} className="mb-6 last:mb-0">
+      <HeadingTag className="mb-6 mt-8 font-semibold first:mt-0">
+        <RichTextSpans spans={heading.children} />
+      </HeadingTag>
+      <div className="grid gap-x-12 gap-y-5 sm:grid-cols-2">
+        {entries.map((entry, entryIndex) => (
+          <div key={`orchestra-entry-${index}-${entryIndex}`}>
+            <p className="mb-1 font-semibold text-[rgba(17,17,17,0.88)]">
+              <RichTextSpans spans={entry.role.children} />
+            </p>
+            {entry.name ? (
+              <p className="text-[rgba(17,17,17,0.72)]">
+                <RichTextSpans spans={entry.name.children} />
+              </p>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function EventRichContent({ blocks }: EventRichContentProps) {
+  const renderedBlocks = [];
+
+  for (let index = 0; index < blocks.length; index += 1) {
+    const block = blocks[index];
+
+    if (isOrchestraHeading(block)) {
+      const entryBlocks = [];
+      let nextIndex = index + 1;
+
+      while (nextIndex < blocks.length && blocks[nextIndex]?.type === "paragraph") {
+        entryBlocks.push(blocks[nextIndex] as EventRichContentBlock & { type: "paragraph" });
+        nextIndex += 1;
+      }
+
+      const entries = [];
+
+      for (let entryIndex = 0; entryIndex < entryBlocks.length; entryIndex += 2) {
+        entries.push({
+          role: entryBlocks[entryIndex],
+          name: entryBlocks[entryIndex + 1],
+        });
+      }
+
+      if (entries.length >= 2) {
+        renderedBlocks.push(
+          <OrchestraGrid
+            key={`orchestra-grid-${index}`}
+            heading={block}
+            entries={entries}
+            index={index}
+          />,
+        );
+        index = nextIndex - 1;
+        continue;
+      }
+    }
+
+    renderedBlocks.push(
+      <EventRichContentBlockRenderer key={`rich-content-block-${index}`} block={block} index={index} />,
+    );
+  }
+
   return (
     <div className={richContentClass}>
-      {blocks.map((block, index) => {
-        if (block.type === "heading") {
-          const HeadingTag = `h${Math.min(Math.max(block.level ?? 2, 2), 4)}` as "h2" | "h3" | "h4";
-          return (
-            <HeadingTag
-              key={`heading-${index}`}
-              className="mb-4 mt-8 font-semibold first:mt-0"
-            >
-              <RichTextSpans spans={block.children} />
-            </HeadingTag>
-          );
-        }
-
-        if (block.type === "quote") {
-          return (
-            <blockquote
-              key={`quote-${index}`}
-              className="mb-6 border-l border-[rgba(217,74,40,0.5)] pl-5 italic last:mb-0"
-            >
-              <RichTextSpans spans={block.children} />
-            </blockquote>
-          );
-        }
-
-        if (block.type === "paragraph") {
-          return (
-            <p key={`paragraph-${index}`} className="mb-6 last:mb-0">
-              <RichTextSpans spans={block.children} />
-            </p>
-          );
-        }
-
-        if (block.type === "list") {
-          const ListTag = block.ordered ? "ol" : "ul";
-
-          return (
-            <ListTag
-              key={`list-${index}`}
-              className={`mb-6 pl-6 last:mb-0 ${block.ordered ? "list-decimal" : "list-disc"}`}
-            >
-              {block.items.map((item, itemIndex) => (
-                <li key={`item-${index}-${itemIndex}`} className="mb-2 last:mb-0">
-                  <RichTextSpans spans={item} />
-                </li>
-              ))}
-            </ListTag>
-          );
-        }
-
-        if (block.type === "image") {
-          return (
-            <figure key={`image-${index}`} className="my-8 first:mt-0 last:mb-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={block.src}
-                alt={block.alt ?? block.caption ?? ""}
-                width={block.width}
-                height={block.height}
-                className="block h-auto w-full max-w-full"
-                loading="lazy"
-              />
-              {block.caption ? (
-                <figcaption className="mt-3 text-[13px] leading-[21px] text-[rgba(17,17,17,0.58)]">
-                  {block.caption}
-                </figcaption>
-              ) : null}
-            </figure>
-          );
-        }
-
-        if (block.type === "video") {
-          return (
-            <figure key={`video-${index}`} className="my-8 first:mt-0 last:mb-0">
-              <video
-                controls
-                playsInline
-                preload="metadata"
-                poster={block.poster}
-                className="aspect-video w-full max-w-full bg-black"
-              >
-                <source src={block.src} />
-              </video>
-              {block.caption ? (
-                <figcaption className="mt-3 text-[13px] leading-[21px] text-[rgba(17,17,17,0.58)]">
-                  {block.caption}
-                </figcaption>
-              ) : null}
-            </figure>
-          );
-        }
-
-        return <hr key={`divider-${index}`} className="my-8 border-[rgba(17,17,17,0.12)]" />;
-      })}
+      {renderedBlocks}
     </div>
   );
 }

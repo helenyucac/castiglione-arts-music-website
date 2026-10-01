@@ -4,20 +4,57 @@ type EventRichContentProps = {
   blocks: EventRichContentBlock[];
 };
 
+type EventHeadingBlock = {
+  type: "heading";
+  level?: number;
+  children: EventRichTextSpan[];
+};
+
+type EventParagraphBlock = {
+  type: "paragraph";
+  level?: number;
+  children: EventRichTextSpan[];
+};
+
+type EventTextBlock = EventHeadingBlock | EventParagraphBlock;
+
 const richContentClass =
   "w-full max-w-[1200px] text-[17px] font-normal leading-[27.625px] text-[rgba(17,17,17,0.8)] antialiased";
+
+const orchestraCityLabels = new Set([
+  "SYDNEY",
+  "MELBOURNE",
+  "BRISBANE",
+  "PERTH",
+  "ADELAIDE",
+  "CANBERRA",
+]);
 
 function getSpanText(spans: EventRichTextSpan[]) {
   return spans.map((span) => span.text).join("").trim();
 }
 
-function isOrchestraHeadingBlock(
-  block: EventRichContentBlock,
-): block is EventRichContentBlock & { type: "heading" | "paragraph" } {
+function getNormalizedBlockText(block: EventRichContentBlock) {
+  if (block.type !== "heading" && block.type !== "paragraph") {
+    return "";
+  }
+
+  return getSpanText(block.children).toUpperCase();
+}
+
+function isTextBlock(block: EventRichContentBlock): block is EventTextBlock {
+  return block.type === "heading" || block.type === "paragraph";
+}
+
+function isOrchestraHeadingBlock(block: EventRichContentBlock) {
   return (
-    (block.type === "heading" || block.type === "paragraph") &&
-    getSpanText(block.children).toUpperCase() === "MEET THE ORCHESTRA"
+    isTextBlock(block) &&
+    getNormalizedBlockText(block) === "MEET THE ORCHESTRA"
   );
+}
+
+function isOrchestraCityBlock(block: EventRichContentBlock) {
+  return isTextBlock(block) && orchestraCityLabels.has(getNormalizedBlockText(block));
 }
 
 function RichTextSpans({ spans }: { spans: EventRichTextSpan[] }) {
@@ -162,14 +199,11 @@ function EventRichContentBlockRenderer({
 
 function OrchestraGrid({
   heading,
-  entries,
+  groups,
   index,
 }: {
-  heading: EventRichContentBlock & { type: "heading" | "paragraph" };
-  entries: {
-    role: EventRichContentBlock & { type: "paragraph" };
-    name?: EventRichContentBlock & { type: "paragraph" };
-  }[];
+  heading: EventTextBlock;
+  groups: OrchestraGroup[];
   index: number;
 }) {
   const HeadingTag =
@@ -182,22 +216,88 @@ function OrchestraGrid({
       <HeadingTag className="mb-6 mt-8 font-semibold first:mt-0">
         <RichTextSpans spans={heading.children} />
       </HeadingTag>
-      <div className="grid gap-x-12 gap-y-5 sm:grid-cols-2">
-        {entries.map((entry, entryIndex) => (
-          <div key={`orchestra-entry-${index}-${entryIndex}`}>
-            <p className="mb-1 font-semibold text-[rgba(17,17,17,0.88)]">
-              <RichTextSpans spans={entry.role.children} />
-            </p>
-            {entry.name ? (
-              <p className="text-[rgba(17,17,17,0.72)]">
-                <RichTextSpans spans={entry.name.children} />
-              </p>
-            ) : null}
+      {groups.map((group, groupIndex) => (
+        <div
+          key={`orchestra-group-${index}-${group.label ?? groupIndex}`}
+          className="mt-8 first:mt-0"
+        >
+          {group.label ? (
+            <h3 className="mb-4 text-[13px] font-semibold uppercase leading-[18px] tracking-[2.2px] text-[rgba(17,17,17,0.52)]">
+              {group.label}
+            </h3>
+          ) : null}
+          <div className="orchestra-grid grid gap-x-12 gap-y-5 sm:grid-cols-2">
+            {group.entries.map((entry, entryIndex) => (
+              <div
+                className="orchestra-entry"
+                key={`orchestra-entry-${index}-${groupIndex}-${entryIndex}`}
+              >
+                <p className="mb-1 font-semibold text-[rgba(17,17,17,0.88)]">
+                  <RichTextSpans spans={entry.role.children} />
+                </p>
+                {entry.name ? (
+                  <p className="text-[rgba(17,17,17,0.72)]">
+                    <RichTextSpans spans={entry.name.children} />
+                  </p>
+                ) : null}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
+}
+
+type OrchestraEntry = {
+  role: EventParagraphBlock;
+  name?: EventParagraphBlock;
+};
+
+type OrchestraGroup = {
+  label?: string;
+  entries: OrchestraEntry[];
+};
+
+function parseOrchestraGroups(blocks: EventTextBlock[]) {
+  const groups: OrchestraGroup[] = [];
+  let currentGroup: OrchestraGroup = { entries: [] };
+
+  const ensureCurrentGroup = () => {
+    if (!groups.includes(currentGroup)) {
+      groups.push(currentGroup);
+    }
+  };
+
+  for (let index = 0; index < blocks.length; index += 1) {
+    const block = blocks[index];
+
+    if (isOrchestraCityBlock(block)) {
+      currentGroup = { label: getNormalizedBlockText(block), entries: [] };
+      groups.push(currentGroup);
+      continue;
+    }
+
+    if (block.type !== "paragraph") {
+      continue;
+    }
+
+    const nextBlock = blocks[index + 1];
+    let name: EventParagraphBlock | undefined;
+
+    if (nextBlock?.type === "paragraph" && !isOrchestraCityBlock(nextBlock)) {
+      name = nextBlock;
+    }
+
+    ensureCurrentGroup();
+    currentGroup.entries.push({ role: block, name });
+
+    if (name) {
+      index += 1;
+    }
+  }
+
+  return groups.filter((group) => group.entries.length > 0);
 }
 
 export function EventRichContent({ blocks }: EventRichContentProps) {
@@ -206,33 +306,57 @@ export function EventRichContent({ blocks }: EventRichContentProps) {
   for (let index = 0; index < blocks.length; index += 1) {
     const block = blocks[index];
 
-    if (isOrchestraHeadingBlock(block)) {
-      const entryBlocks = [];
+    if (isTextBlock(block) && isOrchestraHeadingBlock(block)) {
+      const sectionBlocks: EventTextBlock[] = [];
       let nextIndex = index + 1;
 
-      while (nextIndex < blocks.length && blocks[nextIndex]?.type === "paragraph") {
-        entryBlocks.push(blocks[nextIndex] as EventRichContentBlock & { type: "paragraph" });
-        nextIndex += 1;
+      while (nextIndex < blocks.length) {
+        const nextBlock = blocks[nextIndex];
+
+        if (
+          nextBlock &&
+          isTextBlock(nextBlock) &&
+          (nextBlock.type === "paragraph" || isOrchestraCityBlock(nextBlock))
+        ) {
+          sectionBlocks.push(nextBlock);
+          nextIndex += 1;
+          continue;
+        }
+
+        break;
       }
 
-      const entries = [];
+      const groups = parseOrchestraGroups(sectionBlocks);
+      const entryCount = groups.reduce((total, group) => total + group.entries.length, 0);
 
-      for (let entryIndex = 0; entryIndex < entryBlocks.length; entryIndex += 2) {
-        entries.push({
-          role: entryBlocks[entryIndex],
-          name: entryBlocks[entryIndex + 1],
-        });
-      }
-
-      if (entries.length >= 2) {
+      if (entryCount >= 2) {
         renderedBlocks.push(
           <OrchestraGrid
             key={`orchestra-grid-${index}`}
             heading={block}
-            entries={entries}
+            groups={groups}
             index={index}
           />,
         );
+        index = nextIndex - 1;
+        continue;
+      }
+
+      if (sectionBlocks.length > 0) {
+        renderedBlocks.push(
+          <EventRichContentBlockRenderer key={`rich-content-block-${index}`} block={block} index={index} />,
+        );
+
+        for (let sectionIndex = 0; sectionIndex < sectionBlocks.length; sectionIndex += 1) {
+          renderedBlocks.push(
+            <EventRichContentBlockRenderer
+              key={`rich-content-block-${index}-${sectionIndex}`}
+              block={sectionBlocks[sectionIndex]}
+              index={index + sectionIndex + 1}
+            />,
+          );
+        }
+
         index = nextIndex - 1;
         continue;
       }

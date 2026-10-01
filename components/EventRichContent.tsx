@@ -219,10 +219,14 @@ function OrchestraGrid({
       {groups.map((group, groupIndex) => (
         <div
           key={`orchestra-group-${index}-${group.label ?? groupIndex}`}
-          className="mt-8 first:mt-0"
+          className={
+            groupIndex === 0
+              ? "mt-8 first:mt-0"
+              : "mt-12 border-t border-[rgba(17,17,17,0.18)] pt-10"
+          }
         >
           {group.label ? (
-            <h3 className="mb-4 text-[13px] font-semibold uppercase leading-[18px] tracking-[2.2px] text-[rgba(17,17,17,0.52)]">
+            <h3 className="orchestra-city-heading mb-5 text-[22px] font-semibold uppercase leading-[28px] tracking-[0px] text-[rgba(17,17,17,0.82)]">
               {group.label}
             </h3>
           ) : null}

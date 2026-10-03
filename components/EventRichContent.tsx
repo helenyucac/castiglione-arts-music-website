@@ -263,6 +263,69 @@ type OrchestraGroup = {
   entries: OrchestraEntry[];
 };
 
+function createOrchestraParagraph(text: string): EventParagraphBlock {
+  return {
+    type: "paragraph",
+    children: [{ text }],
+  };
+}
+
+function normalizeNarutoOrchestraGroups(groups: OrchestraGroup[]) {
+  const normalizedGroups = groups.map((group) => ({
+    ...group,
+    entries: [...group.entries],
+  }));
+
+  for (const group of normalizedGroups) {
+    if (group.label !== "SYDNEY" && group.label !== "MELBOURNE") {
+      continue;
+    }
+
+    const conductorEntry: OrchestraEntry = {
+      role: createOrchestraParagraph("Conductor"),
+      name: createOrchestraParagraph("Emily Marshall"),
+    };
+
+    group.entries = group.entries.filter((entry) => {
+      const role = getSpanText(entry.role.children).trim().toLowerCase();
+
+      if (role === "conductor") {
+        return false;
+      }
+
+      if (group.label === "SYDNEY" && role.includes("vocal")) {
+        return false;
+      }
+
+      return true;
+    });
+
+    if (group.label === "SYDNEY") {
+      group.entries.push({
+        role: createOrchestraParagraph("Vocalist"),
+        name: createOrchestraParagraph("Takumi Omine"),
+      });
+    }
+
+    group.entries = group.entries.map((entry) => {
+      const role = getSpanText(entry.role.children).trim().toLowerCase();
+
+      if (role === "drumkit" || role === "drum kit") {
+        return {
+          ...entry,
+          name: createOrchestraParagraph("Andrew Gander"),
+        };
+      }
+
+      return entry;
+    });
+
+    group.entries.unshift(conductorEntry);
+  }
+
+  return normalizedGroups;
+}
+
 function parseOrchestraGroups(blocks: EventTextBlock[]) {
   const groups: OrchestraGroup[] = [];
   let currentGroup: OrchestraGroup = { entries: [] };
@@ -301,7 +364,9 @@ function parseOrchestraGroups(blocks: EventTextBlock[]) {
     }
   }
 
-  return groups.filter((group) => group.entries.length > 0);
+  return normalizeNarutoOrchestraGroups(
+    groups.filter((group) => group.entries.length > 0),
+  );
 }
 
 export function EventRichContent({ blocks }: EventRichContentProps) {

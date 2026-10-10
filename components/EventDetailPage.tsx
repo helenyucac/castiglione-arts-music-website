@@ -468,7 +468,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                             </p>
                             {tourDate.time?.trim() ? (
                               <p
-                                className="mt-2 mb-0 text-[13px] font-medium uppercase leading-[19.5px] tracking-[1.5px] text-[#111111]"
+                                className="mt-2 mb-0 text-[13px] font-medium uppercase leading-[19.5px] tracking-[1.5px] text-[#d94a28]"
                                 style={eyebrowStyle}
                               >
                                 {tourDate.time.trim()}

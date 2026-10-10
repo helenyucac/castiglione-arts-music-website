@@ -7,6 +7,7 @@ import { getTourSlugFromHref } from "@/lib/tourSlug";
 
 export type EventTourDate = {
   date: string;
+  time?: string;
   city: string;
   venue: string;
   venueDetails?: EventVenue;

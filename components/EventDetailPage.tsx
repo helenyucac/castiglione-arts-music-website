@@ -459,12 +459,22 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                           >
                             Show {index + 1}
                           </p>
-                          <p
-                            className="mt-0 mb-0 pt-4 pb-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[#d94a28] antialiased"
-                            style={eyebrowStyle}
-                          >
-                            {formatPublicDateDisplay(tourDate.date) ?? tourDate.date}
-                          </p>
+                          <div className="pt-4">
+                            <p
+                              className="m-0 text-[13px] font-normal uppercase leading-[19.5px] tracking-[1.95px] text-[#d94a28] antialiased"
+                              style={eyebrowStyle}
+                            >
+                              {formatPublicDateDisplay(tourDate.date) ?? tourDate.date}
+                            </p>
+                            {tourDate.time?.trim() ? (
+                              <p
+                                className="mt-2 mb-0 text-[13px] font-medium uppercase leading-[19.5px] tracking-[1.5px] text-[#111111]"
+                                style={eyebrowStyle}
+                              >
+                                {tourDate.time.trim()}
+                              </p>
+                            ) : null}
+                          </div>
                           <div className="lg:self-center">
                             <h3
                               className="m-0 text-[34px] font-medium leading-[38px] tracking-[-0.03em] text-[#111111] antialiased"
@@ -479,15 +489,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                               {tourDate.venue}
                             </p>
                           </div>
-                          <div className="flex flex-wrap items-center gap-4 lg:justify-end lg:pt-4">
-                            {tourDate.time?.trim() ? (
-                              <span
-                                className="text-[13px] font-medium uppercase leading-[19.5px] tracking-[1.5px] text-[#111111]"
-                                style={eyebrowStyle}
-                              >
-                                {tourDate.time.trim()}
-                              </span>
-                            ) : null}
+                          <div className="lg:flex lg:justify-end lg:pt-4">
                             {tourDateCta?.href ? (
                               <a
                                 href={tourDateCta.href}

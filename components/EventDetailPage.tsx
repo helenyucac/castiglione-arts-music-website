@@ -479,7 +479,15 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                               {tourDate.venue}
                             </p>
                           </div>
-                          <div className="lg:flex lg:justify-end lg:pt-4">
+                          <div className="flex flex-wrap items-center gap-4 lg:justify-end lg:pt-4">
+                            {tourDate.time?.trim() ? (
+                              <span
+                                className="text-[13px] font-medium uppercase leading-[19.5px] tracking-[1.5px] text-[#111111]"
+                                style={eyebrowStyle}
+                              >
+                                {tourDate.time.trim()}
+                              </span>
+                            ) : null}
                             {tourDateCta?.href ? (
                               <a
                                 href={tourDateCta.href}

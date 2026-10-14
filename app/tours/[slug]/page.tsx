@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { EventDetailPage } from "@/components/EventDetailPage";
 import { getResolvedEventDetailBySlug } from "@/lib/wix/eventDetailContent";
 
+// Keep event details fresh when content editors publish Wix CMS updates.
 export const revalidate = 60;
 
 type TourEventPageProps = {

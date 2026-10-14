@@ -604,6 +604,7 @@ function resolveCategoryLabel(fields: WixRecordFields, fallback: EventDetailData
 
 function resolveDescription(fields: WixRecordFields, fallback: EventDetailData) {
   const richTextSources = [
+    fields.eventDescription,
     fields.longDescription,
     fields.aboutBody,
     fields.aboutDescription,
@@ -632,6 +633,7 @@ function resolveDescription(fields: WixRecordFields, fallback: EventDetailData) 
 
 function resolveDescriptionHtml(fields: WixRecordFields, fallback: EventDetailData) {
   const richTextSources = [
+    fields.eventDescription,
     fields.longDescription,
     fields.aboutBody,
     fields.aboutDescription,

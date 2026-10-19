@@ -9,6 +9,7 @@ import { WhatsOnEventCard } from "@/components/WhatsOnEventCard";
 import type { EventDetailData, EventTourDate } from "@/data/eventDetails";
 import { formatPublicDateDisplay } from "@/lib/dateDisplay";
 import { JJK_EVENT_SLUG } from "@/lib/eventPixelTracking";
+import { ViennaBoysChoirPixel } from "@/components/ViennaBoysChoirPixel";
 import {
   getRegisterInterestHref,
   getTicketCtaLabel,
@@ -235,6 +236,7 @@ function isExternalHref(href?: string) {
 
 export function EventDetailPage({ event }: EventDetailPageProps) {
   const shouldTrackTicketClicks = event.slug === JJK_EVENT_SLUG;
+  const isViennaBoysChoir = event.slug === "vienna-boys-choir";
   const heroTitleOffsetClass = event.heroTitleOffset ? "lg:mt-14" : "";
   const galleryImages = event.galleryImages ?? [];
   const richEventDescription = event.richEventDescription ?? [];
@@ -254,6 +256,7 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
       {shouldTrackTicketClicks ? (
         <EventTrackingPixels eventSlug={event.slug} eventTitle={event.title} />
       ) : null}
+      {isViennaBoysChoir ? <ViennaBoysChoirPixel /> : null}
       <Navigation />
       <main className="bg-[#f5f1ea] text-[#111111]">
         <section className="border-b border-[rgba(17,17,17,0.06)] py-5">
@@ -509,6 +512,11 @@ export function EventDetailPage({ event }: EventDetailPageProps) {
                                 data-tracking-city={shouldTrackTicketClicks ? tourDate.city : undefined}
                                 data-tracking-show={
                                   shouldTrackTicketClicks ? `Show ${index + 1}` : undefined
+                                }
+                                data-vbc-sydney-show={
+                                  isViennaBoysChoir && /^sydney/i.test(tourDate.city) && /sydney town hall/i.test(tourDate.venue) && /flicket\.io/i.test(tourDateCta.href) && /07 FEB 2027/i.test(tourDate.date) && /^(12:00 PM|5:00 PM)$/i.test(tourDate.time?.trim() ?? "")
+                                    ? tourDate.time?.trim() === "12:00 PM" ? "vbc_sydney_20270207_1200" : "vbc_sydney_20270207_1700"
+                                    : undefined
                                 }
                               >
                                 {tourDateCta.label} →

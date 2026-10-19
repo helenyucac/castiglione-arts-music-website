@@ -48,7 +48,7 @@ export function ViennaBoysChoirPixel() {
   }, []);
 
   useEffect(() => {
-    if (!ready || consent !== "accepted" || navigator.globalPrivacyControl === true) return;
+    if (!ready || consent !== "accepted" || (navigator as Navigator & { globalPrivacyControl?: boolean }).globalPrivacyControl === true) return;
     loadMetaPixel();
     const key = window.location.pathname + window.location.search;
     if (window._cacVbcViewKey !== key) {

@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import { EventDetailPage } from "@/components/EventDetailPage";
 import { getResolvedEventDetailBySlug } from "@/lib/wix/eventDetailContent";
 
-// Keep event details fresh when content editors publish Wix CMS updates.
-export const revalidate = 60;
+// Avoid regenerating event pages every minute. Wix CMS publishes can refresh
+// affected pages immediately through the existing /api/revalidate-cms webhook.
+// The hourly fallback also matches the shared Wix read-cache lifetime.
+export const revalidate = 3600;
 
 type TourEventPageProps = {
   params: Promise<{ slug: string }>;

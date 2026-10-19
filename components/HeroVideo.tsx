@@ -76,6 +76,9 @@ export function HeroVideo({
         return;
       }
 
+      const bounds = video.getBoundingClientRect();
+      if (bounds.bottom <= 0 || bounds.top >= window.innerHeight || document.hidden) return;
+
       attemptedPlaybackReasons.current.add(reason);
       video.muted = true;
       video.defaultMuted = true;

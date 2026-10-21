@@ -19,11 +19,16 @@ declare global {
 
 function loadMetaPixel() {
   if (!window.fbq) {
-    const fbq = ((...args: unknown[]) => {
-      const fn = window.fbq as typeof fbq & { callMethod?: (...a: unknown[]) => void; queue?: unknown[][] };
+    type MetaPixelFunction = ((...args: unknown[]) => void) & {
+      callMethod?: (...args: unknown[]) => void;
+      queue?: unknown[][];
+    };
+    const fbq: MetaPixelFunction = (...args: unknown[]) => {
+      const fn = window.fbq as MetaPixelFunction | undefined;
+      if (!fn) return;
       if (fn.callMethod) fn.callMethod(...args);
       else (fn.queue ??= []).push(args);
-    }) as typeof window.fbq;
+    };
     window.fbq = fbq;
     const script = document.createElement("script");
     script.async = true;

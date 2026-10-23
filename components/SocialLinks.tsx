@@ -1,11 +1,12 @@
 import type { ElementType } from "react";
 import { BookText } from "lucide-react";
-import { FaFacebookF, FaInstagram, FaTiktok, FaYoutube } from "react-icons/fa6";
+import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTiktok, FaYoutube } from "react-icons/fa6";
 import { defaultSocialLinks } from "@/data/siteSettings";
 
 const socialIconMap: Record<string, ElementType> = {
   facebook: FaFacebookF,
   instagram: FaInstagram,
+  linkedin: FaLinkedinIn,
   rednote: BookText,
   tiktok: FaTiktok,
   youtube: FaYoutube,

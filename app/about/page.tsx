@@ -143,15 +143,41 @@ export default function AboutPage() {
               </div>
 
               <div className="m-0 self-start p-0 transform-none lg:mt-12 lg:basis-[46%]">
-                <p
-                  className="m-0 w-full max-w-[720px] p-0 text-[15px] font-normal leading-[24.375px] text-[rgba(17,17,17,0.75)] antialiased"
+                <div
+                  className="w-full max-w-[720px] space-y-5 text-[15px] font-normal leading-[24.375px] text-[rgba(17,17,17,0.75)] antialiased"
                   style={interFont}
                 >
-                  Castiglione Arts &amp; Culture is a touring production and
-                  exhibition company founded in Melbourne in 2015. We curate the
-                  journey of concerts, festivals and immersive experiences across
-                  the world&apos;s most distinctive cultural venues.
-                </p>
+                  <p className="m-0 font-semibold text-[#111111]">
+                    Bringing exceptional experiences to life.
+                  </p>
+                  <p className="m-0">
+                    Castiglione Arts and Culture is an Australian arts and live
+                    entertainment company connecting international creativity
+                    with audiences across Australia, New Zealand and the wider
+                    Asia-Pacific region.
+                  </p>
+                  <p className="m-0">
+                    Our vision is to bring cultures, generations and communities
+                    together through shared experiences in music, arts and live
+                    entertainment. From classical concerts and productions
+                    inspired by film, anime and video game IP to music festivals
+                    and exhibitions, we create and present a diverse programme
+                    that celebrates artistic excellence, cultural exchange and
+                    new forms of storytelling.
+                  </p>
+                  <p className="m-0">
+                    Over the past decade, we have presented, promoted and toured
+                    international productions in collaboration with leading
+                    venues, orchestras, producers and rights holders.
+                  </p>
+                  <p className="m-0">
+                    As we grow, we are building long-term international
+                    partnerships and developing new opportunities for exceptional
+                    productions to travel across borders. At the heart of our
+                    work is a commitment to creating memorable experiences that
+                    inspire curiosity and bring people together.
+                  </p>
+                </div>
               </div>
             </div>
 

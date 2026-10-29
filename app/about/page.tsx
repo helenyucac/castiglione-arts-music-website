@@ -97,6 +97,7 @@ const offices = [
     city: "Melbourne",
     country: "Australia",
     footer: "Programming · Partnership",
+    address: "Level 2, Alfred Deakin Building, Flinders Street, Melbourne 3000",
   },
   {
     eyebrow: "02 / Regional Hub",
@@ -109,6 +110,7 @@ const offices = [
     city: "Hangzhou",
     country: "China",
     footer: "Market Development",
+    address: "U610, Qinglai Jiazuo, Huayuangang Street, Gongshu District, Hangzhou, China",
   },
 ];
 
@@ -399,6 +401,14 @@ export default function AboutPage() {
                   >
                     {office.footer}
                   </p>
+                  {office.address && (
+                    <p
+                      className="mt-3 text-[13px] font-normal leading-[22.1px] text-[rgba(17,17,17,0.65)] antialiased"
+                      style={interFont}
+                    >
+                      {office.address}
+                    </p>
+                  )}
                 </article>
               ))}
 

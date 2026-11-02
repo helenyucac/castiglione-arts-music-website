@@ -205,7 +205,7 @@ export function PartnershipForm() {
         >
           Tell us about your project, partnership or idea. Our team will be in
           touch shortly. For direct enquiries, contact
-          partnerships@castiglione.art.
+          info@castiglione.com.au.
         </p>
 
         <form className="mt-12" onSubmit={handleSubmit}>

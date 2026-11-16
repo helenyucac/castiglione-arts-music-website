@@ -185,7 +185,7 @@ export default function AboutPage() {
 
             <div className="relative mt-14 overflow-hidden bg-[#ded8cf] sm:mt-16 sm:aspect-[16/7] sm:min-h-[280px] lg:mt-20">
               <Image
-                src="https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=1800&q=82"
+                src="https://static.wixstatic.com/media/a087db_de9272801cce42d59e29f3214123b6f6~mv2.jpg"
                 alt="A quiet concert hall interior with tall windows"
                 width={1800}
                 height={1200}
@@ -194,7 +194,7 @@ export default function AboutPage() {
                 className="h-auto w-full object-contain sm:hidden"
               />
               <Image
-                src="https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=1800&q=82"
+                src="https://static.wixstatic.com/media/a087db_de9272801cce42d59e29f3214123b6f6~mv2.jpg"
                 alt="A quiet concert hall interior with tall windows"
                 fill
                 priority

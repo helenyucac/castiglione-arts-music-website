@@ -31,8 +31,6 @@ export type ProgramLandingPageText = {
   secondaryFilterLabel: string;
 };
 
-const HOMEPAGE_WHATS_ON_EVENT_LIMIT = 12;
-
 export const localProgramCards: ProgramCardData[] = [
   {
     number: "01",
@@ -168,12 +166,10 @@ export async function getProgramLandingPageText(
 }
 
 export async function getHomepageWhatsOnEvents() {
-  const events = await getCmsEventsWithFallback(
-    () => getFeaturedHomeEvents(HOMEPAGE_WHATS_ON_EVENT_LIMIT),
+  return getCmsEventsWithFallback(
+    () => getFeaturedHomeEvents(),
     homepageWhatsOnEvents,
   );
-
-  return events.slice(0, HOMEPAGE_WHATS_ON_EVENT_LIMIT);
 }
 
 export async function getToursArchiveEvents() {

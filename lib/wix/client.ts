@@ -10,6 +10,7 @@ const WIX_DATA_API_BASE_URL =
   process.env.WIX_DATA_API_BASE_URL ?? "https://www.wixapis.com/wix-data/v2/items";
 const WIX_DATA_COLLECTIONS_API_URL = WIX_DATA_API_BASE_URL.replace(/\/items\/?$/, "/collections");
 const DEFAULT_WIX_READ_REVALIDATE_SECONDS = 60 * 60;
+const EVENTS_READ_REVALIDATE_SECONDS = 60;
 
 type NextFetchInit = RequestInit & {
   next?: {
@@ -277,7 +278,9 @@ export async function queryWixCollection<TFields extends WixRecordFields = WixRe
   const cacheOptions =
     options.cache === "no-store"
       ? ({ cache: "no-store" as const } satisfies Pick<NextFetchInit, "cache">)
-      : getWixReadFetchOptions(["wix-query", `wix-${collectionName.toLowerCase()}`]);
+      : collectionName === "Events"
+        ? { next: { revalidate: EVENTS_READ_REVALIDATE_SECONDS, tags: ["wix-cms", "wix-query", "wix-events"] } }
+        : getWixReadFetchOptions(["wix-query", `wix-${collectionName.toLowerCase()}`]);
 
   const response = await fetch(`${config.baseUrl}/query`, {
     method: "POST",

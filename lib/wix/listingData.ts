@@ -96,8 +96,9 @@ async function getCmsEventsWithFallback(
   try {
     const cmsEvents = await request();
     return resolveCmsListingEventsForRuntime(cmsEvents);
-  } catch {
-    return localEvents;
+  } catch (error) {
+    console.error("Wix CMS event listing failed; suppressing stale local fallback:", error);
+    return [];
   }
 }
 
